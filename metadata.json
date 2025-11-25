@@ -1,6 +1,6 @@
 {
-  "name": "AnyMais Social",
-  "description": "Uma rede social completa para animais com adoção, namoro, saúde e serviços. Disponível em PT, EN, ES.",
+  "name": "AnyMais",
+  "description": "Uma plataforma completa para animais para adoção, namoro, saúde e serviços. Disponível em PT, EN, ES.",
   "requestFramePermissions": [
     "camera",
     "geolocation"
