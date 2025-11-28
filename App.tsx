@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType } from './types';
-import { TRANSLATIONS } from './constants';
+import { TRANSLATIONS, MOCK_DAILY_PHOTOS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { Button } from './components/Button';
-import { Globe, Check, Lock } from 'lucide-react';
+import { Globe, Check, Lock, Camera } from 'lucide-react';
 import { db } from './services/db';
 
 const App: React.FC = () => {
@@ -16,6 +16,9 @@ const App: React.FC = () => {
   // UI State
   const [isScrolled, setIsScrolled] = useState(false);
   
+  // Photo Slider State
+  const [currentSlide, setCurrentSlide] = useState(0);
+
   // Auth Form States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,6 +45,14 @@ const App: React.FC = () => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Handle Slider Interval
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % MOCK_DAILY_PHOTOS.length);
+    }, 4000);
+    return () => clearInterval(timer);
   }, []);
 
   const toggleLang = (l: Language) => setLang(l);
@@ -173,18 +184,69 @@ const App: React.FC = () => {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6">
-            {t.heroTitle}
-          </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-            {t.heroSubtitle}
-          </p>
-          <div className="mt-10 flex justify-center gap-4">
-            <Button size="lg" onClick={() => openSignup('start')}>{t.ctaStart}</Button>
-            <Button size="lg" variant="outline" onClick={openLogin}>{t.ctaLogin}</Button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Text Column */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6">
+                {t.heroTitle}
+              </h1>
+              <p className="mt-4 max-w-2xl mx-auto lg:mx-0 text-xl text-gray-500">
+                {t.heroSubtitle}
+              </p>
+              <div className="mt-10 flex justify-center lg:justify-start gap-4">
+                <Button size="lg" onClick={() => openSignup('start')}>{t.ctaStart}</Button>
+                <Button size="lg" variant="outline" onClick={openLogin}>{t.ctaLogin}</Button>
+              </div>
+            </div>
+
+            {/* Slider Column */}
+            <div className="relative mx-auto w-full max-w-md lg:max-w-full">
+               {/* Decorative elements */}
+               <div className="absolute top-0 right-0 w-64 h-64 bg-pink-200 rounded-full blur-3xl opacity-30 -translate-y-10 translate-x-10"></div>
+               <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-200 rounded-full blur-3xl opacity-30 translate-y-10 -translate-x-10"></div>
+
+               <div className="relative aspect-[4/5] md:aspect-square bg-white rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-all duration-500 overflow-hidden border-8 border-white group">
+                  {/* Photo of the Day Badge */}
+                  <div className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg flex items-center gap-2">
+                    <Camera size={14} className="text-brand-600" />
+                    <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+                       {lang === Language.PT ? 'Foto do Dia' : (lang === Language.ES ? 'Foto del Día' : 'Photo of the Day')}
+                    </span>
+                  </div>
+
+                  {/* Slides */}
+                  {MOCK_DAILY_PHOTOS.map((photo, index) => (
+                    <div 
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <img src={photo.url} alt={photo.caption} className="w-full h-full object-cover" />
+                      
+                      {/* Caption Overlay */}
+                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-6 pt-20">
+                         <p className="text-white font-bold text-lg">{photo.caption}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Indicators */}
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+                    {MOCK_DAILY_PHOTOS.map((_, index) => (
+                      <button 
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/80'}`}
+                      />
+                    ))}
+                  </div>
+               </div>
+            </div>
+
           </div>
         </div>
+        
         {/* Decorative background blob */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-50 rounded-full blur-3xl -z-10 opacity-50" />
       </section>
@@ -266,7 +328,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 text-center text-gray-500">
-          <p>&copy; 2025 AnyMais. Todos os direitos reservados.</p>
+          <p>&copy; 2024 AnyMais Social. All rights reserved.</p>
         </div>
       </footer>
 

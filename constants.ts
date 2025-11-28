@@ -345,3 +345,10 @@ export const MOCK_SERVICES: ServiceProvider[] = [
   { id: '3', name: 'Walkies with Sarah', type: 'dogwalker', rating: 5.0, image: 'https://picsum.photos/200/200?random=12' },
   { id: '4', name: 'Pet Paradise Hotel', type: 'hotel', rating: 4.7, image: 'https://picsum.photos/200/200?random=13' },
 ];
+
+export const MOCK_DAILY_PHOTOS = [
+  { url: 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?q=80&w=1000&auto=format&fit=crop', caption: 'Rex no Parque' },
+  { url: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=1000&auto=format&fit=crop', caption: 'Mia Relaxando' },
+  { url: 'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?q=80&w=1000&auto=format&fit=crop', caption: 'Hora da soneca' },
+  { url: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?q=80&w=1000&auto=format&fit=crop', caption: 'Aventuras na neve' },
+];
