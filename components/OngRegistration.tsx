@@ -1,9 +1,11 @@
 
+
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { formatCNPJ, formatPhone, validateCNPJ, validateTaxID } from '../utils';
 import { Button } from './Button';
-import { ArrowLeft, Building2, MapPin, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface OngRegistrationProps {
   lang: Language;
@@ -21,9 +23,47 @@ export const OngRegistration: React.FC<OngRegistrationProps> = ({ lang, onBack, 
     location: prefilledLocation || '',
     description: ''
   });
+  const [errors, setErrors] = useState<{cnpj?: string}>({});
+
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Apply mask only if lang is PT (Brazil) or user input is numeric enough to start formatting
+    if (lang === Language.PT) {
+        setFormData(prev => ({ ...prev, cnpj: formatCNPJ(val) }));
+    } else {
+        setFormData(prev => ({ ...prev, cnpj: val }));
+    }
+    if (errors.cnpj) setErrors(prev => ({ ...prev, cnpj: undefined }));
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, phone: formatPhone(val) }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    let isValid = true;
+    const newErrors: {cnpj?: string} = {};
+
+    if (lang === Language.PT) {
+        if (!validateCNPJ(formData.cnpj)) {
+            newErrors.cnpj = t.invalidCnpj;
+            isValid = false;
+        }
+    } else {
+        if (!validateTaxID(formData.cnpj)) {
+            newErrors.cnpj = t.invalidTaxId;
+            isValid = false;
+        }
+    }
+
+    if (!isValid) {
+        setErrors(newErrors);
+        return;
+    }
+
     // Simulate API call
     setTimeout(() => {
       setSubmitted(true);
@@ -85,14 +125,25 @@ export const OngRegistration: React.FC<OngRegistrationProps> = ({ lang, onBack, 
                </div>
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t.ongCnpj}</label>
-                  <input 
-                    type="text" 
-                    required 
-                    placeholder="00.000.000/0000-00"
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-gray-900"
-                    value={formData.cnpj}
-                    onChange={e => setFormData({...formData, cnpj: e.target.value})}
-                  />
+                  <div className="relative">
+                    <input 
+                        type="text" 
+                        required 
+                        placeholder={lang === Language.PT ? "00.000.000/0000-00" : ""}
+                        className={`w-full px-4 py-2 bg-white border ${errors.cnpj ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-brand-500'} rounded-lg focus:ring-2 outline-none text-gray-900`}
+                        value={formData.cnpj}
+                        onChange={handleCnpjChange}
+                        maxLength={lang === Language.PT ? 18 : 20}
+                    />
+                    {errors.cnpj && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+                            <AlertCircle size={18} />
+                        </div>
+                    )}
+                  </div>
+                  {errors.cnpj && (
+                      <p className="mt-1 text-xs text-red-500 font-medium">{errors.cnpj}</p>
+                  )}
                </div>
             </div>
 
@@ -104,7 +155,7 @@ export const OngRegistration: React.FC<OngRegistrationProps> = ({ lang, onBack, 
                     required 
                     className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-gray-900"
                     value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    onChange={handlePhoneChange}
                   />
                </div>
                <div>

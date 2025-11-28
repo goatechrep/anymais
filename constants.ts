@@ -1,5 +1,6 @@
 
-import { Language, Pet, ServiceProvider, TranslationKey } from './types';
+
+import { Language, Pet, ServiceProvider, TranslationKey, Ong } from './types';
 
 export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
   [Language.PT]: {
@@ -164,7 +165,14 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     ongCnpj: "CNPJ",
     ongDescription: "Descrição da Organização",
     ongRegisterSuccess: "Cadastro realizado com sucesso! Em breve entraremos em contato.",
-    viewOngsBtn: "Ver ONGs cadastradas"
+    viewOngsBtn: "Ver ONGs cadastradas",
+    invalidCnpj: "CNPJ inválido. Verifique o número digitado.",
+    invalidTaxId: "Número de registro inválido.",
+    registeredOngsTitle: "ONGs Parceiras",
+    seeAllOngs: "Ver todas as ONGs",
+    partnerOngs: "ONGs Parceiras",
+    searchOngsPlaceholder: "Buscar ONGs por cidade, estado ou nome",
+    noOngsFound: "Nenhuma ONG encontrada com esses critérios.",
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -283,7 +291,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     locationLabel: "Location",
     getLocationBtn: "Update with GPS",
     locationError: "Error getting location. Check permissions.",
-    kmAway: "km away",
+    kmAway: "km de distância",
     locationUpdated: "Location updated successfully!",
     selectedPlanLabel: "Selected Plan",
     passwordStrength: "Password Strength",
@@ -328,7 +336,14 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     ongCnpj: "Tax ID (CNPJ)",
     ongDescription: "Organization Description",
     ongRegisterSuccess: "Registration successful! We will contact you soon.",
-    viewOngsBtn: "View Registered NGOs"
+    viewOngsBtn: "View Registered NGOs",
+    invalidCnpj: "Invalid Tax ID format.",
+    invalidTaxId: "Invalid registration number.",
+    registeredOngsTitle: "Partner NGOs",
+    seeAllOngs: "See all NGOs",
+    partnerOngs: "Partner NGOs",
+    searchOngsPlaceholder: "Search NGOs by city, state or name",
+    noOngsFound: "No NGOs found matching your criteria.",
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -492,7 +507,14 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     ongCnpj: "RUC / ID Fiscal",
     ongDescription: "Descripción de la Organización",
     ongRegisterSuccess: "¡Registro exitoso! Nos pondremos en contacto pronto.",
-    viewOngsBtn: "Ver ONG registradas"
+    viewOngsBtn: "Ver ONG registradas",
+    invalidCnpj: "ID Fiscal inválido.",
+    invalidTaxId: "Número de registro inválido.",
+    registeredOngsTitle: "ONG Asociadas",
+    seeAllOngs: "Ver todas las ONG",
+    partnerOngs: "ONG Asociadas",
+    searchOngsPlaceholder: "Buscar ONG por ciudad, estado o nombre",
+    noOngsFound: "No se encontraron ONG con estos criterios.",
   }
 };
 
@@ -520,4 +542,13 @@ export const MOCK_DAILY_PHOTOS = [
   { url: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=1000&auto=format&fit=crop', petName: 'Mia', breed: 'Persa', location: 'Rio de Janeiro, RJ' },
   { url: 'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?q=80&w=1000&auto=format&fit=crop', petName: 'Buddy', breed: 'Bulldog Francês', location: 'Curitiba, PR' },
   { url: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?q=80&w=1000&auto=format&fit=crop', petName: 'Thor', breed: 'Husky Siberiano', location: 'Belo Horizonte, MG' },
+];
+
+export const MOCK_ONGS: Ong[] = [
+  { id: '1', name: 'Anjos de Patas', image: 'https://images.unsplash.com/photo-1605218427368-35b86121f1d1?auto=format&fit=crop&w=400&q=80', description: 'Resgatando e cuidando de cães de rua há 10 anos.', location: 'São Paulo, SP' },
+  { id: '2', name: 'Gatinhos da Vila', image: 'https://images.unsplash.com/photo-1582294101488-0d19762a5b6c?auto=format&fit=crop&w=400&q=80', description: 'Lar temporário e adoção para felinos.', location: 'Rio de Janeiro, RJ' },
+  { id: '3', name: 'Amigo Fiel', image: 'https://images.unsplash.com/photo-1599566219227-2efe0c9b7f5f?auto=format&fit=crop&w=400&q=80', description: 'Reabilitação e adoção de animais feridos.', location: 'Curitiba, PR' },
+  { id: '4', name: 'Santuário Animal', image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=400&q=80', description: 'Proteção para animais de grande porte e silvestres.', location: 'Belo Horizonte, MG' },
+  { id: '5', name: 'Vira-lata Caramelo', image: 'https://images.unsplash.com/photo-1535930749574-1399327ce78f?auto=format&fit=crop&w=400&q=80', description: 'Apoio a cães comunitários.', location: 'Salvador, BA' },
+  { id: '6', name: 'Arca de Noé', image: 'https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&w=400&q=80', description: 'Abrigo para todos os tipos de animais.', location: 'Porto Alegre, RS' }
 ];

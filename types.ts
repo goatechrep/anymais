@@ -1,4 +1,5 @@
 
+
 export enum Language {
   PT = 'pt',
   EN = 'en',
@@ -47,7 +48,10 @@ export type TranslationKey =
   | 'detecting' | 'setLocation'
   | 'headerLanguage' | 'headerLocation' 
   | 'ongSectionTitle' | 'ongSectionSubtitle' | 'ongBtn' | 'ongFormTitle' | 'ongFormDesc' 
-  | 'ongName' | 'ongCnpj' | 'ongDescription' | 'ongRegisterSuccess' | 'viewOngsBtn';
+  | 'ongName' | 'ongCnpj' | 'ongDescription' | 'ongRegisterSuccess' | 'viewOngsBtn'
+  | 'invalidCnpj' | 'invalidTaxId'
+  | 'registeredOngsTitle' | 'seeAllOngs' | 'partnerOngs'
+  | 'searchOngsPlaceholder' | 'noOngsFound';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -83,6 +87,14 @@ export interface Pet {
   location?: Coordinates;
 }
 
+export interface Ong {
+  id: string;
+  name: string;
+  image: string;
+  description: string;
+  location: string;
+}
+
 export interface Vaccine {
   id: string;
   name: string;
@@ -100,5 +112,5 @@ export interface ServiceProvider {
   address?: string;
 }
 
-export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs';
 export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet';

@@ -31,6 +31,72 @@ export const validateEmail = (email: string): boolean => {
   return re.test(email);
 };
 
+export const formatPhone = (value: string): string => {
+  const numbers = value.replace(/\D/g, '').slice(0, 11);
+  
+  if (numbers.length > 10) {
+    // (11) 91234-5678
+    return numbers.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+  } else if (numbers.length > 6) {
+    // (11) 1234-5678 (Fixed line or partial mobile)
+    return numbers.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+  } else if (numbers.length > 2) {
+    return numbers.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
+  } else {
+    return numbers.replace(/^(\d*)/, '($1');
+  }
+};
+
+export const validateCNPJ = (cnpj: string): boolean => {
+  const clean = cnpj.replace(/[^\d]/g, '');
+
+  if (clean.length !== 14) return false;
+  // Eliminate known invalid CNPJs (e.g., 00000000000000)
+  if (/^(\d)\1+$/.test(clean)) return false;
+
+  // Algorithm to validate digits
+  let size = clean.length - 2;
+  let numbers = clean.substring(0, size);
+  const digits = clean.substring(size);
+  let sum = 0;
+  let pos = size - 7;
+
+  for (let i = size; i >= 1; i--) {
+    sum += parseInt(numbers.charAt(size - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(0))) return false;
+
+  size = size + 1;
+  numbers = clean.substring(0, size);
+  sum = 0;
+  pos = size - 7;
+  for (let i = size; i >= 1; i--) {
+    sum += parseInt(numbers.charAt(size - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(1))) return false;
+
+  return true;
+};
+
+export const formatCNPJ = (value: string): string => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
+    .slice(0, 18);
+};
+
+export const validateTaxID = (value: string): boolean => {
+  // Generic validation for international IDs (at least 5 chars)
+  return value.trim().length >= 5;
+};
+
 export const mockGeocode = async (query: string): Promise<Coordinates | null> => {
     // Simulating an API delay
     await new Promise(resolve => setTimeout(resolve, 600));

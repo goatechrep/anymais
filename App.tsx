@@ -1,13 +1,15 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType } from './types';
-import { TRANSLATIONS, MOCK_DAILY_PHOTOS } from './constants';
+import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
+import { PublicOngs } from './components/PublicOngs';
 import { LegalPages } from './components/LegalPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { db } from './services/db';
 import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
@@ -22,6 +24,8 @@ const App: React.FC = () => {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [headerLocation, setHeaderLocation] = useState<string>('');
   const [isLocating, setIsLocating] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [ongCurrentIndex, setOngCurrentIndex] = useState(0);
   
   // Auth Form States
   const [email, setEmail] = useState('');
@@ -70,6 +74,24 @@ const App: React.FC = () => {
   }, []);
 
   const toggleLang = (l: Language) => setLang(l);
+
+  // NGO Slider Logic
+  const nextOngSlide = () => {
+    setOngCurrentIndex((prev) => (prev + 1) % Math.ceil(MOCK_ONGS.length / 3));
+  };
+  
+  const prevOngSlide = () => {
+    setOngCurrentIndex((prev) => (prev - 1 + Math.ceil(MOCK_ONGS.length / 3)) % Math.ceil(MOCK_ONGS.length / 3));
+  };
+
+  const getVisibleOngs = () => {
+      const isMobile = window.innerWidth < 768;
+      const itemsPerPage = isMobile ? 1 : 3;
+      const start = ongCurrentIndex * itemsPerPage;
+      // Safety check for mobile responsiveness if resizing
+      if (start >= MOCK_ONGS.length) return MOCK_ONGS.slice(0, itemsPerPage);
+      return MOCK_ONGS.slice(start, start + itemsPerPage);
+  };
 
   // Phone Mask Helper
   const formatPhone = (value: string) => {
@@ -177,6 +199,7 @@ const App: React.FC = () => {
     setIsLoginMode(true);
     setShowLogin(true);
     setAuthError('');
+    setMobileMenuOpen(false);
   };
 
   const openSignup = (plan: PlanType = 'basic') => {
@@ -185,6 +208,7 @@ const App: React.FC = () => {
     setShowLogin(true);
     setAuthError('');
     setAcceptedTerms(false);
+    setMobileMenuOpen(false);
   };
 
   const handleLogout = () => {
@@ -221,6 +245,10 @@ const App: React.FC = () => {
     return <PublicAdoption lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
   }
 
+  if (view === 'public-ongs') {
+      return <PublicOngs lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+  }
+
   if (view === 'terms' || view === 'privacy') {
     return <LegalPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
   }
@@ -235,30 +263,31 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-white text-gray-900 font-sans">
       
       {/* Subheader - Static Top Bar */}
-      <div className="bg-brand-900 text-white py-2.5 px-4 text-sm font-medium relative z-[60]">
-         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-             <div className="flex items-center gap-4">
+      <div className="bg-brand-900 text-white py-2 px-3 md:py-2.5 md:px-4 text-xs md:text-sm font-medium relative z-[60]">
+         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
+             <div className="flex items-center gap-4 max-w-[65%] md:max-w-none">
                  <button 
                   onClick={handleHeaderLocationClick}
                   disabled={isLocating}
-                  className="flex items-center gap-1.5 hover:text-brand-200 transition-colors"
+                  className="flex items-center gap-1.5 hover:text-brand-200 transition-colors truncate"
                  >
-                     {isLocating ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
-                     <span>
-                        {t.headerLocation} {isLocating ? t.detecting : (headerLocation || t.setLocation)}
+                     {isLocating ? <Loader2 size={12} className="animate-spin shrink-0" /> : <MapPin size={12} className="shrink-0" />}
+                     <span className="truncate">
+                        <span className="hidden sm:inline">{t.headerLocation} </span>
+                        {isLocating ? t.detecting : (headerLocation || t.setLocation)}
                      </span>
                  </button>
              </div>
              
-             <div className="flex items-center gap-3">
-                 <Globe size={14} className="text-brand-200" />
-                 <span className="hidden sm:inline opacity-75">{t.headerLanguage}:</span>
+             <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                 <Globe size={12} className="text-brand-200 hidden sm:block" />
+                 <span className="opacity-75 hidden sm:inline">{t.headerLanguage}:</span>
                  <div className="flex gap-1">
                     {Object.values(Language).map((l) => (
                         <button 
                             key={l} 
                             onClick={() => toggleLang(l)}
-                            className={`px-1.5 rounded text-[10px] font-bold uppercase ${lang === l ? 'bg-white text-brand-900' : 'bg-brand-800 text-brand-200 hover:bg-brand-700'}`}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${lang === l ? 'bg-white text-brand-900' : 'bg-brand-800 text-brand-200 hover:bg-brand-700'}`}
                         >
                             {l}
                         </button>
@@ -271,8 +300,8 @@ const App: React.FC = () => {
       {/* Main Navbar */}
       <nav className={`sticky top-0 w-full z-50 transition-all duration-300 ease-in-out ${
         isScrolled 
-          ? 'bg-white/90 backdrop-blur-md shadow-sm py-2' 
-          : 'bg-white border-b border-gray-100 py-4'
+          ? 'bg-white/95 backdrop-blur-md shadow-sm py-2' 
+          : 'bg-white border-b border-gray-100 py-3 md:py-4'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
@@ -280,20 +309,61 @@ const App: React.FC = () => {
                <span className="text-3xl">🐾</span>
                <span className="font-bold text-2xl text-brand-600">AnyMais</span>
             </div>
-            <div className="flex items-center gap-4">
+            
+            <div className="hidden md:flex items-center gap-4">
               <Button variant="ghost" onClick={openLogin}>{t.ctaLogin}</Button>
               <Button onClick={() => openSignup('basic')}>{t.createAccount}</Button>
             </div>
+
+            <button 
+              className="md:hidden text-gray-600 hover:text-brand-600 p-2"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu size={28} />
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col md:hidden animate-fade-in">
+          <div className="flex justify-between items-center p-4 border-b border-gray-100">
+             <div className="flex items-center gap-2">
+               <span className="text-3xl">🐾</span>
+               <span className="font-bold text-2xl text-brand-600">AnyMais</span>
+             </div>
+             <button 
+               onClick={() => setMobileMenuOpen(false)}
+               className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+             >
+               <X size={28} />
+             </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+             <div className="flex flex-col gap-4">
+               <Button size="lg" className="w-full justify-center" onClick={() => openSignup('basic')}>
+                  {t.createAccount}
+               </Button>
+               <Button size="lg" variant="outline" className="w-full justify-center" onClick={openLogin}>
+                  {t.ctaLogin}
+               </Button>
+             </div>
+             <hr className="border-gray-100" />
+             <div className="p-4 bg-gray-50 rounded-xl text-center">
+                 <p className="text-sm text-gray-500">
+                     {t.heroSubtitle}
+                 </p>
+             </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Text Column */}
             <div className="text-center lg:text-left z-20">
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6">
                 {t.heroTitle}
@@ -301,19 +371,16 @@ const App: React.FC = () => {
               <p className="mt-4 max-w-2xl mx-auto lg:mx-0 text-xl text-gray-500">
                 {t.heroSubtitle}
               </p>
-              <div className="mt-10 flex justify-center lg:justify-start gap-4">
+              <div className="mt-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
                 <Button size="lg" onClick={() => openSignup('start')}>{t.ctaStart}</Button>
                 <Button size="lg" variant="outline" onClick={openLogin}>{t.ctaLogin}</Button>
               </div>
             </div>
 
-            {/* Hero Image Column - Dynamic Slider */}
             <div className="hidden lg:flex relative w-full h-[600px] items-center justify-center">
-                {/* Decorative Background Blob */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-brand-200 to-secondary-200 rounded-full blur-[100px] -z-10 opacity-60"></div>
                 
                 <div className="relative z-10 w-[450px] h-[550px] transform rotate-3 transition-transform hover:rotate-0 duration-500 group">
-                    {/* Badge - Top Right on the Slide */}
                     <div className="absolute top-6 right-6 bg-brand-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg z-20 flex items-center gap-2">
                         <Camera size={14} /> Foto da Semana
                     </div>
@@ -330,8 +397,6 @@ const App: React.FC = () => {
                               alt={photo.petName} 
                               className="w-full h-full object-cover rounded-[2rem] shadow-2xl border-8 border-white"
                           />
-                          
-                          {/* Caption Card - Bottom */}
                           <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/50 flex flex-col items-start gap-1 transform transition-transform group-hover:scale-105">
                                <div className="flex justify-between items-end w-full">
                                   <div>
@@ -342,12 +407,11 @@ const App: React.FC = () => {
                                      <MapPin size={12} className="mr-1" />
                                      {photo.location}
                                   </div>
-                               </div>
+                                </div>
                           </div>
                       </div>
                     ))}
                     
-                    {/* Progress Indicators */}
                     <div className="absolute -right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
                        {MOCK_DAILY_PHOTOS.map((_, idx) => (
                          <div 
@@ -365,9 +429,8 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* NEW: Adoption CTA Section */}
+      {/* Adoption CTA Section */}
       <section className="py-20 bg-brand-50 border-y border-brand-100 relative overflow-hidden">
-        {/* Background Patterns */}
         <div className="absolute top-0 right-0 p-20 opacity-10">
            <Heart size={200} className="text-brand-600 transform rotate-12" />
         </div>
@@ -418,11 +481,10 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* NEW: NGO Support Section */}
-      <section className="py-16 bg-white relative">
+      {/* NGO Support Section - Dark Teal CTA */}
+      <section className="pt-16 pb-8 bg-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="bg-secondary-500 rounded-3xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between shadow-xl relative overflow-hidden">
-                   {/* Decorative circle */}
                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
 
                    <div className="relative z-10 md:w-2/3 mb-8 md:mb-0">
@@ -438,12 +500,50 @@ const App: React.FC = () => {
                    <div className="relative z-10">
                        <Button 
                            onClick={() => setView('ong-register')}
-                           className="bg-white text-secondary-600 hover:bg-gray-50 border-none px-8 py-4 text-lg font-bold shadow-xl transition-transform hover:scale-105 flex items-center gap-2"
+                           className="bg-brand-600 text-white hover:bg-brand-700 border-2 border-brand-500 hover:border-brand-600 px-8 py-4 text-lg font-bold shadow-xl transition-transform hover:scale-105 flex items-center gap-2"
                        >
                            {t.ongBtn} <ArrowRight size={20} />
                        </Button>
                    </div>
               </div>
+          </div>
+      </section>
+
+      {/* Registered NGOs Slider Section */}
+      <section className="pb-20 pt-8 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div className="flex items-center justify-between mb-8">
+                 <h3 className="text-2xl font-bold text-gray-800">{t.registeredOngsTitle}</h3>
+                 <div className="flex gap-2">
+                     <button onClick={prevOngSlide} className="p-2 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors">
+                         <ChevronLeft size={20} className="text-gray-600" />
+                     </button>
+                     <button onClick={nextOngSlide} className="p-2 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors">
+                         <ChevronRight size={20} className="text-gray-600" />
+                     </button>
+                 </div>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-300">
+                {MOCK_ONGS.slice(ongCurrentIndex * 3, (ongCurrentIndex * 3) + 3).map((ong) => (
+                    <div key={ong.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-4 flex gap-4 items-center">
+                        <img src={ong.image} alt={ong.name} className="w-16 h-16 rounded-full object-cover flex-shrink-0 bg-gray-100" />
+                        <div className="overflow-hidden">
+                            <h4 className="font-bold text-gray-900 truncate">{ong.name}</h4>
+                            <div className="flex items-center text-xs text-gray-500 mb-1">
+                                <MapPin size={10} className="mr-1" /> {ong.location}
+                            </div>
+                            <p className="text-xs text-gray-400 truncate">{ong.description}</p>
+                        </div>
+                    </div>
+                ))}
+             </div>
+             
+             <div className="mt-8 text-center">
+                 <Button variant="ghost" onClick={() => setView('public-ongs')} className="text-brand-600 font-bold hover:bg-brand-50">
+                     {t.seeAllOngs} <ArrowRight size={16} className="ml-2" />
+                 </Button>
+             </div>
           </div>
       </section>
 
@@ -455,7 +555,6 @@ const App: React.FC = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Basic */}
             <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100 hover:border-brand-200 transition-all">
               <h3 className="text-xl font-bold text-gray-900">{t.planBasic}</h3>
               <div className="mt-4 flex items-baseline text-gray-900">
@@ -472,7 +571,6 @@ const App: React.FC = () => {
               <Button variant="outline" className="w-full mt-8" onClick={() => openSignup('basic')}>{t.btnChooseBasic}</Button>
             </div>
 
-            {/* Start */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-brand-500 relative transform md:-translate-y-4">
               <span className="absolute top-0 right-0 bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">{t.popular}</span>
               <h3 className="text-xl font-bold text-gray-900">{t.planStart}</h3>
@@ -494,7 +592,6 @@ const App: React.FC = () => {
               <Button className="w-full mt-8" onClick={() => openSignup('start')}>{t.btnChooseStart}</Button>
             </div>
 
-            {/* Premium */}
             <div className="bg-gray-900 rounded-2xl shadow-sm p-8 text-white border border-gray-800">
               <h3 className="text-xl font-bold text-white">{t.planPremium}</h3>
               <div className="mt-4 flex items-baseline text-white">
@@ -526,7 +623,6 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             
-            {/* Column 1: Brand */}
             <div className="space-y-4">
                <div className="flex items-center gap-2">
                  <span className="text-3xl">🐾</span>
@@ -537,7 +633,6 @@ const App: React.FC = () => {
                </p>
             </div>
 
-            {/* Column 2: Company */}
             <div>
               <h4 className="font-bold text-gray-900 mb-4">{t.footerCompany}</h4>
               <ul className="space-y-2 text-sm text-gray-500">
@@ -548,7 +643,6 @@ const App: React.FC = () => {
               </ul>
             </div>
 
-            {/* Column 3: Legal & Help */}
             <div>
               <h4 className="font-bold text-gray-900 mb-4">{t.footerLegal}</h4>
               <ul className="space-y-2 text-sm text-gray-500">
@@ -558,7 +652,6 @@ const App: React.FC = () => {
               </ul>
             </div>
 
-            {/* Column 4: Socials */}
             <div>
               <h4 className="font-bold text-gray-900 mb-4">{t.footerFollowUs}</h4>
               <div className="flex gap-4">
@@ -589,7 +682,7 @@ const App: React.FC = () => {
 
       {/* Auth Modal */}
       {showLogin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative animate-fade-in max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setShowLogin(false)}
@@ -704,7 +797,6 @@ const App: React.FC = () => {
                         placeholder="••••••••"
                       />
                     </div>
-                    {/* Terms Checkbox - Adjusted size */}
                     <div className="flex items-start gap-2 pt-2">
                          <div className="relative flex items-center h-5">
                             <input
