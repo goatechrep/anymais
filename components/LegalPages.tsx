@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Globe } from 'lucide-react';
 
 interface LegalPagesProps {
   type: 'terms' | 'privacy';
@@ -25,7 +24,7 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, lang, setLang, onB
                 className="flex items-center gap-2 text-gray-600 hover:text-brand-600 font-medium transition-colors"
               >
                 <ArrowLeft size={20} />
-                {t.backToHome}
+                <span className="hidden sm:inline">{t.backToHome}</span>
               </button>
               <div className="ml-6 flex items-center gap-2">
                 <span className="text-2xl">🐾</span>
@@ -33,16 +32,22 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, lang, setLang, onB
               </div>
             </div>
             
-            <div className="flex gap-2">
-               {Object.values(Language).map((l) => (
-                  <button 
-                    key={l} 
-                    onClick={() => setLang(l)}
-                    className={`px-2 py-1 rounded text-xs font-bold uppercase ${lang === l ? 'bg-brand-100 text-brand-700' : 'text-gray-500 hover:bg-gray-100'}`}
-                  >
-                    {l}
-                  </button>
-               ))}
+            <div className="flex items-center gap-2">
+                 <div className="relative">
+                    <Globe size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <select
+                        value={lang}
+                        onChange={(e) => setLang(e.target.value as Language)}
+                        className="pl-8 pr-8 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-bold text-gray-700 focus:ring-2 focus:ring-brand-500 appearance-none cursor-pointer hover:bg-gray-50 outline-none uppercase"
+                    >
+                        {Object.values(Language).map((l) => (
+                            <option key={l} value={l}>
+                                {l}
+                            </option>
+                        ))}
+                    </select>
+                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                 </div>
             </div>
         </div>
       </nav>

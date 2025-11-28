@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Language, Ong } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
@@ -39,7 +38,7 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack }) => 
               className="flex items-center gap-2 text-gray-600 hover:text-brand-600 font-medium transition-colors"
             >
               <ArrowLeft size={20} />
-              {t.backToHome}
+              <span className="hidden sm:inline">{t.backToHome}</span>
             </button>
             <span className="font-bold text-xl text-brand-600">AnyMais</span>
         </div>

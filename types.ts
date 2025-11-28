@@ -130,5 +130,5 @@ export interface ServiceProvider {
   address?: string;
 }
 
-export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile' | 'adoption-pet-profile';
 export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet' | 'lost-found' | 'my-ongs';

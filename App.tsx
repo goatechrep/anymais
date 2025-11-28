@@ -1,16 +1,15 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Language, AppView, User, PlanType, Ong } from './types';
+import { Language, AppView, User, PlanType, Ong, Pet } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
 import { PublicOngs } from './components/PublicOngs';
 import { OngProfile } from './components/OngProfile';
+import { AdoptionPetProfile } from './components/AdoptionPetProfile';
 import { LegalPages } from './components/LegalPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown } from 'lucide-react';
 import { db } from './services/db';
 import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
@@ -28,6 +27,7 @@ const App: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ongCurrentIndex, setOngCurrentIndex] = useState(0);
   const [selectedOng, setSelectedOng] = useState<Ong | null>(null);
+  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   
   // Auth Form States
   const [email, setEmail] = useState('');
@@ -41,6 +41,11 @@ const App: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const t = TRANSLATIONS[lang];
+
+  // Scroll to top whenever view changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
 
   // Initialize persistence for location
   useEffect(() => {
@@ -116,6 +121,11 @@ const App: React.FC = () => {
   const handleViewOng = (ong: Ong) => {
       setSelectedOng(ong);
       setView('ong-profile');
+  };
+
+  const handleViewPet = (pet: Pet) => {
+      setSelectedPet(pet);
+      setView('adoption-pet-profile');
   };
 
   // Phone Mask Helper
@@ -271,7 +281,15 @@ const App: React.FC = () => {
   }
 
   if (view === 'public-adoption') {
-    return <PublicAdoption lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+    return (
+      <PublicAdoption 
+        lang={lang} 
+        setLang={setLang} 
+        onBack={() => setView('landing')} 
+        onSignup={() => openSignup('basic')}
+        onViewPet={handleViewPet}
+      />
+    );
   }
 
   if (view === 'public-ongs') {
@@ -280,6 +298,17 @@ const App: React.FC = () => {
 
   if (view === 'ong-profile' && selectedOng) {
       return <OngProfile lang={lang} ong={selectedOng} onBack={() => setView('landing')} />;
+  }
+
+  if (view === 'adoption-pet-profile' && selectedPet) {
+      return (
+        <AdoptionPetProfile 
+            lang={lang} 
+            pet={selectedPet} 
+            onBack={() => setView('public-adoption')}
+            onSignup={() => openSignup('basic')}
+        />
+      );
   }
 
   if (view === 'terms' || view === 'privacy') {
@@ -315,16 +344,21 @@ const App: React.FC = () => {
              <div className="flex items-center gap-2 md:gap-3 shrink-0">
                  <Globe size={12} className="text-brand-200 hidden sm:block" />
                  <span className="opacity-75 hidden sm:inline">{t.headerLanguage}:</span>
-                 <div className="flex gap-1">
-                    {Object.values(Language).map((l) => (
-                        <button 
-                            key={l} 
-                            onClick={() => toggleLang(l)}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${lang === l ? 'bg-white text-brand-900' : 'bg-brand-800 text-brand-200 hover:bg-brand-700'}`}
-                        >
-                            {l}
-                        </button>
-                    ))}
+                 
+                 {/* Styled Language Combobox */}
+                 <div className="relative group">
+                    <select
+                        value={lang}
+                        onChange={(e) => setLang(e.target.value as Language)}
+                        className="appearance-none bg-transparent text-white text-[10px] md:text-xs font-bold uppercase py-0 pl-1 pr-5 rounded cursor-pointer focus:outline-none hover:text-brand-200 transition-colors"
+                    >
+                        {Object.values(Language).map((l) => (
+                            <option key={l} value={l} className="text-gray-900 bg-white">
+                                {l}
+                            </option>
+                        ))}
+                    </select>
+                    <ChevronDown size={10} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-brand-200 group-hover:text-white transition-colors" />
                  </div>
              </div>
          </div>
@@ -542,29 +576,8 @@ const App: React.FC = () => {
           </div>
       </section>
 
-      {/* Lost & Found CTA Section */}
-      <section className="py-20 bg-gray-50 border-y border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
-               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md mb-6 border border-gray-100">
-                   <Search size={36} className="text-brand-600" />
-               </div>
-               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{t.landingLostFoundTitle}</h2>
-               <p className="text-xl text-gray-500 max-w-2xl mb-8 leading-relaxed">
-                   {t.landingLostFoundSubtitle}
-               </p>
-               <Button 
-                   size="lg" 
-                   className="shadow-xl flex items-center gap-2"
-                   onClick={openLogin}
-                >
-                   {t.landingLostFoundBtn}
-                   <ArrowRight size={20} />
-                </Button>
-          </div>
-      </section>
-
       {/* Registered NGOs Slider Section */}
-      <section className="pb-20 pt-8 bg-white">
+      <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
              <div className="flex items-center justify-between mb-8">
                  <div className="flex items-center gap-4">
@@ -624,6 +637,31 @@ const App: React.FC = () => {
                      {t.seeAllOngs} <ArrowRight size={16} className="ml-2" />
                  </Button>
              </div>
+          </div>
+      </section>
+
+      {/* Lost & Found CTA Section - HIGH VISIBILITY */}
+      <section className="py-24 bg-brand-900 text-white relative overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center relative z-10">
+               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl mb-6 ring-4 ring-white/20">
+                   <Search size={36} className="text-brand-900" />
+               </div>
+               <h2 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">{t.landingLostFoundTitle}</h2>
+               <p className="text-xl text-brand-100 max-w-2xl mb-10 leading-relaxed font-light">
+                   {t.landingLostFoundSubtitle}
+               </p>
+               <Button 
+                   size="lg" 
+                   className="!bg-white !text-brand-900 hover:!bg-gray-100 shadow-xl flex items-center gap-2 border-none px-8 py-4 text-lg"
+                   onClick={openLogin}
+                >
+                   {t.landingLostFoundBtn}
+                   <ArrowRight size={20} />
+                </Button>
           </div>
       </section>
 
