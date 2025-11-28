@@ -32,7 +32,9 @@ export type TranslationKey =
   | 'availableForDatingLabel' | 'datingPlanWarning'
   | 'featureLocked' | 'upgradeToAccess' | 'unlockNow'
   | 'tooltipProfile' | 'tooltipAdoption' | 'tooltipDating' | 'tooltipHealth' | 'tooltipServices'
-  | 'reqPlanBasic' | 'reqPlanStart' | 'reqPlanPremium';
+  | 'reqPlanBasic' | 'reqPlanStart' | 'reqPlanPremium'
+  | 'landingAdoptionTitle' | 'landingAdoptionSubtitle' | 'landingAdoptionBtn'
+  | 'publicAdoptionTitle' | 'publicAdoptionSubtitle' | 'backToHome' | 'interestBtn';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -75,5 +77,5 @@ export interface ServiceProvider {
   image: string;
 }
 
-export type AppView = 'landing' | 'dashboard';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption';
 export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet';

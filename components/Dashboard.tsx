@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
-import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint } from 'lucide-react';
+import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles } from 'lucide-react';
 import { ServiceBooking } from './ServiceBooking';
 import { Button } from './Button';
 import { db } from '../services/db';
+import { generatePetBio } from '../services/geminiService';
 
 interface DashboardProps {
   lang: Language;
@@ -90,6 +91,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
   const [editedPet, setEditedPet] = useState<Pet | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [datingAlert, setDatingAlert] = useState(false);
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
   // New Pet State
   const [newPet, setNewPet] = useState<Pet>({
@@ -294,6 +296,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
       availableForDating: false
     });
     setDatingAlert(false);
+  };
+
+  const handleGenerateBio = async (target: 'new' | 'edit') => {
+    // Check Premium
+    if (currentUser.plan !== 'premium') {
+        setShowPlanModal(true);
+        return;
+    }
+
+    const data = target === 'new' ? newPet : editedPet;
+    if (!data) return;
+
+    // We can allow generation even with partial data, but Name helps
+    
+    setIsGeneratingBio(true);
+    try {
+        const traits = `${data.age} ${lang === Language.PT ? 'anos' : 'years old'}, ${data.type}, ${data.weight}kg`;
+        const bio = await generatePetBio(data.name || 'Pet', data.breed || 'Unknown', traits);
+        
+        if (target === 'new') {
+            setNewPet(prev => ({ ...prev, bio }));
+        } else {
+            setEditedPet(prev => prev ? ({ ...prev, bio }) : null);
+        }
+    } catch (e) {
+        console.error("Bio gen failed", e);
+    } finally {
+        setIsGeneratingBio(false);
+    }
   };
 
   const getPlanName = (plan: PlanType) => {
@@ -663,9 +694,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                     </div>
                  </div>
 
-                 {/* New Bio Field */}
+                 {/* Bio Field with AI Button */}
                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Bio</label>
+                    <div className="flex justify-between items-end mb-1">
+                        <label className="block text-sm font-bold text-gray-700">Bio</label>
+                        <button 
+                            onClick={() => handleGenerateBio('new')}
+                            disabled={isGeneratingBio}
+                            className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded-full transition-all ${
+                                currentUser.plan === 'premium' 
+                                ? 'text-purple-600 bg-purple-50 hover:bg-purple-100' 
+                                : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
+                            }`}
+                        >
+                            {currentUser.plan === 'premium' ? (
+                                <Sparkles size={12} className={isGeneratingBio ? "animate-spin" : ""} />
+                            ) : (
+                                <Lock size={10} />
+                            )}
+                            {t.generateBio}
+                        </button>
+                    </div>
                     <textarea 
                         value={newPet.bio}
                         onChange={e => setNewPet({...newPet, bio: e.target.value})}
@@ -1003,8 +1052,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                             )}
                          </div>
 
+                        {/* Bio with AI Button */}
                         <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-1">Bio</label>
+                          <div className="flex justify-between items-end mb-1">
+                                <label className="block text-sm font-bold text-gray-700">Bio</label>
+                                <button 
+                                    onClick={() => handleGenerateBio('edit')}
+                                    disabled={isGeneratingBio}
+                                    className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded-full transition-all ${
+                                        currentUser.plan === 'premium' 
+                                        ? 'text-purple-600 bg-purple-50 hover:bg-purple-100' 
+                                        : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {currentUser.plan === 'premium' ? (
+                                        <Sparkles size={12} className={isGeneratingBio ? "animate-spin" : ""} />
+                                    ) : (
+                                        <Lock size={10} />
+                                    )}
+                                    {t.generateBio}
+                                </button>
+                          </div>
                           <textarea 
                             value={editedPet.bio}
                             onChange={(e) => setEditedPet({...editedPet, bio: e.target.value})}

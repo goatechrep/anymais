@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS } from './constants';
 import { Dashboard } from './components/Dashboard';
+import { PublicAdoption } from './components/PublicAdoption';
 import { Button } from './components/Button';
-import { Globe, Check, Lock, Camera } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight } from 'lucide-react';
 import { db } from './services/db';
 
 const App: React.FC = () => {
@@ -15,10 +16,8 @@ const App: React.FC = () => {
   
   // UI State
   const [isScrolled, setIsScrolled] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
-  // Photo Slider State
-  const [currentSlide, setCurrentSlide] = useState(0);
-
   // Auth Form States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,12 +46,12 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle Slider Interval
+  // Photo Slideshow Effect
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % MOCK_DAILY_PHOTOS.length);
+    const interval = setInterval(() => {
+      setCurrentPhotoIndex((prev) => (prev + 1) % MOCK_DAILY_PHOTOS.length);
     }, 4000);
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, []);
 
   const toggleLang = (l: Language) => setLang(l);
@@ -149,6 +148,10 @@ const App: React.FC = () => {
     return <Dashboard lang={lang} setLang={setLang} onLogout={handleLogout} />;
   }
 
+  if (view === 'public-adoption') {
+    return <PublicAdoption lang={lang} onBack={() => setView('landing')} />;
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
       {/* Navbar */}
@@ -159,7 +162,7 @@ const App: React.FC = () => {
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('landing')}>
                <span className="text-3xl">🐾</span>
                <span className="font-bold text-2xl text-brand-600">AnyMais</span>
             </div>
@@ -188,7 +191,7 @@ const App: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             
             {/* Text Column */}
-            <div className="text-center lg:text-left">
+            <div className="text-center lg:text-left z-20">
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6">
                 {t.heroTitle}
               </h1>
@@ -201,54 +204,109 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Slider Column */}
-            <div className="relative mx-auto w-full max-w-md lg:max-w-full">
-               {/* Decorative elements */}
-               <div className="absolute top-0 right-0 w-64 h-64 bg-pink-200 rounded-full blur-3xl opacity-30 -translate-y-10 translate-x-10"></div>
-               <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-200 rounded-full blur-3xl opacity-30 translate-y-10 -translate-x-10"></div>
-
-               <div className="relative aspect-[4/5] md:aspect-square bg-white rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-all duration-500 overflow-hidden border-8 border-white group">
-                  {/* Photo of the Day Badge */}
-                  <div className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg flex items-center gap-2">
-                    <Camera size={14} className="text-brand-600" />
-                    <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">
-                       {lang === Language.PT ? 'Foto do Dia' : (lang === Language.ES ? 'Foto del Día' : 'Photo of the Day')}
-                    </span>
-                  </div>
-
-                  {/* Slides */}
-                  {MOCK_DAILY_PHOTOS.map((photo, index) => (
-                    <div 
-                      key={index}
-                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-                    >
-                      <img src={photo.url} alt={photo.caption} className="w-full h-full object-cover" />
-                      
-                      {/* Caption Overlay */}
-                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-6 pt-20">
-                         <p className="text-white font-bold text-lg">{photo.caption}</p>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Indicators */}
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
-                    {MOCK_DAILY_PHOTOS.map((_, index) => (
-                      <button 
+            {/* Hero Image Column - Dynamic Slider */}
+            <div className="hidden lg:flex relative w-full h-[600px] items-center justify-center">
+                {/* Decorative Background Blob */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-brand-200 to-secondary-200 rounded-full blur-[100px] -z-10 opacity-60"></div>
+                
+                <div className="relative z-10 w-[450px] h-[550px] transform rotate-3 transition-transform hover:rotate-0 duration-500 group">
+                    {MOCK_DAILY_PHOTOS.map((photo, index) => (
+                      <div 
                         key={index}
-                        onClick={() => setCurrentSlide(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-white w-6' : 'bg-white/50 hover:bg-white/80'}`}
-                      />
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                          index === currentPhotoIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                        }`}
+                      >
+                          <img 
+                              src={photo.url} 
+                              alt={photo.caption} 
+                              className="w-full h-full object-cover rounded-[2rem] shadow-2xl border-8 border-white"
+                          />
+                          
+                          {/* Photo of the Week Badge */}
+                          <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/50 flex items-center gap-3 transform transition-transform group-hover:scale-105">
+                              <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                                  <Camera size={20} className="text-brand-600" />
+                              </div>
+                              <div>
+                                   <p className="font-bold text-brand-600 text-xs uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                                      Foto da Semana
+                                   </p>
+                                   <p className="text-gray-900 font-bold text-sm leading-tight">{photo.caption}</p>
+                              </div>
+                          </div>
+                      </div>
                     ))}
-                  </div>
-               </div>
+                    
+                    {/* Progress Indicators */}
+                    <div className="absolute -right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
+                       {MOCK_DAILY_PHOTOS.map((_, idx) => (
+                         <div 
+                            key={idx} 
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                              idx === currentPhotoIndex ? 'bg-brand-600 h-6' : 'bg-gray-300'
+                            }`}
+                         />
+                       ))}
+                    </div>
+                </div>
             </div>
 
           </div>
         </div>
+      </section>
+
+      {/* NEW: Adoption CTA Section */}
+      <section className="py-20 bg-brand-50 border-y border-brand-100 relative overflow-hidden">
+        {/* Background Patterns */}
+        <div className="absolute top-0 right-0 p-20 opacity-10">
+           <Heart size={200} className="text-brand-600 transform rotate-12" />
+        </div>
         
-        {/* Decorative background blob */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-50 rounded-full blur-3xl -z-10 opacity-50" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+            <div className="md:w-1/2">
+                <span className="inline-block px-4 py-2 bg-brand-200 text-brand-900 rounded-full text-sm font-bold mb-4 uppercase tracking-wider">
+                  Adote com Amor
+                </span>
+                <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+                  {t.landingAdoptionTitle}
+                </h2>
+                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                  {t.landingAdoptionSubtitle}
+                </p>
+                <div className="flex gap-4">
+                  <Button 
+                    size="lg" 
+                    className="shadow-xl shadow-brand-200 flex items-center gap-2"
+                    onClick={() => setView('public-adoption')}
+                  >
+                    {t.landingAdoptionBtn}
+                    <ArrowRight size={20} />
+                  </Button>
+                </div>
+            </div>
+            <div className="md:w-1/2 flex justify-center">
+                 <div className="relative">
+                    <img 
+                      src="https://images.unsplash.com/photo-1560807707-8cc77767d783?q=80&w=800&auto=format&fit=crop" 
+                      alt="Dog and Cat" 
+                      className="rounded-3xl shadow-2xl border-4 border-white w-[400px] h-[400px] object-cover"
+                    />
+                    <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex items-center gap-3">
+                        <div className="flex -space-x-3">
+                           <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1" />
+                           <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" />
+                           <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=3" />
+                        </div>
+                        <div className="text-sm font-bold text-gray-600">
+                           +120 adoções este mês
+                        </div>
+                    </div>
+                 </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Pricing Section */}

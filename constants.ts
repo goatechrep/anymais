@@ -4,7 +4,7 @@ import { Language, Pet, ServiceProvider, TranslationKey } from './types';
 export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
   [Language.PT]: {
     heroTitle: "O Mundo do Seu Pet em Um Só Lugar",
-    heroSubtitle: "Conecte-se, cuide e ame. A rede social completa para o seu melhor amigo.",
+    heroSubtitle: "Conecte-se, cuide e ame. A plataforma completa para o seu melhor amigo.",
     ctaStart: "Começar Agora",
     ctaLogin: "Entrar",
     planBasic: "AnyBasic",
@@ -108,11 +108,18 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     tooltipServices: "Agende veterinários, banho e tosa.",
     reqPlanBasic: "Plano Basic ou superior",
     reqPlanStart: "Requer Plano Start",
-    reqPlanPremium: "Requer Plano Premium"
+    reqPlanPremium: "Requer Plano Premium",
+    landingAdoptionTitle: "Encontre seu novo melhor amigo",
+    landingAdoptionSubtitle: "Centenas de pets estão esperando por um lar cheio de amor. Faça a diferença hoje.",
+    landingAdoptionBtn: "Ver Pets para Adoção",
+    publicAdoptionTitle: "Adoção Responsável",
+    publicAdoptionSubtitle: "Estes amigos estão procurando um lar. Navegue, apaixone-se e entre em contato.",
+    backToHome: "Voltar ao Início",
+    interestBtn: "Tenho Interesse"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
-    heroSubtitle: "Connect, care, and love. The complete social network for your best friend.",
+    heroSubtitle: "Connect, care, and love. The complete platform for your best friend.",
     ctaStart: "Get Started",
     ctaLogin: "Login",
     planBasic: "AnyBasic",
@@ -216,11 +223,18 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     tooltipServices: "Book vets, grooming, and more.",
     reqPlanBasic: "Basic Plan or higher",
     reqPlanStart: "Requires Start Plan",
-    reqPlanPremium: "Requires Premium Plan"
+    reqPlanPremium: "Requires Premium Plan",
+    landingAdoptionTitle: "Find Your New Best Friend",
+    landingAdoptionSubtitle: "Hundreds of pets are waiting for a loving home. Make a difference today.",
+    landingAdoptionBtn: "View Pets for Adoption",
+    publicAdoptionTitle: "Responsible Adoption",
+    publicAdoptionSubtitle: "These friends are looking for a home. Browse, fall in love, and get in touch.",
+    backToHome: "Back to Home",
+    interestBtn: "I'm Interested"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
-    heroSubtitle: "Conecta, cuida y ama. La red social completa para tu mejor amigo.",
+    heroSubtitle: "Conecta, cuida y ama. La plataforma completa para tu mejor amigo.",
     ctaStart: "Empezar Ahora",
     ctaLogin: "Ingresar",
     planBasic: "AnyBasic",
@@ -324,7 +338,14 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     tooltipServices: "Reserva veterinarios, peluquería y más.",
     reqPlanBasic: "Plan Basic o superior",
     reqPlanStart: "Requiere Plan Start",
-    reqPlanPremium: "Requiere Plan Premium"
+    reqPlanPremium: "Requiere Plan Premium",
+    landingAdoptionTitle: "Encuentra tu nuevo mejor amigo",
+    landingAdoptionSubtitle: "Cientos de mascotas esperan un hogar lleno de amor. Haz la diferencia hoy.",
+    landingAdoptionBtn: "Ver Mascotas en Adopción",
+    publicAdoptionTitle: "Adopción Responsable",
+    publicAdoptionSubtitle: "Estos amigos buscan un hogar. Navega, enamórate y contáctanos.",
+    backToHome: "Volver al Inicio",
+    interestBtn: "Me Interesa"
   }
 };
 

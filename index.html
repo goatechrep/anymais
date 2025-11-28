@@ -20,6 +20,15 @@
               secondary: {
                 500: '#14b8a6', // Teal for health/services
               }
+            },
+            keyframes: {
+              'infinite-scroll': {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              }
+            },
+            animation: {
+              'infinite-scroll': 'infinite-scroll 40s linear infinite',
             }
           }
         }
