@@ -266,7 +266,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 text-center text-gray-500">
-          <p>&copy; 2024 AnyMais Social. All rights reserved.</p>
+          <p>&copy; 2025 AnyMais. Todos os direitos reservados.</p>
         </div>
       </footer>
 

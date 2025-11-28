@@ -1,46 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AnyMais Social</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                50: '#fdf2f8',
-                100: '#fce7f3',
-                500: '#ec4899', // Pink/Reddish for love/pets
-                600: '#db2777',
-                900: '#831843',
-              },
-              secondary: {
-                500: '#14b8a6', // Teal for health/services
-              }
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnyMais Social</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              500: '#ec4899', // Pink/Reddish for love/pets
+              600: '#db2777',
+              900: '#831843',
+            },
+            secondary: {
+              500: '#14b8a6', // Teal for health/services
             }
           }
         }
       }
-    </script>
-    <style>
-      /* Custom scrollbar for dashboard */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #d1d5db; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #9ca3af; 
-      }
-    </style>
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for dashboard */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -53,7 +57,10 @@
 }
 </script>
 </head>
-  <body>
-    <div id="root"></div>
-  </body>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>
