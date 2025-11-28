@@ -11,7 +11,8 @@ export type TranslationKey =
   | 'planBasic' | 'planStart' | 'planPremium' | 'perMonth'
   | 'features' | 'loginTitle' | 'email' | 'password' | 'loginButton'
   | 'dashHome' | 'dashAdoption' | 'dashDating' | 'dashHealth' | 'dashServices'
-  | 'dashProfile' | 'logout' | 'welcome' | 'myPets' | 'vaccines'
+  | 'dashProfile' | 'dashLostFound' | 'dashMyOngs'
+  | 'logout' | 'welcome' | 'myPets' | 'vaccines'
   | 'serviceVet' | 'serviceGroom' | 'serviceHotel' | 'serviceWalker'
   | 'bookNow' | 'adoptMe' | 'match' | 'generateBio' | 'bioPlaceholder'
   | 'priceFree' | 'priceStart' | 'pricePremium' | 'popular'
@@ -53,7 +54,9 @@ export type TranslationKey =
   | 'registeredOngsTitle' | 'seeAllOngs' | 'partnerOngs'
   | 'searchOngsPlaceholder' | 'noOngsFound'
   | 'viewOng' | 'aboutOng' | 'contactOng' | 'availablePets' | 'donateBtn' | 'copyPix' 
-  | 'pixCopied' | 'bankDetails' | 'bankName' | 'agency' | 'account' | 'prevPage' | 'nextPage' | 'pageOf';
+  | 'pixCopied' | 'bankDetails' | 'bankName' | 'agency' | 'account' | 'prevPage' | 'nextPage' | 'pageOf'
+  | 'watchVideo' | 'pauseVideo' | 'verifyLocationBtn' | 'locationMatch' | 'locationMismatch' | 'verifying'
+  | 'lostFoundTitle' | 'lostFoundSubtitle' | 'reportLost' | 'reportFound' | 'noLostPets' | 'myOngsTitle' | 'noMyOngs';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -92,6 +95,7 @@ export interface Pet {
 
 export interface Ong {
   id: string;
+  ownerId?: string;
   name: string;
   image: string;
   description: string;
@@ -125,4 +129,4 @@ export interface ServiceProvider {
 }
 
 export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile';
-export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet';
+export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet' | 'lost-found' | 'my-ongs';

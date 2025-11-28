@@ -151,7 +151,11 @@ const App: React.FC = () => {
                   setIsLocating(false);
               }
           }, (error) => {
-              console.error("Error getting location", error);
+              console.error("Error getting location:", error.message);
+              // Fallback for demo purposes
+              const fallback = "São Paulo, SP";
+              setHeaderLocation(fallback);
+              saveLocationToStorage(fallback);
               setIsLocating(false);
           });
       }

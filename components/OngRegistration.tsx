@@ -6,6 +6,7 @@ import { TRANSLATIONS } from '../constants';
 import { formatCNPJ, formatPhone, validateCNPJ, validateTaxID } from '../utils';
 import { Button } from './Button';
 import { ArrowLeft, Building2, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
+import { db } from '../services/db';
 
 interface OngRegistrationProps {
   lang: Language;
@@ -64,10 +65,23 @@ export const OngRegistration: React.FC<OngRegistrationProps> = ({ lang, onBack, 
         return;
     }
 
-    // Simulate API call
+    // Determine current user for ownership
+    const currentUser = db.auth.getSession();
+
+    // Simulate API call and save to DB
     setTimeout(() => {
+        // Create the NGO in the local DB
+        db.ongs.create({
+            name: formData.name,
+            description: formData.description,
+            location: formData.location,
+            phone: formData.phone,
+            image: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random&size=200`, // Placeholder image
+            ownerId: currentUser ? currentUser.id : undefined // Link to user if logged in
+        });
+
       setSubmitted(true);
-    }, 1000);
+    }, 800);
   };
 
   if (submitted) {

@@ -1,6 +1,7 @@
 
-import { User, Pet, ServiceProvider } from '../types';
-import { MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
+
+import { User, Pet, ServiceProvider, Ong } from '../types';
+import { MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES, MOCK_ONGS } from '../constants';
 
 const DB_KEY = 'anymais_db_v1';
 const SESSION_KEY = 'anymais_session_v1';
@@ -8,9 +9,10 @@ const SESSION_KEY = 'anymais_session_v1';
 interface Schema {
   users: User[];
   pets: Pet[];
+  ongs: Ong[];
 }
 
-// Initial Seed Data (so the app doesn't look empty on first load)
+// Initial Seed Data
 const INITIAL_DATA: Schema = {
   users: [
     {
@@ -53,7 +55,8 @@ const INITIAL_DATA: Schema = {
       bio: 'Rainha da casa.',
       vaccines: []
     }
-  ]
+  ],
+  ongs: MOCK_ONGS // Seed with constant mock ONGs
 };
 
 // Helper to load DB
@@ -63,7 +66,13 @@ const loadDB = (): Schema => {
     localStorage.setItem(DB_KEY, JSON.stringify(INITIAL_DATA));
     return INITIAL_DATA;
   }
-  return JSON.parse(stored);
+  const data = JSON.parse(stored);
+  // Migration check: if ongs missing in stored data, add them
+  if (!data.ongs) {
+      data.ongs = MOCK_ONGS;
+      saveDB(data);
+  }
+  return data;
 };
 
 // Helper to save DB
@@ -144,6 +153,23 @@ export const db = {
       const data = loadDB();
       data.pets = data.pets.filter(p => p.id !== petId);
       saveDB(data);
+    }
+  },
+  ongs: {
+    create: (ong: Omit<Ong, 'id'>): Ong => {
+      const data = loadDB();
+      const newOng = { ...ong, id: `ong-${Date.now()}` };
+      data.ongs.push(newOng);
+      saveDB(data);
+      return newOng;
+    },
+    listByOwner: (ownerId: string): Ong[] => {
+      const data = loadDB();
+      return data.ongs.filter(o => o.ownerId === ownerId);
+    },
+    listAll: (): Ong[] => {
+        const data = loadDB();
+        return data.ongs;
     }
   }
 };

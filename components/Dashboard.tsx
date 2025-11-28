@@ -1,8 +1,9 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { DashboardView, Language, Pet, User, PlanType } from '../types';
+import { DashboardView, Language, Pet, User, PlanType, Ong } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
-import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2 } from 'lucide-react';
+import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2, CheckCircle, Crosshair, Search, Building2 } from 'lucide-react';
 import { ServiceBooking } from './ServiceBooking';
 import { Button } from './Button';
 import { db } from '../services/db';
@@ -80,11 +81,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [editedUser, setEditedUser] = useState<User>(currentUser);
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
+  const [isVerifyingLocation, setIsVerifyingLocation] = useState(false);
   const [locationAddress, setLocationAddress] = useState<string>('');
 
   // --- State: Pets ---
   const [pets, setPets] = useState<Pet[]>([]);
   const [activePetId, setActivePetId] = useState<string | null>(null);
+  const [myOngs, setMyOngs] = useState<Ong[]>([]);
   
   // UI State
   const [activeView, setActiveView] = useState<DashboardView>('profile');
@@ -129,20 +132,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
       if (userPets.length > 0) {
         setActivePetId(userPets[0].id);
       }
+      
+      // Load ONGs for this user
+      const userOngs = db.ongs.listByOwner(session.id);
+      setMyOngs(userOngs);
     } else {
       onLogout(); // Should not happen if App.tsx handles auth correctly
     }
   }, []);
 
-  // Effect: Resolve User Address from Coords
+  // Effect: Resolve User Address from Coords (Fix for Owner Location Error)
   useEffect(() => {
+    // Determine which user object to use for display
     const targetUser = isEditingUser ? editedUser : currentUser;
+
     if (targetUser.location) {
         const fetchAddress = async () => {
             try {
+                // If we have lat/lng but no text address, fetch it
                 const addr = await mockReverseGeocode(targetUser.location!.lat, targetUser.location!.lng);
                 setLocationAddress(addr);
             } catch (e) {
+                // Fallback or empty if error
                 setLocationAddress('');
             }
         };
@@ -150,7 +161,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
     } else {
         setLocationAddress('');
     }
-  }, [currentUser.location, editedUser.location, isEditingUser]);
+  }, [currentUser.location, editedUser.location, isEditingUser]); // Depend on location objects changing
 
   // Derived State
   const activePet = pets.find(p => p.id === activePetId) || null;
@@ -164,7 +175,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
 
   // --- Plan Logic ---
   const checkPlanAccess = (view: DashboardView) => {
-      if (view === 'profile' || view === 'adoption' || view === 'user-profile' || view === 'create-pet') return true;
+      if (view === 'profile' || view === 'adoption' || view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs') return true;
       if (currentUser.plan === 'basic') return false;
       if (currentUser.plan === 'start') {
           if (view === 'health' || view === 'services') return true;
@@ -222,13 +233,55 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
         }
         setIsUpdatingLocation(false);
       }, (error) => {
-        console.error("Error getting location", error);
-        alert(t.locationError);
+        console.error("Error getting location:", error.message);
+        // Fallback for demo
+        const coords = { lat: -23.5505, lng: -46.6333 }; // Default SP
+        const updated = { ...editedUser, location: coords };
+        setEditedUser(updated);
+        if (!isEditingUser) {
+           setCurrentUser(updated);
+           db.auth.updateUser(updated);
+        }
+        alert(t.locationError + " (Usando localização padrão para demonstração)");
         setIsUpdatingLocation(false);
       });
     } else {
       alert("Geolocation not supported");
     }
+  };
+
+  const handleVerifyLocation = () => {
+      if (!currentUser.location) {
+          alert(t.locationNotFound);
+          return;
+      }
+      
+      if ("geolocation" in navigator) {
+          setIsVerifyingLocation(true);
+          navigator.geolocation.getCurrentPosition((position) => {
+              const currentLat = position.coords.latitude;
+              const currentLng = position.coords.longitude;
+              
+              const distance = calculateDistance(
+                  currentLat, 
+                  currentLng, 
+                  currentUser.location!.lat, 
+                  currentUser.location!.lng
+              );
+              
+              // Threshold of 1km
+              if (distance < 1.0) {
+                  alert(t.locationMatch);
+              } else {
+                  alert(`${t.locationMismatch} (${distance} km)`);
+              }
+              setIsVerifyingLocation(false);
+          }, (error) => {
+              console.error("Error verifying location", error);
+              alert(t.locationError);
+              setIsVerifyingLocation(false);
+          });
+      }
   };
 
   const saveUser = () => {
@@ -345,7 +398,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
     setIsGeneratingBio(true);
     try {
         const traits = `${data.age} ${lang === Language.PT ? 'anos' : 'years old'}, ${data.type}, ${data.weight}kg`;
-        const bio = await generatePetBio(data.name || 'Pet', data.breed || 'Unknown', traits);
+        // Pass the selected language to the service
+        const bio = await generatePetBio(data.name || 'Pet', data.breed || 'Unknown', traits, lang);
         if (target === 'new') {
             setNewPet(prev => ({ ...prev, bio }));
         } else {
@@ -398,11 +452,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
   const NavItem = ({ view, icon: Icon, label, locked, description, planReq }: { view: DashboardView, icon: any, label: string, locked?: boolean, description?: string, planReq?: string }) => (
     <button
       onClick={() => { setActiveView(view); setMobileMenuOpen(false); }}
-      disabled={!activePet && view !== 'user-profile' && view !== 'create-pet'}
+      disabled={(!activePet && view !== 'user-profile' && view !== 'create-pet' && view !== 'lost-found' && view !== 'my-ongs')}
       className={`relative group flex items-center w-full p-3 rounded-lg mb-2 transition-colors justify-between ${
         activeView === view 
           ? 'bg-brand-50 text-brand-600 font-medium' 
-          : (!activePet && view !== 'user-profile' && view !== 'create-pet')
+          : (!activePet && view !== 'user-profile' && view !== 'create-pet' && view !== 'lost-found' && view !== 'my-ongs')
             ? 'text-gray-300 cursor-not-allowed'
             : 'text-gray-600 hover:bg-gray-50'
       }`}
@@ -525,6 +579,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
             <NavItem view="dating" icon={Heart} label={t.dashDating} locked={!checkPlanAccess('dating')} description={t.tooltipDating} planReq={t.reqPlanPremium} />
             <NavItem view="health" icon={Stethoscope} label={t.dashHealth} locked={!checkPlanAccess('health')} description={t.tooltipHealth} planReq={t.reqPlanStart} />
             <NavItem view="services" icon={Calendar} label={t.dashServices} locked={!checkPlanAccess('services')} description={t.tooltipServices} planReq={t.reqPlanStart} />
+            
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3 mt-6">Comunidade</p>
+            <NavItem view="lost-found" icon={Search} label={t.dashLostFound} description="Reportar ou encontrar pets perdidos." planReq={t.reqPlanBasic} />
+            <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} description="Gerencie suas ONGs cadastradas." planReq={t.reqPlanBasic} />
           </div>
         </nav>
 
@@ -584,7 +642,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
         {activeView === 'create-pet' && (
            <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">{t.addNewPet}</h2>
-              {/* ... (Create Pet UI similar to previous version) ... */}
               <div className="flex justify-center mb-6">
                   <div className="relative group">
                       <img src={newPet.image} alt="New Pet" className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 bg-gray-50" />
@@ -637,6 +694,68 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
            </div>
         )}
 
+        {/* LOST AND FOUND VIEW */}
+        {activeView === 'lost-found' && (
+             <div className="max-w-4xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                   <h2 className="text-3xl font-bold text-gray-900 mb-2">{t.lostFoundTitle}</h2>
+                   <p className="text-gray-500">{t.lostFoundSubtitle}</p>
+                </div>
+                
+                <div className="flex justify-center gap-4 mb-8">
+                   <Button className="shadow-lg shadow-brand-100 flex gap-2">
+                      <Search size={18} /> {t.reportLost}
+                   </Button>
+                   <Button variant="outline" className="flex gap-2">
+                      <CheckCircle size={18} /> {t.reportFound}
+                   </Button>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                       <Search size={32} className="text-gray-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{t.noLostPets}</h3>
+                    <p className="text-gray-500">Se você perdeu ou encontrou um pet, reporte agora para ajudar a comunidade.</p>
+                </div>
+             </div>
+        )}
+
+        {/* MY ONGS VIEW */}
+        {activeView === 'my-ongs' && (
+             <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-2xl font-bold text-gray-900">{t.myOngsTitle}</h2>
+                </div>
+
+                {myOngs.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {myOngs.map(ong => (
+                           <div key={ong.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-start gap-4">
+                               <img src={ong.image} alt={ong.name} className="w-16 h-16 rounded-xl object-cover" />
+                               <div>
+                                  <h3 className="font-bold text-lg text-gray-900">{ong.name}</h3>
+                                  <p className="text-sm text-gray-500 mb-2">{ong.description}</p>
+                                  <div className="flex items-center text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded-md w-fit">
+                                      <MapPin size={12} className="mr-1" /> {ong.location}
+                                  </div>
+                               </div>
+                           </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                           <Building2 size={32} className="text-gray-300" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">{t.noMyOngs}</h3>
+                        <p className="text-gray-500 mb-6">Cadastre sua organização para ajudar mais animais.</p>
+                        <Button onClick={() => alert('Use o link na página inicial para cadastrar (fluxo simplificado).')} variant="outline">{t.ongBtn}</Button>
+                    </div>
+                )}
+             </div>
+        )}
+
         {/* USER PROFILE VIEW */}
         {activeView === 'user-profile' && (
              <div className="max-w-2xl mx-auto space-y-6">
@@ -687,7 +806,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                             ) : (<p className="text-lg font-medium text-gray-900">{currentUser.phone}</p>)}
                          </div>
 
-                         {/* Location Section Redesign */}
+                         {/* Location Section */}
                          <div>
                              <label className="block text-sm font-bold text-gray-500 mb-2">{t.locationLabel}</label>
                              <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-brand-200 transition-colors">
@@ -717,17 +836,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                                          </div>
                                      </div>
                                      
-                                     {isEditingUser && (
-                                        <Button 
-                                            onClick={handleGetLocation} 
-                                            disabled={isUpdatingLocation}
-                                            variant="primary"
-                                            className="shrink-0 shadow-md flex items-center gap-2"
-                                        >
-                                        {isUpdatingLocation ? <Loader2 className="animate-spin" size={18} /> : <Navigation size={18} />}
-                                        {t.getLocationBtn}
-                                        </Button>
-                                     )}
+                                     <div className="flex gap-2 shrink-0">
+                                        {!isEditingUser && currentUser.location && (
+                                            <Button
+                                                onClick={handleVerifyLocation}
+                                                disabled={isVerifyingLocation}
+                                                variant="outline"
+                                                className="shadow-sm flex items-center gap-2 bg-white"
+                                                title={t.verifyLocationBtn}
+                                            >
+                                                 {isVerifyingLocation ? <Loader2 className="animate-spin" size={18} /> : <Crosshair size={18} />}
+                                                 <span className="hidden md:inline">{t.verifyLocationBtn}</span>
+                                            </Button>
+                                        )}
+                                        {isEditingUser && (
+                                            <Button 
+                                                onClick={handleGetLocation} 
+                                                disabled={isUpdatingLocation}
+                                                variant="primary"
+                                                className="shadow-md flex items-center gap-2"
+                                            >
+                                            {isUpdatingLocation ? <Loader2 className="animate-spin" size={18} /> : <Navigation size={18} />}
+                                            {t.getLocationBtn}
+                                            </Button>
+                                        )}
+                                     </div>
                                  </div>
                                  
                                  {/* Banner if not editing */}
@@ -804,7 +937,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
         )}
 
         {/* IF NO ACTIVE PET AND NOT CREATING/EDITING USER */}
-        {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && (
+        {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && (
              <div className="text-center py-20">
                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">🐾</span></div>
                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t.noPets}</h2>
@@ -829,7 +962,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                   <div className="flex flex-col items-center space-y-4 relative">
                     <div className="relative">
                       <img src={isEditingPet ? editedPet.image : activePet.image} alt={activePet.name} className="w-40 h-40 rounded-full object-cover border-4 border-brand-100 shadow-sm bg-gray-100" />
-                      {isEditingPet && (<label className="absolute bottom-0 right-0 bg-brand-600 text-white p-2 rounded-full cursor-pointer hover:bg-brand-700 shadow-lg transition-transform hover:scale-110"><Camera size={20} /><input type="file" accept="image/*" className="hidden" onChange={handlePetPhotoUpload} /></label>)}
+                      {isEditingPet && (<label className="absolute bottom-0 right-0 bg-brand-600 text-white p-2 rounded-full cursor-pointer hover:bg-brand-600 shadow-lg transition-transform hover:scale-110"><Camera size={20} /><input type="file" accept="image/*" className="hidden" onChange={handlePetPhotoUpload} /></label>)}
                     </div>
                     {isEditingPet && (<p className="text-xs text-gray-500">{t.changePhoto}</p>)}
                   </div>

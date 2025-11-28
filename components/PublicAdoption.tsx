@@ -1,9 +1,10 @@
 
-import React from 'react';
+
+import React, { useRef, useState } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
 import { Button } from './Button';
-import { ArrowLeft, Heart, Dog, Cat, Info } from 'lucide-react';
+import { ArrowLeft, Heart, Dog, Cat, Info, Play, Pause } from 'lucide-react';
 
 interface PublicAdoptionProps {
   lang: Language;
@@ -13,6 +14,19 @@ interface PublicAdoptionProps {
 
 export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, onBack }) => {
   const t = TRANSLATIONS[lang];
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -46,9 +60,35 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
 
       <main className="pt-24 pb-20">
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">{t.publicAdoptionTitle}</h1>
                <p className="text-xl text-gray-500 max-w-2xl mx-auto">{t.publicAdoptionSubtitle}</p>
+            </div>
+
+            {/* Demo Video Section */}
+            <div className="relative max-w-4xl mx-auto mb-16 rounded-3xl overflow-hidden shadow-2xl aspect-video md:aspect-[21/9] group">
+                <video 
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    src="https://videos.pexels.com/video-files/5801170/5801170-hd_1920_1080_24fps.mp4" 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline
+                />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <button 
+                        onClick={togglePlay}
+                        className="bg-white/20 backdrop-blur-md hover:bg-white/40 text-white rounded-full p-6 transition-all transform hover:scale-110"
+                    >
+                        {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+                    </button>
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 text-center md:text-left">
+                    <p className="text-white/90 text-sm md:text-base font-medium drop-shadow-md">
+                        {isPlaying ? t.pauseVideo : t.watchVideo}
+                    </p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
