@@ -1,11 +1,10 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Language, AppView, User, PlanType } from './types';
+import { Language, AppView, User, PlanType, Ong } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
 import { PublicOngs } from './components/PublicOngs';
+import { OngProfile } from './components/OngProfile';
 import { LegalPages } from './components/LegalPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
@@ -26,6 +25,7 @@ const App: React.FC = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ongCurrentIndex, setOngCurrentIndex] = useState(0);
+  const [selectedOng, setSelectedOng] = useState<Ong | null>(null);
   
   // Auth Form States
   const [email, setEmail] = useState('');
@@ -75,22 +75,45 @@ const App: React.FC = () => {
 
   const toggleLang = (l: Language) => setLang(l);
 
+  // Filter ONGs based on location
+  const getFilteredOngs = () => {
+    if (!headerLocation) return MOCK_ONGS;
+    
+    // Simple check: if the ONG location contains the city name (or vice versa)
+    const city = headerLocation.split(',')[0].trim();
+    const local = MOCK_ONGS.filter(ong => 
+        ong.location.toLowerCase().includes(city.toLowerCase()) || 
+        headerLocation.toLowerCase().includes(ong.location.toLowerCase())
+    );
+
+    return local.length > 0 ? local : MOCK_ONGS;
+  };
+
+  const displayOngs = getFilteredOngs();
+
+  // Reset slider index when filtered list changes
+  useEffect(() => {
+    setOngCurrentIndex(0);
+  }, [headerLocation]);
+
   // NGO Slider Logic
   const nextOngSlide = () => {
-    setOngCurrentIndex((prev) => (prev + 1) % Math.ceil(MOCK_ONGS.length / 3));
+    const totalPages = Math.ceil(displayOngs.length / 3);
+    if (totalPages > 0) {
+        setOngCurrentIndex((prev) => (prev + 1) % totalPages);
+    }
   };
   
   const prevOngSlide = () => {
-    setOngCurrentIndex((prev) => (prev - 1 + Math.ceil(MOCK_ONGS.length / 3)) % Math.ceil(MOCK_ONGS.length / 3));
+    const totalPages = Math.ceil(displayOngs.length / 3);
+    if (totalPages > 0) {
+        setOngCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
+    }
   };
 
-  const getVisibleOngs = () => {
-      const isMobile = window.innerWidth < 768;
-      const itemsPerPage = isMobile ? 1 : 3;
-      const start = ongCurrentIndex * itemsPerPage;
-      // Safety check for mobile responsiveness if resizing
-      if (start >= MOCK_ONGS.length) return MOCK_ONGS.slice(0, itemsPerPage);
-      return MOCK_ONGS.slice(start, start + itemsPerPage);
+  const handleViewOng = (ong: Ong) => {
+      setSelectedOng(ong);
+      setView('ong-profile');
   };
 
   // Phone Mask Helper
@@ -246,7 +269,11 @@ const App: React.FC = () => {
   }
 
   if (view === 'public-ongs') {
-      return <PublicOngs lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+      return <PublicOngs lang={lang} setLang={setLang} onBack={() => setView('landing')} onViewOng={handleViewOng} />;
+  }
+
+  if (view === 'ong-profile' && selectedOng) {
+      return <OngProfile lang={lang} ong={selectedOng} onBack={() => setView('landing')} />;
   }
 
   if (view === 'terms' || view === 'privacy') {
@@ -513,7 +540,15 @@ const App: React.FC = () => {
       <section className="pb-20 pt-8 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
              <div className="flex items-center justify-between mb-8">
-                 <h3 className="text-2xl font-bold text-gray-800">{t.registeredOngsTitle}</h3>
+                 <div className="flex items-center gap-4">
+                    <h3 className="text-2xl font-bold text-gray-800">{t.registeredOngsTitle}</h3>
+                    {headerLocation && displayOngs.length < MOCK_ONGS.length && (
+                        <span className="bg-brand-50 text-brand-600 px-3 py-1 rounded-full text-xs font-bold border border-brand-100 flex items-center">
+                            <MapPin size={10} className="mr-1" />
+                            {headerLocation.split(',')[0]}
+                        </span>
+                    )}
+                 </div>
                  <div className="flex gap-2">
                      <button onClick={prevOngSlide} className="p-2 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors">
                          <ChevronLeft size={20} className="text-gray-600" />
@@ -525,15 +560,33 @@ const App: React.FC = () => {
              </div>
 
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-300">
-                {MOCK_ONGS.slice(ongCurrentIndex * 3, (ongCurrentIndex * 3) + 3).map((ong) => (
-                    <div key={ong.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-4 flex gap-4 items-center">
-                        <img src={ong.image} alt={ong.name} className="w-16 h-16 rounded-full object-cover flex-shrink-0 bg-gray-100" />
-                        <div className="overflow-hidden">
-                            <h4 className="font-bold text-gray-900 truncate">{ong.name}</h4>
-                            <div className="flex items-center text-xs text-gray-500 mb-1">
-                                <MapPin size={10} className="mr-1" /> {ong.location}
+                {displayOngs.slice(ongCurrentIndex * 3, (ongCurrentIndex * 3) + 3).map((ong) => (
+                    <div 
+                        key={ong.id} 
+                        className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 items-start cursor-pointer hover:border-brand-100 h-full"
+                        onClick={() => handleViewOng(ong)}
+                    >
+                        <div className="flex items-center gap-4 w-full">
+                            <img src={ong.image} alt={ong.name} className="w-14 h-14 rounded-full object-cover flex-shrink-0 bg-gray-100 ring-2 ring-gray-50" />
+                            <div className="overflow-hidden min-w-0">
+                                <h4 className="font-bold text-gray-900 truncate text-lg">{ong.name}</h4>
+                                <div className="flex items-center text-xs text-gray-500">
+                                    <MapPin size={12} className="mr-1 text-brand-500" /> {ong.location}
+                                </div>
                             </div>
-                            <p className="text-xs text-gray-400 truncate">{ong.description}</p>
+                        </div>
+                        
+                        <p className="text-sm text-gray-500 line-clamp-2 w-full flex-grow">{ong.description}</p>
+                        
+                        <div className="w-full pt-2 mt-auto">
+                             <Button 
+                                size="sm" 
+                                variant="secondary" 
+                                className="w-full bg-brand-50 text-brand-700 hover:bg-brand-100 border-none shadow-none"
+                                onClick={(e) => { e.stopPropagation(); handleViewOng(ong); }}
+                             >
+                                 {t.viewOng}
+                             </Button>
                         </div>
                     </div>
                 ))}

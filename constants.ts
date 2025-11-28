@@ -173,6 +173,20 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     partnerOngs: "ONGs Parceiras",
     searchOngsPlaceholder: "Buscar ONGs por cidade, estado ou nome",
     noOngsFound: "Nenhuma ONG encontrada com esses critérios.",
+    viewOng: "Ver ONG",
+    aboutOng: "Sobre a ONG",
+    contactOng: "Contato",
+    availablePets: "Pets para Adoção",
+    donateBtn: "Fazer Doação",
+    copyPix: "Copiar Chave Pix",
+    pixCopied: "Chave Pix copiada!",
+    bankDetails: "Dados Bancários",
+    bankName: "Banco",
+    agency: "Agência",
+    account: "Conta",
+    prevPage: "Anterior",
+    nextPage: "Próxima",
+    pageOf: "de"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -291,7 +305,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     locationLabel: "Location",
     getLocationBtn: "Update with GPS",
     locationError: "Error getting location. Check permissions.",
-    kmAway: "km de distância",
+    kmAway: "km away",
     locationUpdated: "Location updated successfully!",
     selectedPlanLabel: "Selected Plan",
     passwordStrength: "Password Strength",
@@ -344,6 +358,20 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     partnerOngs: "Partner NGOs",
     searchOngsPlaceholder: "Search NGOs by city, state or name",
     noOngsFound: "No NGOs found matching your criteria.",
+    viewOng: "View NGO",
+    aboutOng: "About the NGO",
+    contactOng: "Contact",
+    availablePets: "Pets for Adoption",
+    donateBtn: "Donate",
+    copyPix: "Copy Pix Key",
+    pixCopied: "Pix Key copied!",
+    bankDetails: "Bank Details",
+    bankName: "Bank",
+    agency: "Agency",
+    account: "Account",
+    prevPage: "Previous",
+    nextPage: "Next",
+    pageOf: "of"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -515,14 +543,30 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     partnerOngs: "ONG Asociadas",
     searchOngsPlaceholder: "Buscar ONG por ciudad, estado o nombre",
     noOngsFound: "No se encontraron ONG con estos criterios.",
+    viewOng: "Ver ONG",
+    aboutOng: "Sobre la ONG",
+    contactOng: "Contacto",
+    availablePets: "Mascotas en Adopción",
+    donateBtn: "Donar",
+    copyPix: "Copiar Clave Pix",
+    pixCopied: "¡Clave Pix copiada!",
+    bankDetails: "Datos Bancarios",
+    bankName: "Banco",
+    agency: "Agencia",
+    account: "Cuenta",
+    prevPage: "Anterior",
+    nextPage: "Siguiente",
+    pageOf: "de"
   }
 };
 
 // Base location: São Paulo (-23.5505, -46.6333) for mock data
 export const MOCK_ADOPTION_PETS: Pet[] = [
-  { id: '1', name: 'Thor', breed: 'Golden Retriever', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', bio: 'Friendly and energetic.', location: { lat: -23.5605, lng: -46.6433 } }, // Near Paulista
-  { id: '2', name: 'Luna', breed: 'Siamese', age: 1, type: 'cat', image: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?auto=format&fit=crop&w=400&q=80', bio: 'Quiet and loving.', location: { lat: -23.5405, lng: -46.6233 } },
-  { id: '3', name: 'Bob', breed: 'Bulldog', age: 4, type: 'dog', image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', bio: 'Loves sleeping.', location: { lat: -23.5705, lng: -46.6533 } },
+  { id: '1', name: 'Thor', breed: 'Golden Retriever', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', bio: 'Friendly and energetic.', location: { lat: -23.5605, lng: -46.6433 }, ongId: '1' }, // Near Paulista
+  { id: '2', name: 'Luna', breed: 'Siamese', age: 1, type: 'cat', image: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?auto=format&fit=crop&w=400&q=80', bio: 'Quiet and loving.', location: { lat: -23.5405, lng: -46.6233 }, ongId: '2' },
+  { id: '3', name: 'Bob', breed: 'Bulldog', age: 4, type: 'dog', image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', bio: 'Loves sleeping.', location: { lat: -23.5705, lng: -46.6533 }, ongId: '1' },
+  { id: '6', name: 'Paçoca', breed: 'Vira-lata', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80', bio: 'Alegre e brincalhão.', location: { lat: -23.5805, lng: -46.6333 }, ongId: '1' },
+  { id: '7', name: 'Simba', breed: 'Persa', age: 3, type: 'cat', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80', bio: 'Rei da casa.', location: { lat: -22.9068, lng: -43.1729 }, ongId: '2' },
 ];
 
 export const MOCK_DATING_PETS: Pet[] = [
@@ -545,10 +589,19 @@ export const MOCK_DAILY_PHOTOS = [
 ];
 
 export const MOCK_ONGS: Ong[] = [
-  { id: '1', name: 'Anjos de Patas', image: 'https://images.unsplash.com/photo-1605218427368-35b86121f1d1?auto=format&fit=crop&w=400&q=80', description: 'Resgatando e cuidando de cães de rua há 10 anos.', location: 'São Paulo, SP' },
-  { id: '2', name: 'Gatinhos da Vila', image: 'https://images.unsplash.com/photo-1582294101488-0d19762a5b6c?auto=format&fit=crop&w=400&q=80', description: 'Lar temporário e adoção para felinos.', location: 'Rio de Janeiro, RJ' },
-  { id: '3', name: 'Amigo Fiel', image: 'https://images.unsplash.com/photo-1599566219227-2efe0c9b7f5f?auto=format&fit=crop&w=400&q=80', description: 'Reabilitação e adoção de animais feridos.', location: 'Curitiba, PR' },
-  { id: '4', name: 'Santuário Animal', image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=400&q=80', description: 'Proteção para animais de grande porte e silvestres.', location: 'Belo Horizonte, MG' },
-  { id: '5', name: 'Vira-lata Caramelo', image: 'https://images.unsplash.com/photo-1535930749574-1399327ce78f?auto=format&fit=crop&w=400&q=80', description: 'Apoio a cães comunitários.', location: 'Salvador, BA' },
-  { id: '6', name: 'Arca de Noé', image: 'https://images.unsplash.com/photo-1560743641-3914f2c45636?auto=format&fit=crop&w=400&q=80', description: 'Abrigo para todos os tipos de animais.', location: 'Porto Alegre, RS' }
+  { id: '1', name: 'Anjos de Patas', image: 'https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&w=400&q=80', description: 'Resgatando e cuidando de cães de rua há 10 anos.', location: 'São Paulo, SP', pixKey: 'anjos@patas.org.br', phone: '(11) 99999-0001', email: 'contato@anjosdepatas.org.br', bankInfo: { bank: 'Banco do Brasil', agency: '1234-X', account: '56789-0' } },
+  { id: '2', name: 'Gatinhos da Vila', image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=400&q=80', description: 'Lar temporário e adoção para felinos.', location: 'Rio de Janeiro, RJ', pixKey: 'gatinhos@vila.com', phone: '(21) 98888-0002', email: 'adote@gatinhosdavila.com' },
+  { id: '3', name: 'Amigo Fiel', image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=400&q=80', description: 'Reabilitação e adoção de animais feridos.', location: 'Curitiba, PR', pixKey: 'amigo@fiel.org', phone: '(41) 97777-0003' },
+  { id: '4', name: 'Santuário Animal', image: 'https://images.unsplash.com/photo-1535930749574-1399327ce78f?auto=format&fit=crop&w=400&q=80', description: 'Proteção para animais de grande porte e silvestres.', location: 'Belo Horizonte, MG', pixKey: 'santuario@animal.org', phone: '(31) 96666-0004' },
+  { id: '5', name: 'Vira-lata Caramelo', image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', description: 'Apoio a cães comunitários.', location: 'Salvador, BA' },
+  { id: '6', name: 'Arca de Noé', image: 'https://images.unsplash.com/photo-1597633425046-08f5110420b5?auto=format&fit=crop&w=400&q=80', description: 'Abrigo para todos os tipos de animais.', location: 'Porto Alegre, RS' },
+  { id: '7', name: 'Cão Sem Dono', image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', description: 'Resgate de animais em situação de risco.', location: 'Recife, PE' },
+  { id: '8', name: 'Adote um Gatinho', image: 'https://images.unsplash.com/photo-1519052537078-e6302a4968ef?auto=format&fit=crop&w=400&q=80', description: 'Maior ONG de resgate de gatos do Brasil.', location: 'São Paulo, SP' },
+  { id: '9', name: 'Protetores Independentes', image: 'https://images.unsplash.com/photo-1527362950785-3231506e33a8?auto=format&fit=crop&w=400&q=80', description: 'Grupo de voluntários unidos pela causa animal.', location: 'Florianópolis, SC' },
+  { id: '10', name: 'Amor de Bicho', image: 'https://images.unsplash.com/photo-1561037404-61cd46aa615b?auto=format&fit=crop&w=400&q=80', description: 'Castração e conscientização.', location: 'Campinas, SP' },
+  { id: '11', name: 'Vida Animal', image: 'https://images.unsplash.com/photo-1581888227599-77981198520d?auto=format&fit=crop&w=400&q=80', description: 'Abrigo e hospital veterinário solidário.', location: 'Fortaleza, CE' },
+  { id: '12', name: 'Patas Dadas', image: 'https://images.unsplash.com/photo-1596272875729-ed2c21d50510?auto=format&fit=crop&w=400&q=80', description: 'Promovendo encontros felizes.', location: 'Porto Alegre, RS' },
+  { id: '13', name: 'SOS Animais', image: 'https://images.unsplash.com/photo-1503256207526-0d5d80fa2f47?auto=format&fit=crop&w=400&q=80', description: 'Atendimento emergencial para animais de rua.', location: 'Brasília, DF' },
+  { id: '14', name: 'Bicho Feliz', image: 'https://images.unsplash.com/photo-1554558236-02e07973752d?auto=format&fit=crop&w=400&q=80', description: 'Felicidade é ter um lar.', location: 'Manaus, AM' },
+  { id: '15', name: 'Resgate Pet', image: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?auto=format&fit=crop&w=400&q=80', description: 'Resgate, reabilitação e amor.', location: 'Goiânia, GO' }
 ];

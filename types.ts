@@ -51,7 +51,9 @@ export type TranslationKey =
   | 'ongName' | 'ongCnpj' | 'ongDescription' | 'ongRegisterSuccess' | 'viewOngsBtn'
   | 'invalidCnpj' | 'invalidTaxId'
   | 'registeredOngsTitle' | 'seeAllOngs' | 'partnerOngs'
-  | 'searchOngsPlaceholder' | 'noOngsFound';
+  | 'searchOngsPlaceholder' | 'noOngsFound'
+  | 'viewOng' | 'aboutOng' | 'contactOng' | 'availablePets' | 'donateBtn' | 'copyPix' 
+  | 'pixCopied' | 'bankDetails' | 'bankName' | 'agency' | 'account' | 'prevPage' | 'nextPage' | 'pageOf';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -82,6 +84,7 @@ export interface Pet {
   image: string;
   bio: string;
   ownerId?: string;
+  ongId?: string;
   vaccines?: Vaccine[];
   availableForDating?: boolean;
   location?: Coordinates;
@@ -93,6 +96,15 @@ export interface Ong {
   image: string;
   description: string;
   location: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  pixKey?: string;
+  bankInfo?: {
+    bank: string;
+    agency: string;
+    account: string;
+  };
 }
 
 export interface Vaccine {
@@ -112,5 +124,5 @@ export interface ServiceProvider {
   address?: string;
 }
 
-export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile';
 export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet';
