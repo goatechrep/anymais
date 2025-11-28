@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
-import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation } from 'lucide-react';
+import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2 } from 'lucide-react';
 import { ServiceBooking } from './ServiceBooking';
 import { Button } from './Button';
 import { db } from '../services/db';
 import { generatePetBio } from '../services/geminiService';
-import { calculateDistance } from '../utils';
+import { calculateDistance, mockReverseGeocode } from '../utils';
 
 interface DashboardProps {
   lang: Language;
@@ -74,12 +74,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
   // --- State: User ---
   // Initialize with a placeholder, then load from DB
   const [currentUser, setCurrentUser] = useState<User>({
-    id: '', name: '', email: '', phone: '', image: '', plan: 'basic'
+    id: '', name: '', email: '', phone: '', image: '', plan: 'basic', favorites: []
   });
   
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [editedUser, setEditedUser] = useState<User>(currentUser);
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
+  const [locationAddress, setLocationAddress] = useState<string>('');
 
   // --- State: Pets ---
   const [pets, setPets] = useState<Pet[]>([]);
@@ -132,6 +133,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
       onLogout(); // Should not happen if App.tsx handles auth correctly
     }
   }, []);
+
+  // Effect: Resolve User Address from Coords
+  useEffect(() => {
+    const targetUser = isEditingUser ? editedUser : currentUser;
+    if (targetUser.location) {
+        const fetchAddress = async () => {
+            try {
+                const addr = await mockReverseGeocode(targetUser.location!.lat, targetUser.location!.lng);
+                setLocationAddress(addr);
+            } catch (e) {
+                setLocationAddress('');
+            }
+        };
+        fetchAddress();
+    } else {
+        setLocationAddress('');
+    }
+  }, [currentUser.location, editedUser.location, isEditingUser]);
 
   // Derived State
   const activePet = pets.find(p => p.id === activePetId) || null;
@@ -224,6 +243,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
     setCurrentUser(updatedUser);
     setEditedUser(updatedUser); // Sync edited state
     setShowPlanModal(false);
+  };
+
+  const toggleFavorite = (petId: string) => {
+    const currentFavorites = currentUser.favorites || [];
+    let newFavorites: string[];
+    
+    if (currentFavorites.includes(petId)) {
+      newFavorites = currentFavorites.filter(id => id !== petId);
+    } else {
+      newFavorites = [...currentFavorites, petId];
+    }
+    
+    const updatedUser = { ...currentUser, favorites: newFavorites };
+    setCurrentUser(updatedUser);
+    setEditedUser(updatedUser);
+    db.auth.updateUser(updatedUser);
   };
 
   // --- Handlers: Pet Actions ---
@@ -652,35 +687,55 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                             ) : (<p className="text-lg font-medium text-gray-900">{currentUser.phone}</p>)}
                          </div>
 
-                         {/* Location Section */}
+                         {/* Location Section Redesign */}
                          <div>
                              <label className="block text-sm font-bold text-gray-500 mb-2">{t.locationLabel}</label>
-                             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between">
-                                 <div className="flex items-center gap-3">
-                                     <div className="bg-white p-2 rounded-full shadow-sm text-brand-600">
-                                         <MapPin size={20} />
+                             <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-brand-200 transition-colors">
+                                 {/* Background Pattern to simulate map */}
+                                 <div className="absolute inset-0 opacity-[0.03]" 
+                                     style={{ 
+                                         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
+                                     }} 
+                                 />
+                                 
+                                 <div className="relative p-6 flex flex-col sm:flex-row items-center sm:justify-between gap-6">
+                                     <div className="flex items-center gap-4 w-full sm:w-auto">
+                                         <div className={`p-4 rounded-full shadow-lg border-4 border-white ${currentUser.location ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                             <MapPin size={24} />
+                                         </div>
+                                         <div>
+                                             <h4 className="text-lg font-bold text-gray-900">
+                                                 {locationAddress || (currentUser.location ? t.detecting : t.locationNotFound)}
+                                             </h4>
+                                             {currentUser.location ? (
+                                                 <p className="text-xs font-mono text-gray-500 bg-white/50 px-2 py-1 rounded-md inline-block border border-gray-200 mt-1">
+                                                     LAT: {currentUser.location.lat.toFixed(5)} • LNG: {currentUser.location.lng.toFixed(5)}
+                                                 </p>
+                                             ) : (
+                                                 <p className="text-sm text-gray-500">{t.locationError}</p>
+                                             )}
+                                         </div>
                                      </div>
-                                     <div>
-                                         {currentUser.location ? (
-                                             <div className="text-sm">
-                                                 <p className="font-bold text-gray-900">Lat: {currentUser.location.lat.toFixed(4)}</p>
-                                                 <p className="text-gray-500">Lng: {currentUser.location.lng.toFixed(4)}</p>
-                                             </div>
-                                         ) : (
-                                             <p className="text-sm text-gray-500 italic">Nenhuma localização definida</p>
-                                         )}
-                                     </div>
+                                     
+                                     {isEditingUser && (
+                                        <Button 
+                                            onClick={handleGetLocation} 
+                                            disabled={isUpdatingLocation}
+                                            variant="primary"
+                                            className="shrink-0 shadow-md flex items-center gap-2"
+                                        >
+                                        {isUpdatingLocation ? <Loader2 className="animate-spin" size={18} /> : <Navigation size={18} />}
+                                        {t.getLocationBtn}
+                                        </Button>
+                                     )}
                                  </div>
-                                 <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    onClick={handleGetLocation} 
-                                    disabled={isUpdatingLocation}
-                                    className="flex items-center gap-2"
-                                 >
-                                     <Navigation size={14} className={isUpdatingLocation ? "animate-spin" : ""} />
-                                     {t.getLocationBtn}
-                                 </Button>
+                                 
+                                 {/* Banner if not editing */}
+                                 {!isEditingUser && currentUser.location && (
+                                      <div className="absolute top-0 right-0 bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider shadow-sm">
+                                         GPS Ativo
+                                      </div>
+                                 )}
                              </div>
                          </div>
                      </div>
@@ -707,6 +762,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                          ))}
                          <button onClick={() => setActiveView('create-pet')} className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand-400 hover:text-brand-600 transition-all"><Plus size={20} /> {t.addNewPet}</button>
                      </div>
+                 </div>
+
+                 {/* Favorites Card */}
+                 <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
+                     <h3 className="font-bold text-gray-800 mb-4">{t.myFavorites}</h3>
+                     {currentUser.favorites && currentUser.favorites.length > 0 ? (
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             {MOCK_ADOPTION_PETS.filter(pet => currentUser.favorites?.includes(pet.id)).map(pet => (
+                                 <div key={pet.id} className="relative group flex items-start gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50">
+                                     <img src={pet.image} className="w-16 h-16 rounded-lg object-cover" />
+                                     <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="font-bold text-gray-900 truncate">{pet.name}</h4>
+                                            <button 
+                                              onClick={() => toggleFavorite(pet.id)}
+                                              className="text-red-500 hover:text-red-700 transition-colors"
+                                            >
+                                                <Heart size={16} fill="currentColor" />
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 truncate mb-2">{pet.breed}</p>
+                                        <div className="flex items-center gap-1 text-xs text-brand-600 font-medium">
+                                          {getDistanceText(pet.location)}
+                                        </div>
+                                     </div>
+                                 </div>
+                             ))}
+                         </div>
+                     ) : (
+                         <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                             <Heart className="mx-auto text-gray-300 mb-2" size={32} />
+                             <p className="text-gray-500 text-sm">{t.noFavorites}</p>
+                             <Button variant="ghost" size="sm" className="mt-2 text-brand-600" onClick={() => setActiveView('adoption')}>
+                                 {t.landingAdoptionBtn}
+                             </Button>
+                         </div>
+                     )}
                  </div>
              </div>
         )}
@@ -805,11 +897,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
             <h2 className="text-2xl font-bold mb-6 text-gray-800">{t.dashAdoption}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {MOCK_ADOPTION_PETS.map(pet => (
-                <div key={pet.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div key={pet.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
                   <div className="overflow-hidden h-48 relative">
-                    <img src={pet.image} alt={pet.name} className="w-full h-full object-cover bg-gray-100 transition-transform duration-500 hover:scale-105" />
+                    <img src={pet.image} alt={pet.name} className="w-full h-full object-cover bg-gray-100 transition-transform duration-500 group-hover:scale-105" />
+                    
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(pet.id); }}
+                      className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-sm z-10"
+                    >
+                        <Heart 
+                          size={20} 
+                          className={`transition-colors ${currentUser.favorites?.includes(pet.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+                        />
+                    </button>
+
                     {getDistanceText(pet.location) && (
-                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
                             <Navigation size={10} />
                             {getDistanceText(pet.location)}
                         </div>
@@ -818,7 +921,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                   <div className="p-4">
                     <h3 className="font-bold text-lg text-gray-900">{pet.name}</h3>
                     <p className="text-sm text-gray-500">{pet.breed}</p>
-                    <p className="text-sm mt-2 text-gray-600">{pet.bio}</p>
+                    <p className="text-sm mt-2 text-gray-600 line-clamp-2">{pet.bio}</p>
                     <Button className="w-full mt-4">{t.adoptMe}</Button>
                   </div>
                 </div>

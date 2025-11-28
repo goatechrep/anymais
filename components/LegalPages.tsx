@@ -7,27 +7,42 @@ import { ArrowLeft } from 'lucide-react';
 interface LegalPagesProps {
   type: 'terms' | 'privacy';
   lang: Language;
+  setLang: (lang: Language) => void;
   onBack: () => void;
 }
 
-export const LegalPages: React.FC<LegalPagesProps> = ({ type, lang, onBack }) => {
+export const LegalPages: React.FC<LegalPagesProps> = ({ type, lang, setLang, onBack }) => {
   const t = TRANSLATIONS[lang];
   const title = type === 'terms' ? t.termsTitle : t.privacyTitle;
 
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col">
        <nav className="fixed w-full z-50 bg-white border-b border-gray-100 py-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-            <button 
-              onClick={onBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-brand-600 font-medium transition-colors"
-            >
-              <ArrowLeft size={20} />
-              {t.backToHome}
-            </button>
-            <div className="ml-6 flex items-center gap-2">
-               <span className="text-2xl">🐾</span>
-               <span className="font-bold text-xl text-brand-600">AnyMais</span>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div className="flex items-center">
+              <button 
+                onClick={onBack}
+                className="flex items-center gap-2 text-gray-600 hover:text-brand-600 font-medium transition-colors"
+              >
+                <ArrowLeft size={20} />
+                {t.backToHome}
+              </button>
+              <div className="ml-6 flex items-center gap-2">
+                <span className="text-2xl">🐾</span>
+                <span className="font-bold text-xl text-brand-600">AnyMais</span>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+               {Object.values(Language).map((l) => (
+                  <button 
+                    key={l} 
+                    onClick={() => setLang(l)}
+                    className={`px-2 py-1 rounded text-xs font-bold uppercase ${lang === l ? 'bg-brand-100 text-brand-700' : 'text-gray-500 hover:bg-gray-100'}`}
+                  >
+                    {l}
+                  </button>
+               ))}
             </div>
         </div>
       </nav>

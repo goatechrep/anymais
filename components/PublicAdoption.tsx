@@ -7,10 +7,11 @@ import { ArrowLeft, Heart, Dog, Cat, Info } from 'lucide-react';
 
 interface PublicAdoptionProps {
   lang: Language;
+  setLang: (lang: Language) => void;
   onBack: () => void;
 }
 
-export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, onBack }) => {
+export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, onBack }) => {
   const t = TRANSLATIONS[lang];
 
   return (
@@ -29,7 +30,17 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, onBack }) 
                <span className="text-2xl">🐾</span>
                <span className="font-bold text-xl text-brand-600">AnyMais</span>
             </div>
-            <div className="w-20"></div> {/* Spacer for centering */}
+            <div className="flex gap-2">
+               {Object.values(Language).map((l) => (
+                  <button 
+                    key={l} 
+                    onClick={() => setLang(l)}
+                    className={`px-2 py-1 rounded text-xs font-bold uppercase ${lang === l ? 'bg-brand-100 text-brand-700' : 'text-gray-500 hover:bg-gray-100'}`}
+                  >
+                    {l}
+                  </button>
+               ))}
+            </div>
         </div>
       </nav>
 

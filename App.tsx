@@ -5,10 +5,11 @@ import { TRANSLATIONS, MOCK_DAILY_PHOTOS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
 import { LegalPages } from './components/LegalPages';
+import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake } from 'lucide-react';
 import { db } from './services/db';
-import { checkPasswordStrength } from './utils';
+import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>(Language.PT);
@@ -19,6 +20,8 @@ const App: React.FC = () => {
   // UI State
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [headerLocation, setHeaderLocation] = useState<string>('');
+  const [isLocating, setIsLocating] = useState(false);
   
   // Auth Form States
   const [email, setEmail] = useState('');
@@ -32,6 +35,14 @@ const App: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const t = TRANSLATIONS[lang];
+
+  // Initialize persistence for location
+  useEffect(() => {
+    const savedLocation = getLocationFromStorage();
+    if (savedLocation) {
+        setHeaderLocation(savedLocation);
+    }
+  }, []);
 
   // Check for existing session on load
   useEffect(() => {
@@ -81,9 +92,34 @@ const App: React.FC = () => {
     setPhone(formatPhone(e.target.value));
   };
 
+  const handleHeaderLocationClick = () => {
+      if ("geolocation" in navigator) {
+          setIsLocating(true);
+          navigator.geolocation.getCurrentPosition(async (position) => {
+              try {
+                  const cityState = await mockReverseGeocode(position.coords.latitude, position.coords.longitude);
+                  setHeaderLocation(cityState);
+                  saveLocationToStorage(cityState); // Persist
+              } catch (e) {
+                  console.error("Geocoding failed", e);
+              } finally {
+                  setIsLocating(false);
+              }
+          }, (error) => {
+              console.error("Error getting location", error);
+              setIsLocating(false);
+          });
+      }
+  };
+
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+
+    if (!validateEmail(email)) {
+      setAuthError(t.emailError);
+      return;
+    }
 
     if (isLoginMode) {
       const user = db.auth.login(email, password);
@@ -182,41 +218,69 @@ const App: React.FC = () => {
   }
 
   if (view === 'public-adoption') {
-    return <PublicAdoption lang={lang} onBack={() => setView('landing')} />;
+    return <PublicAdoption lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
   }
 
   if (view === 'terms' || view === 'privacy') {
-    return <LegalPages type={view} lang={lang} onBack={() => setView('landing')} />;
+    return <LegalPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+  }
+
+  if (view === 'ong-register') {
+      return <OngRegistration lang={lang} onBack={() => setView('landing')} prefilledLocation={headerLocation} />;
   }
 
   const passwordStrength = checkPasswordStrength(password);
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
-      {/* Navbar */}
-      <nav className={`fixed w-full z-50 transition-all duration-300 ease-in-out ${
+      
+      {/* Subheader - Static Top Bar */}
+      <div className="bg-brand-900 text-white py-2.5 px-4 text-sm font-medium relative z-[60]">
+         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+             <div className="flex items-center gap-4">
+                 <button 
+                  onClick={handleHeaderLocationClick}
+                  disabled={isLocating}
+                  className="flex items-center gap-1.5 hover:text-brand-200 transition-colors"
+                 >
+                     {isLocating ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
+                     <span>
+                        {t.headerLocation} {isLocating ? t.detecting : (headerLocation || t.setLocation)}
+                     </span>
+                 </button>
+             </div>
+             
+             <div className="flex items-center gap-3">
+                 <Globe size={14} className="text-brand-200" />
+                 <span className="hidden sm:inline opacity-75">{t.headerLanguage}:</span>
+                 <div className="flex gap-1">
+                    {Object.values(Language).map((l) => (
+                        <button 
+                            key={l} 
+                            onClick={() => toggleLang(l)}
+                            className={`px-1.5 rounded text-[10px] font-bold uppercase ${lang === l ? 'bg-white text-brand-900' : 'bg-brand-800 text-brand-200 hover:bg-brand-700'}`}
+                        >
+                            {l}
+                        </button>
+                    ))}
+                 </div>
+             </div>
+         </div>
+      </div>
+
+      {/* Main Navbar */}
+      <nav className={`sticky top-0 w-full z-50 transition-all duration-300 ease-in-out ${
         isScrolled 
-          ? 'bg-white/80 backdrop-blur-lg border-b border-white/20 shadow-sm py-1' 
-          : 'bg-transparent border-transparent py-4'
+          ? 'bg-white/90 backdrop-blur-md shadow-sm py-2' 
+          : 'bg-white border-b border-gray-100 py-4'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-14">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('landing')}>
                <span className="text-3xl">🐾</span>
                <span className="font-bold text-2xl text-brand-600">AnyMais</span>
             </div>
             <div className="flex items-center gap-4">
-              <div className="hidden md:flex gap-2">
-                {Object.values(Language).map((l) => (
-                  <button 
-                    key={l} 
-                    onClick={() => toggleLang(l)}
-                    className={`px-2 py-1 rounded text-xs font-bold uppercase ${lang === l ? 'bg-brand-100 text-brand-700' : 'text-gray-500 hover:bg-gray-100'}`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
               <Button variant="ghost" onClick={openLogin}>{t.ctaLogin}</Button>
               <Button onClick={() => openSignup('basic')}>{t.createAccount}</Button>
             </div>
@@ -225,7 +289,7 @@ const App: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             
@@ -249,6 +313,11 @@ const App: React.FC = () => {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-brand-200 to-secondary-200 rounded-full blur-[100px] -z-10 opacity-60"></div>
                 
                 <div className="relative z-10 w-[450px] h-[550px] transform rotate-3 transition-transform hover:rotate-0 duration-500 group">
+                    {/* Badge - Top Right on the Slide */}
+                    <div className="absolute top-6 right-6 bg-brand-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg z-20 flex items-center gap-2">
+                        <Camera size={14} /> Foto da Semana
+                    </div>
+
                     {MOCK_DAILY_PHOTOS.map((photo, index) => (
                       <div 
                         key={index}
@@ -258,21 +327,22 @@ const App: React.FC = () => {
                       >
                           <img 
                               src={photo.url} 
-                              alt={photo.caption} 
+                              alt={photo.petName} 
                               className="w-full h-full object-cover rounded-[2rem] shadow-2xl border-8 border-white"
                           />
                           
-                          {/* Photo of the Week Badge */}
-                          <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/50 flex items-center gap-3 transform transition-transform group-hover:scale-105">
-                              <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
-                                  <Camera size={20} className="text-brand-600" />
-                              </div>
-                              <div>
-                                   <p className="font-bold text-brand-600 text-xs uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                                      Foto da Semana
-                                   </p>
-                                   <p className="text-gray-900 font-bold text-sm leading-tight">{photo.caption}</p>
-                              </div>
+                          {/* Caption Card - Bottom */}
+                          <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/50 flex flex-col items-start gap-1 transform transition-transform group-hover:scale-105">
+                               <div className="flex justify-between items-end w-full">
+                                  <div>
+                                     <p className="font-extrabold text-gray-900 text-lg leading-tight">{photo.petName}</p>
+                                     <p className="text-brand-600 font-medium text-sm">{photo.breed}</p>
+                                  </div>
+                                  <div className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
+                                     <MapPin size={12} className="mr-1" />
+                                     {photo.location}
+                                  </div>
+                               </div>
                           </div>
                       </div>
                     ))}
@@ -346,6 +416,35 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* NEW: NGO Support Section */}
+      <section className="py-16 bg-white relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-secondary-500 rounded-3xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between shadow-xl relative overflow-hidden">
+                   {/* Decorative circle */}
+                   <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
+
+                   <div className="relative z-10 md:w-2/3 mb-8 md:mb-0">
+                       <div className="flex items-center gap-3 mb-4">
+                           <HeartHandshake size={32} className="text-white" />
+                           <span className="font-bold uppercase tracking-widest text-white/80 text-sm">Parceiros Sociais</span>
+                       </div>
+                       <h2 className="text-3xl md:text-4xl font-bold mb-4">{t.ongSectionTitle}</h2>
+                       <p className="text-lg text-white/90 leading-relaxed max-w-xl">
+                           {t.ongSectionSubtitle}
+                       </p>
+                   </div>
+                   <div className="relative z-10">
+                       <Button 
+                           onClick={() => setView('ong-register')}
+                           className="bg-white text-secondary-600 hover:bg-gray-50 border-none px-8 py-4 text-lg font-bold shadow-xl transition-transform hover:scale-105 flex items-center gap-2"
+                       >
+                           {t.ongBtn} <ArrowRight size={20} />
+                       </Button>
+                   </div>
+              </div>
+          </div>
       </section>
 
       {/* Pricing Section */}
@@ -423,9 +522,68 @@ const App: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center text-gray-500">
-          <p>&copy; 2024 AnyMais Social. All rights reserved.</p>
+      <footer className="bg-gray-50 border-t border-gray-200 pt-16 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            
+            {/* Column 1: Brand */}
+            <div className="space-y-4">
+               <div className="flex items-center gap-2">
+                 <span className="text-3xl">🐾</span>
+                 <span className="font-bold text-2xl text-brand-600">AnyMais</span>
+               </div>
+               <p className="text-gray-500 text-sm leading-relaxed">
+                 {t.heroSubtitle}
+               </p>
+            </div>
+
+            {/* Column 2: Company */}
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4">{t.footerCompany}</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerAbout}</a></li>
+                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerCareers}</a></li>
+                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerBlog}</a></li>
+                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerContact}</a></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Legal & Help */}
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4">{t.footerLegal}</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><button onClick={() => setView('terms')} className="hover:text-brand-600 transition-colors">{t.termsTitle}</button></li>
+                <li><button onClick={() => setView('privacy')} className="hover:text-brand-600 transition-colors">{t.privacyTitle}</button></li>
+                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerHelp}</a></li>
+              </ul>
+            </div>
+
+            {/* Column 4: Socials */}
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4">{t.footerFollowUs}</h4>
+              <div className="flex gap-4">
+                <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-pink-600 hover:border-pink-200 hover:bg-pink-50 transition-all">
+                   <Instagram size={20} />
+                </a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all">
+                   <Facebook size={20} />
+                </a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black hover:border-gray-400 hover:bg-gray-100 transition-all">
+                   <Twitter size={20} />
+                </a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all">
+                   <Linkedin size={20} />
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-gray-400 text-sm">
+              &copy; 2025 AnyMais Social. {t.footerRights}.
+            </p>
+          </div>
         </div>
       </footer>
 
@@ -546,7 +704,7 @@ const App: React.FC = () => {
                         placeholder="••••••••"
                       />
                     </div>
-                    {/* Terms Checkbox */}
+                    {/* Terms Checkbox - Adjusted size */}
                     <div className="flex items-start gap-2 pt-2">
                          <div className="relative flex items-center h-5">
                             <input
@@ -557,7 +715,7 @@ const App: React.FC = () => {
                               className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
                             />
                          </div>
-                         <label htmlFor="terms" className="text-sm text-gray-500 leading-tight">
+                         <label htmlFor="terms" className="text-xs text-gray-500 leading-snug">
                             {t.acceptTerms}{" "}
                             <button type="button" onClick={() => { setShowLogin(false); setView('terms'); }} className="text-brand-600 underline font-medium hover:text-brand-800">
                                 {t.termsLink}

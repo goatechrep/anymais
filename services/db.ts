@@ -21,7 +21,8 @@ const INITIAL_DATA: Schema = {
       image: 'https://i.pravatar.cc/150?img=5',
       plan: 'start',
       password: '123', // In a real app, this would be hashed!
-      location: { lat: -23.5555, lng: -46.6333 } // Mock default location (SP)
+      location: { lat: -23.5555, lng: -46.6333 }, // Mock default location (SP)
+      favorites: []
     }
   ],
   pets: [
@@ -91,7 +92,8 @@ export const db = {
       const newUser = { 
         ...user, 
         id: `u-${Date.now()}`,
-        plan: user.plan || 'basic' 
+        plan: user.plan || 'basic',
+        favorites: []
       };
       data.users.push(newUser);
       saveDB(data);

@@ -38,7 +38,16 @@ export type TranslationKey =
   | 'locationLabel' | 'getLocationBtn' | 'locationError' | 'kmAway' | 'locationUpdated'
   | 'selectedPlanLabel' | 'passwordStrength' | 'weak' | 'medium' | 'strong'
   | 'acceptTerms' | 'termsLink' | 'privacyLink' | 'termsError'
-  | 'termsTitle' | 'privacyTitle';
+  | 'termsTitle' | 'privacyTitle' | 'emailError'
+  | 'myFavorites' | 'noFavorites'
+  | 'footerRights' | 'footerCompany' | 'footerLegal' | 'footerAbout' | 'footerContact' 
+  | 'footerFollowUs' | 'footerBlog' | 'footerCareers' | 'footerHelp'
+  | 'searchLocationPlaceholder' | 'searchBtn' | 'locationNotFound'
+  | 'filterAll' | 'filterType' | 'minRating' | 'clearFilters'
+  | 'detecting' | 'setLocation'
+  | 'headerLanguage' | 'headerLocation' 
+  | 'ongSectionTitle' | 'ongSectionSubtitle' | 'ongBtn' | 'ongFormTitle' | 'ongFormDesc' 
+  | 'ongName' | 'ongCnpj' | 'ongDescription' | 'ongRegisterSuccess' | 'viewOngsBtn';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -56,6 +65,7 @@ export interface User {
   plan: PlanType;
   password?: string;
   location?: Coordinates;
+  favorites?: string[];
 }
 
 export interface Pet {
@@ -90,5 +100,5 @@ export interface ServiceProvider {
   address?: string;
 }
 
-export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register';
 export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet';
