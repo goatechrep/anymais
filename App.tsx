@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType, Ong } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
@@ -8,7 +10,7 @@ import { OngProfile } from './components/OngProfile';
 import { LegalPages } from './components/LegalPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { db } from './services/db';
 import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
@@ -540,6 +542,27 @@ const App: React.FC = () => {
           </div>
       </section>
 
+      {/* Lost & Found CTA Section */}
+      <section className="py-20 bg-gray-50 border-y border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
+               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md mb-6 border border-gray-100">
+                   <Search size={36} className="text-brand-600" />
+               </div>
+               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{t.landingLostFoundTitle}</h2>
+               <p className="text-xl text-gray-500 max-w-2xl mb-8 leading-relaxed">
+                   {t.landingLostFoundSubtitle}
+               </p>
+               <Button 
+                   size="lg" 
+                   className="shadow-xl flex items-center gap-2"
+                   onClick={openLogin}
+                >
+                   {t.landingLostFoundBtn}
+                   <ArrowRight size={20} />
+                </Button>
+          </div>
+      </section>
+
       {/* Registered NGOs Slider Section */}
       <section className="pb-20 pt-8 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -624,6 +647,12 @@ const App: React.FC = () => {
                 <li className="flex items-center text-sm text-gray-500">
                   <Check size={16} className="text-green-500 mr-2" /> {t.featAdoption}
                 </li>
+                <li className="flex items-center text-sm text-gray-500">
+                  <Check size={16} className="text-green-500 mr-2" /> {t.featLostFound}
+                </li>
+                 <li className="flex items-center text-sm text-gray-500">
+                  <Check size={16} className="text-green-500 mr-2" /> {t.featOngRegister}
+                </li>
               </ul>
               <Button variant="outline" className="w-full mt-8" onClick={() => openSignup('basic')}>{t.btnChooseBasic}</Button>
             </div>
@@ -642,9 +671,7 @@ const App: React.FC = () => {
                 <li className="flex items-center text-sm text-gray-500">
                   <Check size={16} className="text-brand-500 mr-2" /> {t.featVaccines}
                 </li>
-                 <li className="flex items-center text-sm text-gray-500">
-                  <Check size={16} className="text-brand-500 mr-2" /> {t.featScheduling}
-                </li>
+                 <li className="flex items-center text-sm text-gray-500"><Check size={14} className="text-brand-500 mr-2" /> {t.featScheduling}</div>
               </ul>
               <Button className="w-full mt-8" onClick={() => openSignup('start')}>{t.btnChooseStart}</Button>
             </div>

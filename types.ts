@@ -18,6 +18,7 @@ export type TranslationKey =
   | 'priceFree' | 'priceStart' | 'pricePremium' | 'popular'
   | 'featProfile' | 'featAdoption' | 'featBasic' | 'featVaccines'
   | 'featScheduling' | 'featStart' | 'featDating' | 'featAIBio' | 'featSupport'
+  | 'featLostFound' | 'featOngRegister'
   | 'btnChooseBasic' | 'btnChooseStart' | 'btnChoosePremium'
   | 'signupTitle' | 'name' | 'confirmPassword' | 'signupButton' 
   | 'haveAccount' | 'noAccount' | 'createAccount'
@@ -56,7 +57,8 @@ export type TranslationKey =
   | 'viewOng' | 'aboutOng' | 'contactOng' | 'availablePets' | 'donateBtn' | 'copyPix' 
   | 'pixCopied' | 'bankDetails' | 'bankName' | 'agency' | 'account' | 'prevPage' | 'nextPage' | 'pageOf'
   | 'watchVideo' | 'pauseVideo' | 'verifyLocationBtn' | 'locationMatch' | 'locationMismatch' | 'verifying'
-  | 'lostFoundTitle' | 'lostFoundSubtitle' | 'reportLost' | 'reportFound' | 'noLostPets' | 'myOngsTitle' | 'noMyOngs';
+  | 'lostFoundTitle' | 'lostFoundSubtitle' | 'reportLost' | 'reportFound' | 'noLostPets' | 'myOngsTitle' | 'noMyOngs'
+  | 'landingLostFoundTitle' | 'landingLostFoundSubtitle' | 'landingLostFoundBtn';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 

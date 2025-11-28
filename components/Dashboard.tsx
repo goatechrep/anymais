@@ -449,14 +449,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
 
   // --- Render Components ---
 
-  const NavItem = ({ view, icon: Icon, label, locked, description, planReq }: { view: DashboardView, icon: any, label: string, locked?: boolean, description?: string, planReq?: string }) => (
+  const NavItem = ({ view, icon: Icon, label, locked, description, planReq }: { view: DashboardView, icon: any, label: string, locked?: boolean, description?: string, planReq?: string }) => {
+    // Check if view is available even without a pet
+    const isAlwaysAvailable = view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs' || view === 'adoption';
+    const isDisabled = !activePet && !isAlwaysAvailable;
+    
+    return (
     <button
       onClick={() => { setActiveView(view); setMobileMenuOpen(false); }}
-      disabled={(!activePet && view !== 'user-profile' && view !== 'create-pet' && view !== 'lost-found' && view !== 'my-ongs')}
+      disabled={isDisabled}
       className={`relative group flex items-center w-full p-3 rounded-lg mb-2 transition-colors justify-between ${
         activeView === view 
           ? 'bg-brand-50 text-brand-600 font-medium' 
-          : (!activePet && view !== 'user-profile' && view !== 'create-pet' && view !== 'lost-found' && view !== 'my-ongs')
+          : isDisabled
             ? 'text-gray-300 cursor-not-allowed'
             : 'text-gray-600 hover:bg-gray-50'
       }`}
@@ -468,18 +473,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
       {locked && <Lock size={14} className="text-gray-400 group-hover:text-brand-500" />}
 
       {/* Tooltip (Desktop Only) */}
-      <div className="hidden md:block invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-3 w-56 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-          <div className="font-bold mb-1 text-sm">{label}</div>
-          <div className="text-gray-300 mb-2 leading-tight">{description}</div>
-          {planReq && (
-              <div className={`font-bold uppercase text-[10px] tracking-wider ${locked ? 'text-red-300' : 'text-green-300'}`}>
-                  {planReq}
-              </div>
-          )}
-          <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-      </div>
+      {description && (
+        <div className="hidden md:block invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-3 w-56 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <div className="font-bold mb-1 text-sm">{label}</div>
+            <div className="text-gray-300 mb-2 leading-tight">{description}</div>
+            {planReq && (
+                <div className={`font-bold uppercase text-[10px] tracking-wider ${locked ? 'text-red-300' : 'text-green-300'}`}>
+                    {planReq}
+                </div>
+            )}
+            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+        </div>
+      )}
     </button>
-  );
+  )};
 
   const LockedFeature = ({ feature }: { feature: string }) => (
     <div className="flex flex-col items-center justify-center text-center py-20 px-4">
@@ -575,14 +582,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Menu</p>
           <div className="relative z-30">
             <NavItem view="profile" icon={Home} label={t.dashProfile} description={t.tooltipProfile} planReq={t.reqPlanBasic} />
-            <NavItem view="adoption" icon={PawPrint} label={t.dashAdoption} description={t.tooltipAdoption} planReq={t.reqPlanBasic} />
             <NavItem view="dating" icon={Heart} label={t.dashDating} locked={!checkPlanAccess('dating')} description={t.tooltipDating} planReq={t.reqPlanPremium} />
             <NavItem view="health" icon={Stethoscope} label={t.dashHealth} locked={!checkPlanAccess('health')} description={t.tooltipHealth} planReq={t.reqPlanStart} />
             <NavItem view="services" icon={Calendar} label={t.dashServices} locked={!checkPlanAccess('services')} description={t.tooltipServices} planReq={t.reqPlanStart} />
             
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3 mt-6">Comunidade</p>
-            <NavItem view="lost-found" icon={Search} label={t.dashLostFound} description="Reportar ou encontrar pets perdidos." planReq={t.reqPlanBasic} />
-            <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} description="Gerencie suas ONGs cadastradas." planReq={t.reqPlanBasic} />
+            {/* Tooltips removed for Adoption, Lost & Found, My ONGs */}
+            <NavItem view="adoption" icon={PawPrint} label={t.dashAdoption} planReq={t.reqPlanBasic} />
+            <NavItem view="lost-found" icon={Search} label={t.dashLostFound} planReq={t.reqPlanBasic} />
+            <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} planReq={t.reqPlanBasic} />
           </div>
         </nav>
 
@@ -937,7 +945,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
         )}
 
         {/* IF NO ACTIVE PET AND NOT CREATING/EDITING USER */}
-        {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && (
+        {/* Updated condition to allow adoption, lost-found, my-ongs views without pet */}
+        {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && activeView !== 'adoption' && (
              <div className="text-center py-20">
                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">🐾</span></div>
                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t.noPets}</h2>
@@ -945,7 +954,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                  <Button onClick={() => setActiveView('create-pet')}>{t.addNewPet}</Button>
              </div>
         )}
-
+        
+        {/* ... Rest of existing dashboard render logic ... */}
+        {/* Only included relevant parts of Dashboard.tsx where changes were made */}
         {/* PET PROFILE VIEW */}
         {activePet && activeView === 'profile' && editedPet && (
           <div className="max-w-3xl mx-auto">
@@ -1025,7 +1036,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
         )}
 
         {/* Adoption View */}
-        {activeView === 'adoption' && activePet && (
+        {activeView === 'adoption' && (
           <div>
             <h2 className="text-2xl font-bold mb-6 text-gray-800">{t.dashAdoption}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1169,6 +1180,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                             <div className="mt-4 flex-1 space-y-2">
                                 <div className="flex items-center text-sm text-gray-500"><Check size={14} className="text-green-500 mr-2" /> {t.featProfile}</div>
                                 <div className="flex items-center text-sm text-gray-500"><Check size={14} className="text-green-500 mr-2" /> {t.featAdoption}</div>
+                                <div className="flex items-center text-sm text-gray-500"><Check size={14} className="text-green-500 mr-2" /> {t.featLostFound}</div>
+                                <div className="flex items-center text-sm text-gray-500"><Check size={14} className="text-green-500 mr-2" /> {t.featOngRegister}</div>
                             </div>
                             <Button variant={currentUser.plan === 'basic' ? 'outline' : 'primary'} className="w-full mt-6" onClick={() => handleUpdatePlan('basic')} disabled={currentUser.plan === 'basic'}>{currentUser.plan === 'basic' ? 'Atual' : 'Selecionar'}</Button>
                         </div>
