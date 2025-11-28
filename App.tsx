@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType, Ong, Pet } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
@@ -297,7 +298,14 @@ const App: React.FC = () => {
   }
 
   if (view === 'ong-profile' && selectedOng) {
-      return <OngProfile lang={lang} ong={selectedOng} onBack={() => setView('landing')} />;
+      return (
+        <OngProfile 
+          lang={lang} 
+          ong={selectedOng} 
+          onBack={() => setView('landing')} 
+          onViewPet={handleViewPet}
+        />
+      );
   }
 
   if (view === 'adoption-pet-profile' && selectedPet) {

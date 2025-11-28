@@ -1,16 +1,18 @@
+
 import React, { useState } from 'react';
-import { Language, Ong } from '../types';
+import { Language, Ong, Pet } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
 import { Button } from './Button';
-import { ArrowLeft, MapPin, Mail, Phone, Globe, Copy, Check, Info, Dog, Cat, Heart, Calendar, Ruler } from 'lucide-react';
+import { ArrowLeft, MapPin, Mail, Phone, Globe, Copy, Check, Info, Dog, Cat, Heart, Calendar } from 'lucide-react';
 
 interface OngProfileProps {
   lang: Language;
   ong: Ong;
   onBack: () => void;
+  onViewPet: (pet: Pet) => void;
 }
 
-export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack }) => {
+export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onViewPet }) => {
   const t = TRANSLATIONS[lang];
   const [copied, setCopied] = useState(false);
 
@@ -23,10 +25,6 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack }) => 
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
-  };
-
-  const handleInterest = (petName: string) => {
-      alert(`Obrigado pelo interesse em ${petName}! A ONG entrará em contato em breve.`);
   };
 
   return (
@@ -104,7 +102,7 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack }) => 
                                             </p>
 
                                             <Button 
-                                                onClick={() => handleInterest(pet.name)}
+                                                onClick={() => onViewPet(pet)}
                                                 className="w-full flex items-center justify-center gap-2 font-bold py-3"
                                             >
                                                 <Heart size={18} className="fill-white/20" /> {t.interestBtn}

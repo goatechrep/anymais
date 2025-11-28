@@ -206,7 +206,8 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     noMyOngs: "Você ainda não cadastrou nenhuma ONG.",
     landingLostFoundTitle: "Perdeu ou encontrou um pet?",
     landingLostFoundSubtitle: "Nossa comunidade pode ajudar! Utilize nossa ferramenta de Achados e Perdidos baseada em geolocalização para reencontrar pets.",
-    landingLostFoundBtn: "Acessar Achados e Perdidos"
+    landingLostFoundBtn: "Acessar Achados e Perdidos",
+    linkCopied: "Link copiado!"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -411,7 +412,8 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     noMyOngs: "You haven't registered any NGOs yet.",
     landingLostFoundTitle: "Lost or Found a Pet?",
     landingLostFoundSubtitle: "Our community can help! Use our geolocation-based Lost & Found tool to reunite pets.",
-    landingLostFoundBtn: "Access Lost & Found"
+    landingLostFoundBtn: "Access Lost & Found",
+    linkCopied: "Link copied!"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -616,7 +618,8 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     noMyOngs: "Aún no has registrado ninguna ONG.",
     landingLostFoundTitle: "¿Perdió o encontró una mascota?",
     landingLostFoundSubtitle: "¡Nuestra comunidad puede ayudar! Utiliza nuestra herramienta de Objetos Perdidos basada en geolocalización.",
-    landingLostFoundBtn: "Acceder a Perdidos y Encontrados"
+    landingLostFoundBtn: "Acceder a Perdidos y Encontrados",
+    linkCopied: "¡Enlace copiado!"
   }
 };
 

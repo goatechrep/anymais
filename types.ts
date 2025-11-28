@@ -58,7 +58,8 @@ export type TranslationKey =
   | 'pixCopied' | 'bankDetails' | 'bankName' | 'agency' | 'account' | 'prevPage' | 'nextPage' | 'pageOf'
   | 'watchVideo' | 'pauseVideo' | 'verifyLocationBtn' | 'locationMatch' | 'locationMismatch' | 'verifying'
   | 'lostFoundTitle' | 'lostFoundSubtitle' | 'reportLost' | 'reportFound' | 'noLostPets' | 'myOngsTitle' | 'noMyOngs'
-  | 'landingLostFoundTitle' | 'landingLostFoundSubtitle' | 'landingLostFoundBtn';
+  | 'landingLostFoundTitle' | 'landingLostFoundSubtitle' | 'landingLostFoundBtn'
+  | 'linkCopied';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
