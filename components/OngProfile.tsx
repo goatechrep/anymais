@@ -170,31 +170,31 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack }) => 
 
                         <hr className="my-6 border-gray-100" />
 
-                        <div className="bg-brand-700 rounded-2xl shadow-xl text-white p-8 relative overflow-hidden">
-                            {/* Removed visual overlay for better readability */}
-                            <h3 className="text-xl font-bold mb-3 relative z-10">{t.donateBtn}</h3>
-                            <p className="text-white/80 mb-6 text-sm relative z-10">Ajude {ong.name} a continuar salvando vidas. Sua contribuição faz a diferença.</p>
+                        {/* Updated Donation Card with Solid Dark Background */}
+                        <div className="bg-gray-900 rounded-2xl shadow-xl text-white p-8 relative overflow-hidden">
+                            <h3 className="text-xl font-bold mb-3 relative z-10 text-white">{t.donateBtn}</h3>
+                            <p className="text-gray-300 mb-6 text-sm relative z-10 leading-relaxed">Ajude {ong.name} a continuar salvando vidas. Sua contribuição faz a diferença.</p>
                             
                             {ong.pixKey && (
                                 <div className="mb-6 relative z-10">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-brand-200 mb-2 block">Chave Pix</label>
-                                    <div className="bg-black/30 rounded-lg p-3 flex items-center justify-between gap-2 border border-white/10 hover:bg-black/40 transition-colors cursor-pointer" onClick={handleCopyPix}>
-                                        <span className="font-mono text-sm truncate select-all">{ong.pixKey}</span>
-                                        <button className="hover:text-brand-200 transition-colors shrink-0">
-                                            {copied ? <Check size={18} className="text-green-300" /> : <Copy size={18} />}
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 block">Chave Pix</label>
+                                    <div className="bg-black/50 rounded-lg p-3 flex items-center justify-between gap-2 border border-gray-700 hover:border-gray-500 transition-colors cursor-pointer group" onClick={handleCopyPix}>
+                                        <span className="font-mono text-sm truncate select-all text-white">{ong.pixKey}</span>
+                                        <button className="text-gray-400 group-hover:text-white transition-colors shrink-0">
+                                            {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
                                         </button>
                                     </div>
-                                    {copied && <p className="text-green-300 text-xs mt-1 text-right font-medium animate-pulse">{t.pixCopied}</p>}
+                                    {copied && <p className="text-green-400 text-xs mt-1 text-right font-medium animate-pulse">{t.pixCopied}</p>}
                                 </div>
                             )}
 
                             {ong.bankInfo && (
                                 <div className="relative z-10">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-brand-200 mb-2 block">{t.bankDetails}</label>
-                                    <div className="bg-white/10 rounded-lg p-4 space-y-2 text-sm border border-white/10">
-                                        <p className="flex justify-between"><span className="text-brand-100">{t.bankName}:</span> <span className="font-medium">{ong.bankInfo.bank}</span></p>
-                                        <p className="flex justify-between"><span className="text-brand-100">{t.agency}:</span> <span className="font-medium">{ong.bankInfo.agency}</span></p>
-                                        <p className="flex justify-between"><span className="text-brand-100">{t.account}:</span> <span className="font-medium">{ong.bankInfo.account}</span></p>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 block">{t.bankDetails}</label>
+                                    <div className="bg-white/5 rounded-lg p-4 space-y-2 text-sm border border-gray-700">
+                                        <p className="flex justify-between"><span className="text-gray-400">{t.bankName}:</span> <span className="font-medium text-white">{ong.bankInfo.bank}</span></p>
+                                        <p className="flex justify-between"><span className="text-gray-400">{t.agency}:</span> <span className="font-medium text-white">{ong.bankInfo.agency}</span></p>
+                                        <p className="flex justify-between"><span className="text-gray-400">{t.account}:</span> <span className="font-medium text-white">{ong.bankInfo.account}</span></p>
                                     </div>
                                 </div>
                             )}
