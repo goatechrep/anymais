@@ -115,7 +115,23 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     publicAdoptionTitle: "Adoção Responsável",
     publicAdoptionSubtitle: "Estes amigos estão procurando um lar. Navegue, apaixone-se e entre em contato.",
     backToHome: "Voltar ao Início",
-    interestBtn: "Tenho Interesse"
+    interestBtn: "Tenho Interesse",
+    locationLabel: "Localização",
+    getLocationBtn: "Atualizar com GPS",
+    locationError: "Erro ao obter localização. Verifique as permissões.",
+    kmAway: "km de distância",
+    locationUpdated: "Localização atualizada com sucesso!",
+    selectedPlanLabel: "Plano Selecionado",
+    passwordStrength: "Força da senha",
+    weak: "Fraca",
+    medium: "Média",
+    strong: "Forte",
+    acceptTerms: "Li e concordo com os",
+    termsLink: "Termos de Uso",
+    privacyLink: "Política de Privacidade",
+    termsError: "Você precisa aceitar os termos para continuar.",
+    termsTitle: "Termos de Uso",
+    privacyTitle: "Política de Privacidade"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -230,7 +246,23 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     publicAdoptionTitle: "Responsible Adoption",
     publicAdoptionSubtitle: "These friends are looking for a home. Browse, fall in love, and get in touch.",
     backToHome: "Back to Home",
-    interestBtn: "I'm Interested"
+    interestBtn: "I'm Interested",
+    locationLabel: "Location",
+    getLocationBtn: "Update with GPS",
+    locationError: "Error getting location. Check permissions.",
+    kmAway: "km away",
+    locationUpdated: "Location updated successfully!",
+    selectedPlanLabel: "Selected Plan",
+    passwordStrength: "Password Strength",
+    weak: "Weak",
+    medium: "Medium",
+    strong: "Strong",
+    acceptTerms: "I read and accept the",
+    termsLink: "Terms of Service",
+    privacyLink: "Privacy Policy",
+    termsError: "You must accept the terms to continue.",
+    termsTitle: "Terms of Service",
+    privacyTitle: "Privacy Policy"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -330,7 +362,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     datingPlanWarning: "¡Función exclusiva del plan Premium!",
     featureLocked: "Función Bloqueada",
     upgradeToAccess: "Mejora tu plan para acceder a esta función.",
-    unlockNow: "Desbloquear Ahora",
+    unlockNow: "Desbloquear Agora",
     tooltipProfile: "Gestiona la información y fotos de tu mascota.",
     tooltipAdoption: "Encuentra un nuevo amigo o adopta.",
     tooltipDating: "Encuentra la pareja perfecta para tu mascota.",
@@ -345,26 +377,43 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     publicAdoptionTitle: "Adopción Responsable",
     publicAdoptionSubtitle: "Estos amigos buscan un hogar. Navega, enamórate y contáctanos.",
     backToHome: "Volver al Inicio",
-    interestBtn: "Me Interesa"
+    interestBtn: "Me Interesa",
+    locationLabel: "Ubicación",
+    getLocationBtn: "Actualizar con GPS",
+    locationError: "Error al obtener ubicación. Revisa permisos.",
+    kmAway: "km de distancia",
+    locationUpdated: "¡Ubicación actualizada con éxito!",
+    selectedPlanLabel: "Plan Seleccionado",
+    passwordStrength: "Seguridad de clave",
+    weak: "Débil",
+    medium: "Media",
+    strong: "Fuerte",
+    acceptTerms: "Leí y acepto los",
+    termsLink: "Términos de Uso",
+    privacyLink: "Política de Privacidad",
+    termsError: "Debes aceptar los términos para continuar.",
+    termsTitle: "Términos de Uso",
+    privacyTitle: "Política de Privacidad"
   }
 };
 
+// Base location: São Paulo (-23.5505, -46.6333) for mock data
 export const MOCK_ADOPTION_PETS: Pet[] = [
-  { id: '1', name: 'Thor', breed: 'Golden Retriever', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', bio: 'Friendly and energetic.' },
-  { id: '2', name: 'Luna', breed: 'Siamese', age: 1, type: 'cat', image: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?auto=format&fit=crop&w=400&q=80', bio: 'Quiet and loving.' },
-  { id: '3', name: 'Bob', breed: 'Bulldog', age: 4, type: 'dog', image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', bio: 'Loves sleeping.' },
+  { id: '1', name: 'Thor', breed: 'Golden Retriever', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', bio: 'Friendly and energetic.', location: { lat: -23.5605, lng: -46.6433 } }, // Near Paulista
+  { id: '2', name: 'Luna', breed: 'Siamese', age: 1, type: 'cat', image: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?auto=format&fit=crop&w=400&q=80', bio: 'Quiet and loving.', location: { lat: -23.5405, lng: -46.6233 } },
+  { id: '3', name: 'Bob', breed: 'Bulldog', age: 4, type: 'dog', image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', bio: 'Loves sleeping.', location: { lat: -23.5705, lng: -46.6533 } },
 ];
 
 export const MOCK_DATING_PETS: Pet[] = [
-  { id: '4', name: 'Bella', breed: 'Poodle', age: 3, type: 'dog', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=400&q=80', bio: 'Looking for a playdate.' },
-  { id: '5', name: 'Max', breed: 'German Shepherd', age: 3, type: 'dog', image: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?auto=format&fit=crop&w=400&q=80', bio: 'Very active and protective.' },
+  { id: '4', name: 'Bella', breed: 'Poodle', age: 3, type: 'dog', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=400&q=80', bio: 'Looking for a playdate.', location: { lat: -23.5555, lng: -46.6355 } },
+  { id: '5', name: 'Max', breed: 'German Shepherd', age: 3, type: 'dog', image: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?auto=format&fit=crop&w=400&q=80', bio: 'Very active and protective.', location: { lat: -23.5805, lng: -46.6133 } },
 ];
 
 export const MOCK_SERVICES: ServiceProvider[] = [
-  { id: '1', name: 'Dr. Dolittle Clinic', type: 'veterinarian', rating: 4.8, image: 'https://picsum.photos/200/200?random=10' },
-  { id: '2', name: 'Happy Paws Grooming', type: 'petshop', rating: 4.5, image: 'https://picsum.photos/200/200?random=11' },
-  { id: '3', name: 'Walkies with Sarah', type: 'dogwalker', rating: 5.0, image: 'https://picsum.photos/200/200?random=12' },
-  { id: '4', name: 'Pet Paradise Hotel', type: 'hotel', rating: 4.7, image: 'https://picsum.photos/200/200?random=13' },
+  { id: '1', name: 'Dr. Dolittle Clinic', type: 'veterinarian', rating: 4.8, image: 'https://picsum.photos/200/200?random=10', location: { lat: -23.5615, lng: -46.6559 }, address: 'Av. Paulista, 1000' },
+  { id: '2', name: 'Happy Paws Grooming', type: 'petshop', rating: 4.5, image: 'https://picsum.photos/200/200?random=11', location: { lat: -23.5505, lng: -46.6333 }, address: 'Centro Histórico' },
+  { id: '3', name: 'Walkies with Sarah', type: 'dogwalker', rating: 5.0, image: 'https://picsum.photos/200/200?random=12', location: { lat: -23.5905, lng: -46.6733 }, address: 'Vila Olímpia' },
+  { id: '4', name: 'Pet Paradise Hotel', type: 'hotel', rating: 4.7, image: 'https://picsum.photos/200/200?random=13', location: { lat: -23.5205, lng: -46.6033 }, address: 'Santana' },
 ];
 
 export const MOCK_DAILY_PHOTOS = [

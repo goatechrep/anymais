@@ -1,16 +1,18 @@
 
 import React from 'react';
-import { ServiceProvider, Language } from '../types';
+import { ServiceProvider, Language, Coordinates } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
 import { Star, MapPin, Calendar, Clock, ShieldCheck, Dog } from 'lucide-react';
+import { calculateDistance } from '../utils';
 
 interface ServiceBookingProps {
   providers: ServiceProvider[];
   lang: Language;
+  userLocation?: Coordinates;
 }
 
-export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang }) => {
+export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang, userLocation }) => {
   const t = TRANSLATIONS[lang];
 
   const getServiceLabel = (type: ServiceProvider['type']) => {
@@ -31,6 +33,15 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang 
       case 'dogwalker': return 'bg-green-50 text-green-700 border-green-100';
       default: return 'bg-gray-50 text-gray-700 border-gray-100';
     }
+  };
+
+  const getDistanceDisplay = (provider: ServiceProvider) => {
+    if (userLocation && provider.location) {
+      const dist = calculateDistance(userLocation.lat, userLocation.lng, provider.location.lat, provider.location.lng);
+      return `${dist} km`;
+    }
+    // Fallback static distance if location not available or calculated
+    return '2.5 km';
   };
 
   return (
@@ -89,7 +100,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang 
               <div className="flex flex-col gap-2 mt-3 mb-6">
                 <div className="flex items-center text-gray-500 text-sm">
                   <MapPin size={16} className="mr-2 text-gray-400" />
-                  <span>2.5 km • Vila Madalena</span>
+                  <span>{getDistanceDisplay(provider)} • {provider.address || 'Vila Madalena'}</span>
                 </div>
                 <div className="flex items-center text-gray-500 text-sm">
                   <Clock size={16} className="mr-2 text-gray-400" />

@@ -34,9 +34,18 @@ export type TranslationKey =
   | 'tooltipProfile' | 'tooltipAdoption' | 'tooltipDating' | 'tooltipHealth' | 'tooltipServices'
   | 'reqPlanBasic' | 'reqPlanStart' | 'reqPlanPremium'
   | 'landingAdoptionTitle' | 'landingAdoptionSubtitle' | 'landingAdoptionBtn'
-  | 'publicAdoptionTitle' | 'publicAdoptionSubtitle' | 'backToHome' | 'interestBtn';
+  | 'publicAdoptionTitle' | 'publicAdoptionSubtitle' | 'backToHome' | 'interestBtn'
+  | 'locationLabel' | 'getLocationBtn' | 'locationError' | 'kmAway' | 'locationUpdated'
+  | 'selectedPlanLabel' | 'passwordStrength' | 'weak' | 'medium' | 'strong'
+  | 'acceptTerms' | 'termsLink' | 'privacyLink' | 'termsError'
+  | 'termsTitle' | 'privacyTitle';
 
 export type PlanType = 'basic' | 'start' | 'premium';
+
+export interface Coordinates {
+  lat: number;
+  lng: number;
+}
 
 export interface User {
   id: string;
@@ -45,7 +54,8 @@ export interface User {
   phone: string;
   image: string;
   plan: PlanType;
-  password?: string; // Added for simple auth simulation
+  password?: string;
+  location?: Coordinates;
 }
 
 export interface Pet {
@@ -60,6 +70,7 @@ export interface Pet {
   ownerId?: string;
   vaccines?: Vaccine[];
   availableForDating?: boolean;
+  location?: Coordinates;
 }
 
 export interface Vaccine {
@@ -75,7 +86,9 @@ export interface ServiceProvider {
   type: 'veterinarian' | 'petshop' | 'dogwalker' | 'petsitter' | 'hotel';
   rating: number;
   image: string;
+  location?: Coordinates;
+  address?: string;
 }
 
-export type AppView = 'landing' | 'dashboard' | 'public-adoption';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy';
 export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet';

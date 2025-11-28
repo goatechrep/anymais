@@ -20,7 +20,8 @@ const INITIAL_DATA: Schema = {
       phone: '+55 11 99999-8888',
       image: 'https://i.pravatar.cc/150?img=5',
       plan: 'start',
-      password: '123' // In a real app, this would be hashed!
+      password: '123', // In a real app, this would be hashed!
+      location: { lat: -23.5555, lng: -46.6333 } // Mock default location (SP)
     }
   ],
   pets: [

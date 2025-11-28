@@ -4,9 +4,11 @@ import { Language, AppView, User, PlanType } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
+import { LegalPages } from './components/LegalPages';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { db } from './services/db';
+import { checkPasswordStrength } from './utils';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>(Language.PT);
@@ -21,11 +23,13 @@ const App: React.FC = () => {
   // Auth Form States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('basic');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const t = TRANSLATIONS[lang];
 
@@ -92,6 +96,11 @@ const App: React.FC = () => {
       }
     } else {
       // Signup
+      if (!acceptedTerms) {
+        setAuthError(t.termsError);
+        return;
+      }
+
       if (password !== confirmPassword) {
         setAuthError(lang === Language.PT ? 'As senhas não conferem.' : 'Passwords do not match.');
         return;
@@ -124,6 +133,8 @@ const App: React.FC = () => {
     setConfirmPassword('');
     setAuthError('');
     setSelectedPlan('basic');
+    setShowPassword(false);
+    setAcceptedTerms(false);
   };
 
   const openLogin = () => {
@@ -137,11 +148,33 @@ const App: React.FC = () => {
     setIsLoginMode(false);
     setShowLogin(true);
     setAuthError('');
+    setAcceptedTerms(false);
   };
 
   const handleLogout = () => {
     db.auth.logout();
     setView('landing');
+  };
+
+  const getPlanName = (plan: PlanType) => {
+    switch(plan) {
+      case 'basic': return t.planBasic;
+      case 'start': return t.planStart;
+      case 'premium': return t.planPremium;
+      default: return plan;
+    }
+  };
+
+  const getPasswordStrengthColor = (str: string) => {
+    if (str === 'weak') return 'bg-red-500';
+    if (str === 'medium') return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+  
+  const getPasswordStrengthLabel = (str: string) => {
+      if (str === 'weak') return t.weak;
+      if (str === 'medium') return t.medium;
+      return t.strong;
   };
 
   if (view === 'dashboard') {
@@ -151,6 +184,12 @@ const App: React.FC = () => {
   if (view === 'public-adoption') {
     return <PublicAdoption lang={lang} onBack={() => setView('landing')} />;
   }
+
+  if (view === 'terms' || view === 'privacy') {
+    return <LegalPages type={view} lang={lang} onBack={() => setView('landing')} />;
+  }
+
+  const passwordStrength = checkPasswordStrength(password);
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
@@ -393,10 +432,10 @@ const App: React.FC = () => {
       {/* Auth Modal */}
       {showLogin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative animate-fade-in max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"
             >
               ✕
             </button>
@@ -409,7 +448,7 @@ const App: React.FC = () => {
                 </h2>
                 {!isLoginMode && (
                   <p className="text-sm text-gray-500 mt-2">
-                    Selected Plan: <span className="font-bold uppercase text-brand-600">{selectedPlan}</span>
+                    {t.selectedPlanLabel}: <span className="font-bold uppercase text-brand-600">{getPlanName(selectedPlan)}</span>
                   </p>
                 )}
               </div>
@@ -460,27 +499,76 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t.password}</label>
-                  <input 
-                    type="password" 
-                    required 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition"
-                    placeholder="••••••••"
-                  />
-                </div>
-                {!isLoginMode && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.confirmPassword}</label>
+                  <div className="relative">
                     <input 
-                      type="password" 
+                      type={showPassword ? "text" : "password"} 
                       required 
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition pr-10"
                       placeholder="••••••••"
                     />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
+                  {!isLoginMode && password && (
+                      <div className="mt-2">
+                          <div className="flex justify-between text-xs mb-1">
+                              <span className="text-gray-500">{t.passwordStrength}</span>
+                              <span className={`font-bold ${
+                                  passwordStrength === 'weak' ? 'text-red-500' : 
+                                  passwordStrength === 'medium' ? 'text-yellow-600' : 'text-green-600'
+                              }`}>{getPasswordStrengthLabel(passwordStrength)}</span>
+                          </div>
+                          <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                              <div className={`h-full transition-all duration-300 ${getPasswordStrengthColor(passwordStrength)}`} style={{ 
+                                  width: passwordStrength === 'weak' ? '33%' : passwordStrength === 'medium' ? '66%' : '100%' 
+                              }}></div>
+                          </div>
+                      </div>
+                  )}
+                </div>
+                {!isLoginMode && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t.confirmPassword}</label>
+                      <input 
+                        type="password" 
+                        required 
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    {/* Terms Checkbox */}
+                    <div className="flex items-start gap-2 pt-2">
+                         <div className="relative flex items-center h-5">
+                            <input
+                              id="terms"
+                              type="checkbox"
+                              checked={acceptedTerms}
+                              onChange={(e) => setAcceptedTerms(e.target.checked)}
+                              className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                            />
+                         </div>
+                         <label htmlFor="terms" className="text-sm text-gray-500 leading-tight">
+                            {t.acceptTerms}{" "}
+                            <button type="button" onClick={() => { setShowLogin(false); setView('terms'); }} className="text-brand-600 underline font-medium hover:text-brand-800">
+                                {t.termsLink}
+                            </button>{" "}
+                            &{" "}
+                            <button type="button" onClick={() => { setShowLogin(false); setView('privacy'); }} className="text-brand-600 underline font-medium hover:text-brand-800">
+                                {t.privacyLink}
+                            </button>.
+                         </label>
+                    </div>
+                  </>
                 )}
                 <Button type="submit" className="w-full py-3 mt-2">
                   {isLoginMode ? t.loginButton : t.signupButton}
@@ -489,7 +577,7 @@ const App: React.FC = () => {
               
               <div className="mt-6 text-center">
                 <button 
-                  onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); }}
+                  onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); setAcceptedTerms(false); }}
                   className="text-sm text-brand-600 hover:text-brand-800 font-medium"
                 >
                   {isLoginMode ? t.noAccount : t.haveAccount}
