@@ -567,7 +567,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     filterAll: "Todos",
     filterType: "Filtrar por tipo",
     minRating: "Valoración Mín.",
-    clearFilters: "Limpiar Filtros",
+    clearFilters: "Limpar Filtros",
     detecting: "Detectando...",
     setLocation: "Establecer Ubicación",
     headerLanguage: "Idioma",
@@ -651,7 +651,7 @@ export const MOCK_DAILY_PHOTOS = [
   { url: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?q=80&w=1000&auto=format&fit=crop', petName: 'Thor', breed: 'Husky Siberiano', location: 'Belo Horizonte, MG' },
 ];
 
-// Updated MOCK_ONGS with reliable Unsplash images
+// Updated MOCK_ONGS with reliable Unsplash images and coordinates
 export const MOCK_ONGS: Ong[] = [
   { 
     id: '1', 
@@ -659,6 +659,7 @@ export const MOCK_ONGS: Ong[] = [
     image: 'https://images.unsplash.com/photo-1593134257782-e89567b7718a?auto=format&fit=crop&w=400&q=80', 
     description: 'Resgatando e cuidando de cães de rua há 10 anos.', 
     location: 'São Paulo, SP', 
+    coordinates: { lat: -23.5505, lng: -46.6333 },
     pixKey: 'anjos@patas.org.br', 
     phone: '(11) 99999-0001', 
     email: 'contato@anjosdepatas.org.br', 
@@ -670,6 +671,7 @@ export const MOCK_ONGS: Ong[] = [
     image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80', 
     description: 'Lar temporário e adoção para felinos.', 
     location: 'Rio de Janeiro, RJ', 
+    coordinates: { lat: -22.9068, lng: -43.1729 },
     pixKey: 'gatinhos@vila.com', 
     phone: '(21) 98888-0002', 
     email: 'adote@gatinhosdavila.com' 
@@ -680,6 +682,7 @@ export const MOCK_ONGS: Ong[] = [
     image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', 
     description: 'Reabilitação e adoção de animais feridos.', 
     location: 'Curitiba, PR', 
+    coordinates: { lat: -25.4244, lng: -49.2654 },
     pixKey: 'amigo@fiel.org', 
     phone: '(41) 97777-0003' 
   },
@@ -689,6 +692,7 @@ export const MOCK_ONGS: Ong[] = [
     image: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?auto=format&fit=crop&w=400&q=80', 
     description: 'Proteção para animais de grande porte e silvestres.', 
     location: 'Belo Horizonte, MG', 
+    coordinates: { lat: -19.9167, lng: -43.9345 },
     pixKey: 'santuario@animal.org', 
     phone: '(31) 96666-0004' 
   },
@@ -697,76 +701,87 @@ export const MOCK_ONGS: Ong[] = [
     name: 'Vira-lata Caramelo', 
     image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=400&q=80', 
     description: 'Apoio a cães comunitários.', 
-    location: 'Salvador, BA' 
+    location: 'Salvador, BA',
+    coordinates: { lat: -12.9777, lng: -38.5016 }
   },
   { 
     id: '6', 
     name: 'Arca de Noé', 
     image: 'https://images.unsplash.com/photo-1596272875729-ed2c21d50510?auto=format&fit=crop&w=400&q=80', 
     description: 'Abrigo para todos os tipos de animais.', 
-    location: 'Porto Alegre, RS' 
+    location: 'Porto Alegre, RS',
+    coordinates: { lat: -30.0346, lng: -51.2177 }
   },
   { 
     id: '7', 
     name: 'Cão Sem Dono', 
     image: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&w=400&q=80', 
     description: 'Resgate de animais em situação de risco.', 
-    location: 'Recife, PE' 
+    location: 'Recife, PE',
+    coordinates: { lat: -8.0476, lng: -34.8770 }
   },
   { 
     id: '8', 
     name: 'Adote um Gatinho', 
     image: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=400&q=80', 
     description: 'Maior ONG de resgate de gatos do Brasil.', 
-    location: 'São Paulo, SP' 
+    location: 'São Paulo, SP',
+    coordinates: { lat: -23.5505, lng: -46.6333 }
   },
   { 
     id: '9', 
     name: 'Protetores Independentes', 
     image: 'https://images.unsplash.com/photo-1535930749574-1399327ce78f?auto=format&fit=crop&w=400&q=80', 
     description: 'Grupo de voluntários unidos pela causa animal.', 
-    location: 'Florianópolis, SC' 
+    location: 'Florianópolis, SC',
+    coordinates: { lat: -27.5954, lng: -48.5480 }
   },
   { 
     id: '10', 
     name: 'Amor de Bicho', 
     image: 'https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&w=400&q=80', 
     description: 'Castração e conscientização.', 
-    location: 'Campinas, SP' 
+    location: 'Campinas, SP',
+    coordinates: { lat: -22.9099, lng: -47.0626 }
   },
   { 
     id: '11', 
     name: 'Vida Animal', 
     image: 'https://images.unsplash.com/photo-1494913148647-3532a40bf239?auto=format&fit=crop&w=400&q=80', 
     description: 'Abrigo e hospital veterinário solidário.', 
-    location: 'Fortaleza, CE' 
+    location: 'Fortaleza, CE',
+    coordinates: { lat: -3.7172, lng: -38.5434 }
   },
   { 
     id: '12', 
     name: 'Patas Dadas', 
     image: 'https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&w=400&q=80', 
     description: 'Promovendo encontros felizes.', 
-    location: 'Porto Alegre, RS' 
+    location: 'Porto Alegre, RS',
+    coordinates: { lat: -30.0346, lng: -51.2177 }
   },
   { 
     id: '13', 
     name: 'SOS Animais', 
     image: 'https://images.unsplash.com/photo-1529472119196-cb724127a98e?auto=format&fit=crop&w=400&q=80', 
     description: 'Atendimento emergencial para animais de rua.', 
-    location: 'Brasília, DF' 
+    location: 'Brasília, DF',
+    coordinates: { lat: -15.7975, lng: -47.8919 }
   },
   { 
     id: '14', 
     name: 'Bicho Feliz', 
     image: 'https://images.unsplash.com/photo-1519052537078-e6302a4968ef?auto=format&fit=crop&w=400&q=80', 
     description: 'Felicidade é ter um lar.', 
-    location: 'Manaus, AM' 
+    location: 'Manaus, AM',
+    coordinates: { lat: -3.1190, lng: -60.0217 }
   },
   { 
     id: '15', 
     name: 'Resgate Pet', 
     image: 'https://images.unsplash.com/photo-1472491235688-bdc81a63246e?auto=format&fit=crop&w=400&q=80', 
     description: 'Resgate, reabilitação e amor.', 
-    location: 'Goiânia, GO' 
+    location: 'Goiânia, GO',
+    coordinates: { lat: -16.6869, lng: -49.2648 }
   }
 ];

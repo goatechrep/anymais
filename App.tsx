@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Language, AppView, User, PlanType, Ong, Pet } from './types';
+import { Language, AppView, User, PlanType, Ong, Pet, Coordinates } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
@@ -24,6 +23,7 @@ const App: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [headerLocation, setHeaderLocation] = useState<string>('');
+  const [userCoords, setUserCoords] = useState<Coordinates | undefined>(undefined);
   const [isLocating, setIsLocating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ongCurrentIndex, setOngCurrentIndex] = useState(0);
@@ -155,7 +155,10 @@ const App: React.FC = () => {
           setIsLocating(true);
           navigator.geolocation.getCurrentPosition(async (position) => {
               try {
-                  const cityState = await mockReverseGeocode(position.coords.latitude, position.coords.longitude);
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+                  setUserCoords({ lat, lng }); // Save coords for distance calc
+                  const cityState = await mockReverseGeocode(lat, lng);
                   setHeaderLocation(cityState);
                   saveLocationToStorage(cityState); // Persist
               } catch (e) {
@@ -168,6 +171,7 @@ const App: React.FC = () => {
               // Fallback for demo purposes
               const fallback = "São Paulo, SP";
               setHeaderLocation(fallback);
+              setUserCoords({ lat: -23.5505, lng: -46.6333 }); // Mock SP coords
               saveLocationToStorage(fallback);
               setIsLocating(false);
           });
@@ -278,7 +282,7 @@ const App: React.FC = () => {
   };
 
   if (view === 'dashboard') {
-    return <Dashboard lang={lang} setLang={setLang} onLogout={handleLogout} />;
+    return <Dashboard lang={lang} setLang={setLang} onLogout={handleLogout} onViewPet={handleViewPet} />;
   }
 
   if (view === 'public-adoption') {
@@ -294,7 +298,15 @@ const App: React.FC = () => {
   }
 
   if (view === 'public-ongs') {
-      return <PublicOngs lang={lang} setLang={setLang} onBack={() => setView('landing')} onViewOng={handleViewOng} />;
+      return (
+        <PublicOngs 
+            lang={lang} 
+            setLang={setLang} 
+            onBack={() => setView('landing')} 
+            onViewOng={handleViewOng}
+            userCoordinates={userCoords}
+        />
+      );
   }
 
   if (view === 'ong-profile' && selectedOng) {
@@ -344,7 +356,12 @@ const App: React.FC = () => {
                      {isLocating ? <Loader2 size={12} className="animate-spin shrink-0" /> : <MapPin size={12} className="shrink-0" />}
                      <span className="truncate">
                         <span className="hidden sm:inline">{t.headerLocation} </span>
-                        {isLocating ? t.detecting : (headerLocation || t.setLocation)}
+                        {isLocating ? t.detecting : (
+                            headerLocation || 
+                            <span className="text-yellow-300 font-bold hover:text-yellow-200 underline decoration-yellow-300/50 underline-offset-2 transition-colors">
+                                {t.setLocation}
+                            </span>
+                        )}
                      </span>
                  </button>
              </div>
@@ -546,7 +563,7 @@ const App: React.FC = () => {
                            <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" />
                            <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=3" />
                         </div>
-                        <div className="text-sm font-bold text-gray-600">
+                        <div className="text-lg font-bold text-brand-700">
                            +120 adoções este mês
                         </div>
                     </div>

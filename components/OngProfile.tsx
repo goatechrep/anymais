@@ -69,7 +69,9 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
                     <section>
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 border-l-4 border-brand-500 pl-4">{t.availablePets}</h2>
-                            <span className="bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-xs font-bold">{availablePets.length} pets</span>
+                            <span className="bg-brand-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md transform hover:scale-105 transition-transform">
+                                {availablePets.length} pets
+                            </span>
                         </div>
                         
                         {availablePets.length > 0 ? (

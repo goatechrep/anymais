@@ -14,6 +14,7 @@ interface DashboardProps {
   lang: Language;
   setLang: (lang: Language) => void;
   onLogout: () => void;
+  onViewPet: (pet: Pet) => void;
 }
 
 const getPlaceholderImage = (type: string) => {
@@ -69,7 +70,7 @@ const optimizeImage = (file: File, maxWidth = 800, quality = 0.8): Promise<strin
   });
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, onViewPet }) => {
   const t = TRANSLATIONS[lang];
   
   // --- State: User ---
@@ -1066,7 +1067,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout })
                     <h3 className="font-bold text-lg text-gray-900">{pet.name}</h3>
                     <p className="text-sm text-gray-500">{pet.breed}</p>
                     <p className="text-sm mt-2 text-gray-600 line-clamp-2">{pet.bio}</p>
-                    <Button className="w-full mt-4">{t.adoptMe}</Button>
+                    <Button 
+                      className="w-full mt-4"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewPet(pet);
+                      }}
+                    >
+                      {t.adoptMe}
+                    </Button>
                   </div>
                 </div>
               ))}

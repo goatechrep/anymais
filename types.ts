@@ -103,6 +103,7 @@ export interface Ong {
   image: string;
   description: string;
   location: string;
+  coordinates?: Coordinates;
   email?: string;
   phone?: string;
   website?: string;
