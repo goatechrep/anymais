@@ -110,11 +110,7 @@ export const OngRegistration: React.FC<OngRegistrationProps> = ({ lang, onBack, 
             >
               <ArrowLeft size={24} className="text-gray-600" />
             </button>
-            <span className="font-bold text-xl">
-               <span className="text-brand-600">Any</span>
-               <span className="text-secondary-500">Mais</span>
-               <span className="text-brand-600 ml-1">- {t.ongFormTitle}</span>
-           </span>
+            <span className="font-bold text-xl text-brand-600">AnyMais - {t.ongFormTitle}</span>
         </div>
       </nav>
 

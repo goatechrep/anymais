@@ -1,9 +1,7 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType, Ong } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
-import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2, CheckCircle, Crosshair, Search, Building2 } from 'lucide-react';
+import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2, CheckCircle, Crosshair, Search, Building2, LayoutDashboard, Clock, Activity, ArrowRight, AlertTriangle } from 'lucide-react';
 import { ServiceBooking } from './ServiceBooking';
 import { Button } from './Button';
 import { db } from '../services/db';
@@ -15,7 +13,6 @@ interface DashboardProps {
   setLang: (lang: Language) => void;
   onLogout: () => void;
   onViewPet: (pet: Pet) => void;
-  initialView?: DashboardView;
 }
 
 const getPlaceholderImage = (type: string) => {
@@ -71,7 +68,7 @@ const optimizeImage = (file: File, maxWidth = 800, quality = 0.8): Promise<strin
   });
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, onViewPet, initialView = 'profile' }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, onViewPet }) => {
   const t = TRANSLATIONS[lang];
   
   // --- State: User ---
@@ -84,6 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const [editedUser, setEditedUser] = useState<User>(currentUser);
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const [isVerifyingLocation, setIsVerifyingLocation] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'match' | 'mismatch'>('idle');
   const [locationAddress, setLocationAddress] = useState<string>('');
 
   // --- State: Pets ---
@@ -92,12 +90,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const [myOngs, setMyOngs] = useState<Ong[]>([]);
   
   // UI State
-  const [activeView, setActiveView] = useState<DashboardView>(initialView);
+  const [activeView, setActiveView] = useState<DashboardView>('overview');
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isEditingPet, setIsEditingPet] = useState(false);
   const [editedPet, setEditedPet] = useState<Pet | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // New modal state
   const [datingAlert, setDatingAlert] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
@@ -165,6 +164,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
     }
   }, [currentUser.location, editedUser.location, isEditingUser]); // Depend on location objects changing
 
+  // Reset verification status when entering edit mode or changing location
+  useEffect(() => {
+      setVerificationStatus('idle');
+  }, [isEditingUser, currentUser.location]);
+
   // Derived State
   const activePet = pets.find(p => p.id === activePetId) || null;
 
@@ -177,7 +181,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
   // --- Plan Logic ---
   const checkPlanAccess = (view: DashboardView) => {
-      if (view === 'profile' || view === 'adoption' || view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs') return true;
+      if (view === 'profile' || view === 'overview' || view === 'adoption' || view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs') return true;
       if (currentUser.plan === 'basic') return false;
       if (currentUser.plan === 'start') {
           if (view === 'health' || view === 'services') return true;
@@ -208,15 +212,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const handleUserPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-         alert(t.invalidFileType);
-         return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-         alert(t.fileTooLarge);
-         return;
-      }
-
       try {
         const optimized = await optimizeImage(file);
         setEditedUser(prev => ({ ...prev, image: optimized }));
@@ -269,6 +264,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       
       if ("geolocation" in navigator) {
           setIsVerifyingLocation(true);
+          setVerificationStatus('idle');
+          
           navigator.geolocation.getCurrentPosition((position) => {
               const currentLat = position.coords.latitude;
               const currentLng = position.coords.longitude;
@@ -282,9 +279,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
               
               // Threshold of 1km
               if (distance < 1.0) {
-                  alert(t.locationMatch);
+                  setVerificationStatus('match');
               } else {
-                  alert(`${t.locationMismatch} (${distance} km)`);
+                  setVerificationStatus('mismatch');
               }
               setIsVerifyingLocation(false);
           }, (error) => {
@@ -329,15 +326,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const handlePetPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-         alert(t.invalidFileType);
-         return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-         alert(t.fileTooLarge);
-         return;
-      }
-
       try {
         const optimized = await optimizeImage(file);
         if (editedPet) {
@@ -352,15 +340,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const handleNewPetPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-         alert(t.invalidFileType);
-         return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-         alert(t.fileTooLarge);
-         return;
-      }
-
       try {
         const optimized = await optimizeImage(file);
         setNewPet(prev => ({ ...prev, image: optimized }));
@@ -378,20 +357,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
     }
   };
 
-  const handleDeletePet = () => {
-    if (window.confirm(t.confirmDeletePet)) {
-      if (activePetId) {
-        db.pets.delete(activePetId); // Remove from DB
-      }
-      const remainingPets = pets.filter(p => p.id !== activePetId);
-      setPets(remainingPets);
-      setIsEditingPet(false);
-      setEditedPet(null);
-      if (remainingPets.length > 0) {
-        setActivePetId(remainingPets[0].id);
-      } else {
-        setActivePetId(null);
-      }
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmPetDeletion = () => {
+    if (activePetId) {
+      db.pets.delete(activePetId); // Remove from DB
+    }
+    const remainingPets = pets.filter(p => p.id !== activePetId);
+    setPets(remainingPets);
+    setIsEditingPet(false);
+    setEditedPet(null);
+    setShowDeleteModal(false);
+    
+    if (remainingPets.length > 0) {
+      setActivePetId(remainingPets[0].id);
+    } else {
+      setActivePetId(null);
+      setActiveView('overview');
     }
   };
 
@@ -476,11 +460,57 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       return `${dist} ${t.kmAway}`;
   };
 
+  // --- Overview Calculations ---
+  const getStats = () => {
+      const totalPets = pets.length;
+      let pendingVaccines = 0;
+      let activeMatches = 0;
+      const today = new Date();
+      
+      const upcomingVaccineList: Array<{petName: string, vaccineName: string, date: string, daysLeft: number, petId: string}> = [];
+
+      pets.forEach(pet => {
+          if (pet.vaccines) {
+              pet.vaccines.forEach(v => {
+                  const dueDate = new Date(v.nextDueDate);
+                  const diffTime = dueDate.getTime() - today.getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  
+                  // If due within 30 days or overdue
+                  if (diffDays <= 30) {
+                      pendingVaccines++;
+                      if (diffDays >= -30) { // Don't show extremely old ones in "upcoming"
+                          upcomingVaccineList.push({
+                              petName: pet.name,
+                              vaccineName: v.name,
+                              date: v.nextDueDate,
+                              daysLeft: diffDays,
+                              petId: pet.id
+                          });
+                      }
+                  }
+              });
+          }
+          if (pet.availableForDating) activeMatches++; // Mock calculation
+      });
+
+      // Mock appointments for demo (since we don't persist booking)
+      const mockAppointments = 2;
+
+      // Sort upcoming vaccines by date
+      upcomingVaccineList.sort((a, b) => a.daysLeft - b.daysLeft);
+
+      return { totalPets, pendingVaccines, activeMatches, mockAppointments, upcomingVaccineList };
+  };
+
+  const overviewStats = getStats();
+
+
   // --- Render Components ---
 
   const NavItem = ({ view, icon: Icon, label, locked, description, planReq }: { view: DashboardView, icon: any, label: string, locked?: boolean, description?: string, planReq?: string }) => {
     // Check if view is available even without a pet
-    const isAlwaysAvailable = view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs' || view === 'adoption';
+    const isAlwaysAvailable = view === 'overview' || view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs' || view === 'adoption';
     const isDisabled = !activePet && !isAlwaysAvailable;
     
     return (
@@ -549,10 +579,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         {/* Brand & Pet Switcher */}
         <div className="p-6 border-b border-gray-100 relative">
            <button onClick={() => setMobileMenuOpen(false)} className="absolute top-4 right-4 text-gray-400 md:hidden"><X size={24} /></button>
-          <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
-            <span className="text-3xl">🐾</span> 
-            <span className="text-brand-600">Any</span>
-            <span className="text-secondary-500">Mais</span>
+          <h1 className="text-2xl font-bold text-brand-600 flex items-center gap-2 mb-6">
+            <span className="text-3xl">🐾</span> AnyMais
           </h1>
           <div className="relative">
             <button 
@@ -612,12 +640,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         <nav className="flex-1 p-4 overflow-y-auto md:overflow-visible overflow-x-hidden">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Menu</p>
           <div className="relative z-30">
+            <NavItem view="overview" icon={LayoutDashboard} label={t.dashOverview} />
             <NavItem view="profile" icon={Home} label={t.dashProfile} description={t.tooltipProfile} planReq={t.reqPlanBasic} />
             <NavItem view="dating" icon={Heart} label={t.dashDating} locked={!checkPlanAccess('dating')} description={t.tooltipDating} planReq={t.reqPlanPremium} />
             <NavItem view="health" icon={Stethoscope} label={t.dashHealth} locked={!checkPlanAccess('health')} description={t.tooltipHealth} planReq={t.reqPlanStart} />
             <NavItem view="services" icon={Calendar} label={t.dashServices} locked={!checkPlanAccess('services')} description={t.tooltipServices} planReq={t.reqPlanStart} />
             
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3 mt-6">Comunidade</p>
+            {/* Tooltips removed for Adoption, Lost & Found, My ONGs */}
             <NavItem view="adoption" icon={PawPrint} label={t.dashAdoption} planReq={t.reqPlanBasic} />
             <NavItem view="lost-found" icon={Search} label={t.dashLostFound} planReq={t.reqPlanBasic} />
             <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} planReq={t.reqPlanBasic} />
@@ -648,10 +678,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-white z-10 border-b p-4 flex justify-between items-center">
          <button onClick={() => setMobileMenuOpen(true)} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"><Menu size={24} /></button>
-         <span className="font-bold text-lg">
-             <span className="text-brand-600">Any</span>
-             <span className="text-secondary-500">Mais</span>
-         </span>
+         <span className="font-bold text-brand-600 text-lg">AnyMais</span>
          <button onClick={() => setShowPetDropdown(!showPetDropdown)} className="bg-gray-100 p-1 rounded-full relative">
             {activePet ? (<img src={activePet.image} className="w-8 h-8 rounded-full object-cover ring-2 ring-brand-500 ring-offset-1" />) : (<div className="w-8 h-8 flex items-center justify-center"><Plus size={20} className="text-gray-500" /></div>)}
          </button>
@@ -679,6 +706,150 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6 md:p-10 pt-20 md:pt-10 pb-24 md:pb-10">
         
+        {/* OVERVIEW DASHBOARD */}
+        {activeView === 'overview' && (
+            <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-900">{t.overviewTitle}</h2>
+                        <p className="text-gray-500 mt-1">{t.welcome}, {currentUser.name.split(' ')[0]}!</p>
+                    </div>
+                    <Button onClick={() => setActiveView('create-pet')} size="sm" className="hidden sm:flex items-center gap-2">
+                        <Plus size={16} /> {t.addNewPet}
+                    </Button>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start">
+                            <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsTotalPets}</span>
+                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><PawPrint size={18} /></div>
+                        </div>
+                        <div className="text-3xl font-bold text-gray-900">{overviewStats.totalPets}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveView('health')}>
+                        <div className="flex justify-between items-start">
+                             <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsVaccinesDue}</span>
+                            <div className={`p-2 rounded-lg ${overviewStats.pendingVaccines > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                <Syringe size={18} />
+                            </div>
+                        </div>
+                        <div className="text-3xl font-bold text-gray-900">{overviewStats.pendingVaccines}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveView('dating')}>
+                        <div className="flex justify-between items-start">
+                             <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsMatches}</span>
+                            <div className="p-2 bg-pink-50 text-pink-600 rounded-lg"><Heart size={18} /></div>
+                        </div>
+                        <div className="text-3xl font-bold text-gray-900">{overviewStats.activeMatches}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveView('services')}>
+                        <div className="flex justify-between items-start">
+                             <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsAppointments}</span>
+                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Calendar size={18} /></div>
+                        </div>
+                        <div className="text-3xl font-bold text-gray-900">{overviewStats.mockAppointments}</div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* My Pets List */}
+                    <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="font-bold text-gray-800 text-lg">{t.myPets}</h3>
+                            <button onClick={() => setActiveView('create-pet')} className="text-brand-600 text-sm font-medium hover:text-brand-800">{t.addNewPet}</button>
+                        </div>
+                        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {pets.map(pet => (
+                                <div key={pet.id} 
+                                    className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${activePetId === pet.id ? 'border-brand-200 bg-brand-50' : 'border-gray-200 hover:border-brand-200 hover:bg-gray-50'}`}
+                                    onClick={() => { setActivePetId(pet.id); setActiveView('profile'); }}
+                                >
+                                    <img src={pet.image} alt={pet.name} className="w-14 h-14 rounded-full object-cover bg-gray-100" />
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-bold text-gray-900 truncate">{pet.name}</h4>
+                                        <p className="text-sm text-gray-500 truncate">{pet.breed}</p>
+                                    </div>
+                                    <div className="text-gray-400 hover:text-brand-600">
+                                        <ArrowRight size={18} />
+                                    </div>
+                                </div>
+                            ))}
+                            {pets.length === 0 && (
+                                <div className="col-span-full text-center py-8 text-gray-500">
+                                    {t.noPets}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Upcoming Events */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-fit">
+                        <div className="p-6 border-b border-gray-100">
+                            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                <Clock size={18} className="text-brand-500" /> {t.upcomingEvents}
+                            </h3>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            {overviewStats.upcomingVaccineList.length > 0 ? (
+                                overviewStats.upcomingVaccineList.map((v, i) => (
+                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+                                        <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${v.daysLeft < 0 ? 'bg-red-500' : v.daysLeft <= 7 ? 'bg-yellow-500' : 'bg-green-500'}`} />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800">{v.vaccineName} ({v.petName})</p>
+                                            <p className="text-xs text-gray-500">
+                                                {v.daysLeft < 0 ? `Atrasada ${Math.abs(v.daysLeft)} dias` : v.daysLeft === 0 ? 'Vence hoje!' : `Vence em ${v.daysLeft} dias`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-6 text-gray-400 text-sm">
+                                    <CheckCircle size={24} className="mx-auto mb-2 opacity-50" />
+                                    {t.noUpcomingEvents}
+                                </div>
+                            )}
+                            {/* Mock Appointment */}
+                            <div className="flex items-start gap-3 pt-2">
+                                 <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                                 <div>
+                                     <p className="text-sm font-bold text-gray-800">Banho e Tosa (Happy Paws)</p>
+                                     <p className="text-xs text-gray-500">Amanhã, 14:00</p>
+                                 </div>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
+                             <button onClick={() => setActiveView('health')} className="text-sm font-bold text-brand-600 hover:text-brand-800">
+                                 {t.viewDetails}
+                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quick Actions Bar */}
+                <div className="bg-gradient-to-r from-brand-600 to-pink-600 rounded-2xl shadow-lg p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                            <Activity size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg">{t.quickActions}</h3>
+                            <p className="text-white/80 text-sm">Gerencie o dia a dia do seu pet com facilidade.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button size="sm" onClick={() => setActiveView('services')} className="bg-white text-brand-600 hover:bg-gray-100 border-none">
+                            {t.dashServices}
+                        </Button>
+                        <Button size="sm" onClick={() => setActiveView('health')} className="bg-brand-800 text-white hover:bg-brand-900 border-none">
+                            {t.dashHealth}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* CREATE NEW PET VIEW */}
         {activeView === 'create-pet' && (
            <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
@@ -735,7 +906,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
            </div>
         )}
 
-        {/* ... (Other views same as before) ... */}
+        {/* LOST AND FOUND VIEW */}
         {activeView === 'lost-found' && (
              <div className="max-w-4xl mx-auto space-y-6">
                 <div className="text-center mb-8">
@@ -780,7 +951,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                   <div className="flex items-center text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded-md w-fit">
                                       <MapPin size={12} className="mr-1" /> {ong.location}
                                   </div>
-                                </div>
+                               </div>
                            </div>
                         ))}
                     </div>
@@ -851,6 +1022,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                          <div>
                              <label className="block text-sm font-bold text-gray-500 mb-2">{t.locationLabel}</label>
                              <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-brand-200 transition-colors">
+                                 {/* Background Pattern to simulate map */}
                                  <div className="absolute inset-0 opacity-[0.03]" 
                                      style={{ 
                                          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
@@ -876,18 +1048,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                          </div>
                                      </div>
                                      
-                                     <div className="flex gap-2 shrink-0">
+                                     <div className="flex gap-2 shrink-0 items-center">
                                         {!isEditingUser && currentUser.location && (
-                                            <Button
-                                                onClick={handleVerifyLocation}
-                                                disabled={isVerifyingLocation}
-                                                variant="outline"
-                                                className="shadow-sm flex items-center gap-2 bg-white"
-                                                title={t.verifyLocationBtn}
-                                            >
-                                                 {isVerifyingLocation ? <Loader2 className="animate-spin" size={18} /> : <Crosshair size={18} />}
-                                                 <span className="hidden md:inline">{t.verifyLocationBtn}</span>
-                                            </Button>
+                                            <>
+                                              {verificationStatus === 'match' && (
+                                                <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1.5 rounded-lg border border-green-200 text-xs font-bold animate-fade-in">
+                                                  <CheckCircle size={14} />
+                                                  <span>{t.locationMatch}</span>
+                                                </div>
+                                              )}
+                                              {verificationStatus === 'mismatch' && (
+                                                <div className="flex items-center gap-1 text-orange-600 bg-orange-50 px-2 py-1.5 rounded-lg border border-orange-200 text-xs font-bold animate-fade-in">
+                                                  <AlertCircle size={14} />
+                                                  <span>{t.locationMismatch}</span>
+                                                </div>
+                                              )}
+
+                                              <Button
+                                                  onClick={handleVerifyLocation}
+                                                  disabled={isVerifyingLocation}
+                                                  variant="outline"
+                                                  className="shadow-sm flex items-center gap-2 bg-white"
+                                                  title={t.verifyLocationBtn}
+                                              >
+                                                  {isVerifyingLocation ? <Loader2 className="animate-spin" size={18} /> : <Crosshair size={18} />}
+                                                  <span className="hidden md:inline">{t.verifyLocationBtn}</span>
+                                              </Button>
+                                            </>
                                         )}
                                         {isEditingUser && (
                                             <Button 
@@ -976,8 +1163,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
         )}
 
-        {/* ... (Existing views logic) ... */}
-        {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && activeView !== 'adoption' && (
+        {/* IF NO ACTIVE PET AND NOT CREATING/EDITING USER */}
+        {/* Updated condition to allow adoption, lost-found, my-ongs views without pet */}
+        {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && activeView !== 'adoption' && activeView !== 'overview' && (
              <div className="text-center py-20">
                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">🐾</span></div>
                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t.noPets}</h2>
@@ -985,7 +1173,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                  <Button onClick={() => setActiveView('create-pet')}>{t.addNewPet}</Button>
              </div>
         )}
-
+        
+        {/* ... Rest of existing dashboard render logic ... */}
+        {/* Only included relevant parts of Dashboard.tsx where changes were made */}
         {/* PET PROFILE VIEW */}
         {activePet && activeView === 'profile' && editedPet && (
           <div className="max-w-3xl mx-auto">
@@ -1054,7 +1244,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                         </div>
                         <div className="pt-8 mt-8 border-t border-gray-100">
                           <h3 className="text-sm font-bold text-red-600 mb-2">{t.deletePetWarning}</h3>
-                          <button onClick={handleDeletePet} className="flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors font-medium text-sm"><Trash2 size={16} />{t.deletePet}</button>
+                          <button onClick={handleDeleteClick} className="flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors font-medium text-sm"><Trash2 size={16} />{t.deletePet}</button>
                         </div>
                       </div>
                     )}
@@ -1063,8 +1253,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
           </div>
         )}
-        
-        {/* Adoption View - no changes */}
+
+        {/* Adoption View */}
         {activeView === 'adoption' && (
           <div>
             <h2 className="text-2xl font-bold mb-6 text-gray-800">{t.dashAdoption}</h2>
@@ -1111,7 +1301,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           </div>
         )}
 
-        {/* Dating View - no changes */}
+        {/* Dating View */}
         {activeView === 'dating' && activePet && (
           checkPlanAccess('dating') ? (
             <div>
@@ -1147,13 +1337,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           )
         )}
 
-        {/* Health View - no changes */}
+        {/* Health View */}
         {activeView === 'health' && activePet && (
           checkPlanAccess('health') ? (
             <div className="max-w-3xl">
               <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
                 <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
               </h2>
+              {/* ... (Health table UI same as before) ... */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <table className="w-full text-left">
                   <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
@@ -1181,7 +1372,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           )
         )}
 
-        {/* Services View - no changes */}
+        {/* Services View */}
         {activeView === 'services' && activePet && (
           checkPlanAccess('services') ? (
              <ServiceBooking providers={MOCK_SERVICES} lang={lang} userLocation={currentUser.location} />
@@ -1201,7 +1392,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
       </main>
 
-      {/* Plan Selection Modal - no changes */}
+      {/* Delete Pet Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center">
+             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+               <AlertTriangle size={32} className="text-red-600" />
+             </div>
+             <h3 className="text-xl font-bold text-gray-900 mb-2">{t.deletePet}</h3>
+             <p className="text-gray-500 mb-6">{t.confirmDeletePet}</p>
+             <div className="flex gap-3">
+               <Button variant="ghost" className="flex-1" onClick={() => setShowDeleteModal(false)}>
+                 {t.cancel}
+               </Button>
+               <Button 
+                className="flex-1 !bg-red-600 hover:!bg-red-700" 
+                onClick={confirmPetDeletion}
+               >
+                 {t.deletePet}
+               </Button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Plan Selection Modal */}
       {showPlanModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
              {/* ... (Plan Modal UI same as before) ... */}

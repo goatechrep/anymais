@@ -11,7 +11,7 @@ export type TranslationKey =
   | 'planBasic' | 'planStart' | 'planPremium' | 'perMonth'
   | 'features' | 'loginTitle' | 'email' | 'password' | 'loginButton'
   | 'dashHome' | 'dashAdoption' | 'dashDating' | 'dashHealth' | 'dashServices'
-  | 'dashProfile' | 'dashLostFound' | 'dashMyOngs'
+  | 'dashProfile' | 'dashLostFound' | 'dashMyOngs' | 'dashOverview'
   | 'logout' | 'welcome' | 'myPets' | 'vaccines'
   | 'serviceVet' | 'serviceGroom' | 'serviceHotel' | 'serviceWalker'
   | 'bookNow' | 'adoptMe' | 'match' | 'generateBio' | 'bioPlaceholder'
@@ -59,15 +59,10 @@ export type TranslationKey =
   | 'watchVideo' | 'pauseVideo' | 'verifyLocationBtn' | 'locationMatch' | 'locationMismatch' | 'verifying'
   | 'lostFoundTitle' | 'lostFoundSubtitle' | 'reportLost' | 'reportFound' | 'noLostPets' | 'myOngsTitle' | 'noMyOngs'
   | 'landingLostFoundTitle' | 'landingLostFoundSubtitle' | 'landingLostFoundBtn'
-  | 'linkCopied' | 'adoptionSuccessTitle' | 'adoptionSuccessMsg'
-  | 'viewMap' | 'viewList'
-  | 'tabOverview' | 'tabTransparency' | 'totalRaised' | 'totalExpenses' | 'activeDonors'
-  | 'monthlyBreakdown' | 'expenseFood' | 'expenseVet' | 'expenseMaintenance' | 'expenseMeds'
-  | 'howToHelpTitle' | 'helpTip1' | 'helpTip2' | 'helpTip3'
-  | 'locationMap' | 'invalidFileType' | 'fileTooLarge'
-  | 'scheduleTitle' | 'selectDate' | 'selectTime' | 'confirmBooking' | 'bookingSuccess'
-  | 'landingServicesTitle' | 'landingServicesSubtitle' | 'landingServicesBtn'
-  | 'landingDatingTitle' | 'landingDatingSubtitle' | 'landingDatingBtn';
+  | 'linkCopied'
+  | 'overviewTitle' | 'statsTotalPets' | 'statsVaccinesDue' | 'statsAppointments' | 'statsMatches'
+  | 'upcomingEvents' | 'noUpcomingEvents' | 'quickActions' | 'viewDetails'
+  | 'vaccineCtaTitle' | 'vaccineCtaSubtitle' | 'vaccineCtaFeature1' | 'vaccineCtaFeature2' | 'vaccineCtaBtn';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -104,18 +99,6 @@ export interface Pet {
   location?: Coordinates;
 }
 
-export interface OngFinancials {
-  revenue: number;
-  expenses: number;
-  donors: number;
-  breakdown: {
-    food: number;
-    vet: number;
-    maintenance: number;
-    meds: number;
-  }
-}
-
 export interface Ong {
   id: string;
   ownerId?: string;
@@ -133,7 +116,6 @@ export interface Ong {
     agency: string;
     account: string;
   };
-  financials?: OngFinancials;
 }
 
 export interface Vaccine {
@@ -154,4 +136,4 @@ export interface ServiceProvider {
 }
 
 export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile' | 'adoption-pet-profile';
-export type DashboardView = 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet' | 'lost-found' | 'my-ongs';
+export type DashboardView = 'overview' | 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet' | 'lost-found' | 'my-ongs';

@@ -1,6 +1,6 @@
 {
   "name": "AnyMais",
-  "description": "Todos são bem-vindos: piando, miando, relinchando ou latindo. Uma plataforma completa para animais. Seja para adoção, namoro, saúde e serviços. Disponível em PT, EN, ES.",
+  "description": "Uma plataforma completa para animais para adoção, namoro, saúde e serviços. Disponível em PT, EN, ES.",
   "requestFramePermissions": [
     "camera",
     "geolocation"
