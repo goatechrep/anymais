@@ -26,7 +26,7 @@ export type TranslationKey =
   | 'ageLabel' | 'breedLabel' | 'changePhoto'
   | 'userProfile' | 'switchPet' | 'addNewPet' | 'noPets' | 'createFirstPet'
   | 'userSettings' | 'phone' | 'petName' | 'petType' | 'selectPet'
-  | 'deletePet' | 'confirmDeletePet' | 'deletePetWarning'
+  | 'deletePet' | 'confirmDeletePet' | 'deletePetWarning' | 'confirm'
   | 'currentPlan' | 'upgradePlan' | 'planBenefits' | 'managePlan'
   | 'typeDog' | 'typeCat' | 'typeBird' | 'typeOther'
   | 'healthVaccine' | 'healthDate' | 'healthNextDue' | 'healthStatus'

@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType, Ong } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
@@ -1394,7 +1396,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
       {/* Delete Pet Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center">
              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                <AlertTriangle size={32} className="text-red-600" />
@@ -1409,7 +1411,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                 className="flex-1 !bg-red-600 hover:!bg-red-700" 
                 onClick={confirmPetDeletion}
                >
-                 {t.deletePet}
+                 {t.confirm}
                </Button>
              </div>
           </div>
