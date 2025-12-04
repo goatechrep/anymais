@@ -17,12 +17,12 @@ const INITIAL_DATA: Schema = {
   users: [
     {
       id: 'u1',
-      name: 'Maria Silva',
-      email: 'maria@example.com',
-      phone: '+55 11 99999-8888',
+      name: 'Diogo Lins',
+      email: 'contato@goatech.com.br',
+      phone: '+55 18 99647-5908',
       image: 'https://i.pravatar.cc/150?img=5',
       plan: 'start',
-      password: '123', // In a real app, this would be hashed!
+      password: '123456789', // In a real app, this would be hashed!
       location: { lat: -23.5555, lng: -46.6333 }, // Mock default location (SP)
       favorites: []
     }
@@ -31,7 +31,7 @@ const INITIAL_DATA: Schema = {
     {
       id: 'pet-1',
       ownerId: 'u1',
-      name: 'Paçoca',
+      name: 'Caramelo',
       breed: 'Vira-lata',
       age: 3,
       weight: 12,
@@ -46,13 +46,13 @@ const INITIAL_DATA: Schema = {
     {
       id: 'pet-2',
       ownerId: 'u1',
-      name: 'Mimi',
-      breed: 'Persa',
+      name: 'Bulma',
+      breed: 'Rajada',
       age: 5,
       weight: 4,
       type: 'cat',
       image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80',
-      bio: 'Rainha da casa.',
+      bio: 'Rainha da casa. Razão deste projeto',
       vaccines: []
     }
   ],

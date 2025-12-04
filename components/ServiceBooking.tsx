@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ServiceProvider, Language, Coordinates } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -21,6 +20,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
   // Filter States
   const [selectedType, setSelectedType] = useState<ServiceProvider['type'] | 'all'>('all');
   const [minRating, setMinRating] = useState<number>(0);
+
+  // Booking Modal States
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<ServiceProvider | null>(null);
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingTime, setBookingTime] = useState('');
   
   // Keep reference location in sync with user location initially, 
   // but allow override if user searches
@@ -74,8 +79,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
       const dist = calculateDistance(referenceLocation.lat, referenceLocation.lng, provider.location.lat, provider.location.lng);
       return `${dist} km`;
     }
-    // Fallback static distance if location not available or calculated
-    return '2.5 km';
+    return null;
   };
 
   // Filter and Sort Providers
@@ -99,8 +103,25 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
 
   const hasActiveFilters = selectedType !== 'all' || minRating > 0;
 
+  const handleBook = (provider: ServiceProvider) => {
+      setSelectedProvider(provider);
+      setBookingModalOpen(true);
+  };
+
+  const confirmBooking = () => {
+      if (!bookingDate || !bookingTime) {
+          alert('Por favor, selecione data e hora.');
+          return;
+      }
+      // In a real app, this would send data to backend
+      setBookingModalOpen(false);
+      setBookingDate('');
+      setBookingTime('');
+      alert(t.bookingSuccess);
+  };
+
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-20 relative">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-gray-800">{t.dashServices}</h2>
@@ -223,7 +244,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                 <div className="flex flex-col gap-2 mt-3 mb-6">
                     <div className="flex items-center text-gray-500 text-sm">
                     <MapPin size={16} className="mr-2 text-gray-400" />
-                    <span>{getDistanceDisplay(provider)} • {provider.address || 'Vila Madalena'}</span>
+                    <span>{getDistanceDisplay(provider) ? `${getDistanceDisplay(provider)} • ` : ''}{provider.address || 'Vila Madalena'}</span>
                     </div>
                     <div className="flex items-center text-gray-500 text-sm">
                     <Clock size={16} className="mr-2 text-gray-400" />
@@ -231,7 +252,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                     </div>
                 </div>
 
-                <Button className="w-full py-3 shadow-lg shadow-brand-100 flex items-center justify-center gap-2 font-semibold text-lg">
+                <Button 
+                    className="w-full py-3 shadow-lg shadow-brand-100 flex items-center justify-center gap-2 font-semibold text-lg"
+                    onClick={() => handleBook(provider)}
+                >
                     <Calendar size={18} />
                     {t.bookNow}
                 </Button>
@@ -251,6 +275,53 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
             </div>
         )}
       </div>
+
+      {/* Booking Modal */}
+      {bookingModalOpen && selectedProvider && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+                 <div className="flex justify-between items-center mb-6">
+                     <h3 className="text-xl font-bold text-gray-900">{t.scheduleTitle}</h3>
+                     <button onClick={() => setBookingModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                         <X size={24} />
+                     </button>
+                 </div>
+                 
+                 <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                     <img src={selectedProvider.image} alt={selectedProvider.name} className="w-16 h-16 rounded-lg object-cover" />
+                     <div>
+                         <h4 className="font-bold text-gray-900">{selectedProvider.name}</h4>
+                         <span className="text-sm text-gray-500">{getServiceLabel(selectedProvider.type)}</span>
+                     </div>
+                 </div>
+
+                 <div className="space-y-4">
+                     <div>
+                         <label className="block text-sm font-bold text-gray-700 mb-1">{t.selectDate}</label>
+                         <input 
+                            type="date" 
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-gray-900"
+                            value={bookingDate}
+                            onChange={(e) => setBookingDate(e.target.value)}
+                         />
+                     </div>
+                     <div>
+                         <label className="block text-sm font-bold text-gray-700 mb-1">{t.selectTime}</label>
+                         <input 
+                            type="time" 
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-gray-900"
+                            value={bookingTime}
+                            onChange={(e) => setBookingTime(e.target.value)}
+                         />
+                     </div>
+                 </div>
+
+                 <Button className="w-full mt-8" onClick={confirmBooking} disabled={!bookingDate || !bookingTime}>
+                     {t.confirmBooking}
+                 </Button>
+             </div>
+         </div>
+      )}
     </div>
   );
 };

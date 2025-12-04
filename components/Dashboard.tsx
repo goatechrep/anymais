@@ -15,6 +15,7 @@ interface DashboardProps {
   setLang: (lang: Language) => void;
   onLogout: () => void;
   onViewPet: (pet: Pet) => void;
+  initialView?: DashboardView;
 }
 
 const getPlaceholderImage = (type: string) => {
@@ -70,7 +71,7 @@ const optimizeImage = (file: File, maxWidth = 800, quality = 0.8): Promise<strin
   });
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, onViewPet }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, onViewPet, initialView = 'profile' }) => {
   const t = TRANSLATIONS[lang];
   
   // --- State: User ---
@@ -91,7 +92,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const [myOngs, setMyOngs] = useState<Ong[]>([]);
   
   // UI State
-  const [activeView, setActiveView] = useState<DashboardView>('profile');
+  const [activeView, setActiveView] = useState<DashboardView>(initialView);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isEditingPet, setIsEditingPet] = useState(false);
@@ -207,6 +208,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const handleUserPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+         alert(t.invalidFileType);
+         return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+         alert(t.fileTooLarge);
+         return;
+      }
+
       try {
         const optimized = await optimizeImage(file);
         setEditedUser(prev => ({ ...prev, image: optimized }));
@@ -319,6 +329,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const handlePetPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+         alert(t.invalidFileType);
+         return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+         alert(t.fileTooLarge);
+         return;
+      }
+
       try {
         const optimized = await optimizeImage(file);
         if (editedPet) {
@@ -333,6 +352,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const handleNewPetPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+         alert(t.invalidFileType);
+         return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+         alert(t.fileTooLarge);
+         return;
+      }
+
       try {
         const optimized = await optimizeImage(file);
         setNewPet(prev => ({ ...prev, image: optimized }));
@@ -521,8 +549,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         {/* Brand & Pet Switcher */}
         <div className="p-6 border-b border-gray-100 relative">
            <button onClick={() => setMobileMenuOpen(false)} className="absolute top-4 right-4 text-gray-400 md:hidden"><X size={24} /></button>
-          <h1 className="text-2xl font-bold text-brand-600 flex items-center gap-2 mb-6">
-            <span className="text-3xl">🐾</span> AnyMais
+          <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
+            <span className="text-3xl">🐾</span> 
+            <span className="text-brand-600">Any</span>
+            <span className="text-secondary-500">Mais</span>
           </h1>
           <div className="relative">
             <button 
@@ -588,7 +618,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
             <NavItem view="services" icon={Calendar} label={t.dashServices} locked={!checkPlanAccess('services')} description={t.tooltipServices} planReq={t.reqPlanStart} />
             
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3 mt-6">Comunidade</p>
-            {/* Tooltips removed for Adoption, Lost & Found, My ONGs */}
             <NavItem view="adoption" icon={PawPrint} label={t.dashAdoption} planReq={t.reqPlanBasic} />
             <NavItem view="lost-found" icon={Search} label={t.dashLostFound} planReq={t.reqPlanBasic} />
             <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} planReq={t.reqPlanBasic} />
@@ -619,7 +648,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-white z-10 border-b p-4 flex justify-between items-center">
          <button onClick={() => setMobileMenuOpen(true)} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"><Menu size={24} /></button>
-         <span className="font-bold text-brand-600 text-lg">AnyMais</span>
+         <span className="font-bold text-lg">
+             <span className="text-brand-600">Any</span>
+             <span className="text-secondary-500">Mais</span>
+         </span>
          <button onClick={() => setShowPetDropdown(!showPetDropdown)} className="bg-gray-100 p-1 rounded-full relative">
             {activePet ? (<img src={activePet.image} className="w-8 h-8 rounded-full object-cover ring-2 ring-brand-500 ring-offset-1" />) : (<div className="w-8 h-8 flex items-center justify-center"><Plus size={20} className="text-gray-500" /></div>)}
          </button>
@@ -703,7 +735,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
            </div>
         )}
 
-        {/* LOST AND FOUND VIEW */}
+        {/* ... (Other views same as before) ... */}
         {activeView === 'lost-found' && (
              <div className="max-w-4xl mx-auto space-y-6">
                 <div className="text-center mb-8">
@@ -748,7 +780,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                   <div className="flex items-center text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded-md w-fit">
                                       <MapPin size={12} className="mr-1" /> {ong.location}
                                   </div>
-                               </div>
+                                </div>
                            </div>
                         ))}
                     </div>
@@ -819,7 +851,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                          <div>
                              <label className="block text-sm font-bold text-gray-500 mb-2">{t.locationLabel}</label>
                              <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-brand-200 transition-colors">
-                                 {/* Background Pattern to simulate map */}
                                  <div className="absolute inset-0 opacity-[0.03]" 
                                      style={{ 
                                          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
@@ -945,8 +976,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
         )}
 
-        {/* IF NO ACTIVE PET AND NOT CREATING/EDITING USER */}
-        {/* Updated condition to allow adoption, lost-found, my-ongs views without pet */}
+        {/* ... (Existing views logic) ... */}
         {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && activeView !== 'adoption' && (
              <div className="text-center py-20">
                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">🐾</span></div>
@@ -955,9 +985,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                  <Button onClick={() => setActiveView('create-pet')}>{t.addNewPet}</Button>
              </div>
         )}
-        
-        {/* ... Rest of existing dashboard render logic ... */}
-        {/* Only included relevant parts of Dashboard.tsx where changes were made */}
+
         {/* PET PROFILE VIEW */}
         {activePet && activeView === 'profile' && editedPet && (
           <div className="max-w-3xl mx-auto">
@@ -1035,8 +1063,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
           </div>
         )}
-
-        {/* Adoption View */}
+        
+        {/* Adoption View - no changes */}
         {activeView === 'adoption' && (
           <div>
             <h2 className="text-2xl font-bold mb-6 text-gray-800">{t.dashAdoption}</h2>
@@ -1083,7 +1111,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           </div>
         )}
 
-        {/* Dating View */}
+        {/* Dating View - no changes */}
         {activeView === 'dating' && activePet && (
           checkPlanAccess('dating') ? (
             <div>
@@ -1119,14 +1147,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           )
         )}
 
-        {/* Health View */}
+        {/* Health View - no changes */}
         {activeView === 'health' && activePet && (
           checkPlanAccess('health') ? (
             <div className="max-w-3xl">
               <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
                 <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
               </h2>
-              {/* ... (Health table UI same as before) ... */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <table className="w-full text-left">
                   <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
@@ -1154,7 +1181,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           )
         )}
 
-        {/* Services View */}
+        {/* Services View - no changes */}
         {activeView === 'services' && activePet && (
           checkPlanAccess('services') ? (
              <ServiceBooking providers={MOCK_SERVICES} lang={lang} userLocation={currentUser.location} />
@@ -1174,7 +1201,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
       </main>
 
-      {/* Plan Selection Modal */}
+      {/* Plan Selection Modal - no changes */}
       {showPlanModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
              {/* ... (Plan Modal UI same as before) ... */}

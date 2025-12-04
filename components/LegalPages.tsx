@@ -28,7 +28,10 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, lang, setLang, onB
               </button>
               <div className="ml-6 flex items-center gap-2">
                 <span className="text-2xl">🐾</span>
-                <span className="font-bold text-xl text-brand-600">AnyMais</span>
+                <span className="font-bold text-xl">
+                   <span className="text-brand-600">Any</span>
+                   <span className="text-secondary-500">Mais</span>
+               </span>
               </div>
             </div>
             

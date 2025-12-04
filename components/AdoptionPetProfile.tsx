@@ -4,18 +4,21 @@ import React, { useState } from 'react';
 import { Language, Pet } from '../types';
 import { TRANSLATIONS, MOCK_ONGS } from '../constants';
 import { Button } from './Button';
-import { ArrowLeft, MapPin, Heart, Info, Calendar, Ruler, Phone, Mail, Globe, Share2, ShieldCheck, Building2, Check } from 'lucide-react';
+import { ArrowLeft, MapPin, Heart, Info, Calendar, Ruler, Phone, Mail, Globe, Share2, ShieldCheck, Building2, Check, Loader2, CheckCircle } from 'lucide-react';
 
 interface AdoptionPetProfileProps {
   lang: Language;
   pet: Pet;
   onBack: () => void;
   onSignup: () => void;
+  isLoggedIn?: boolean;
 }
 
-export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pet, onBack, onSignup }) => {
+export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pet, onBack, onSignup, isLoggedIn = false }) => {
   const t = TRANSLATIONS[lang];
   const [showCopied, setShowCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   
   // Find associated NGO if any
   const ownerOng = pet.ongId ? MOCK_ONGS.find(o => o.id === pet.ongId) : null;
@@ -53,6 +56,20 @@ export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pe
     }
   };
 
+  const handleInterest = () => {
+      if (!isLoggedIn) {
+          onSignup();
+          return;
+      }
+
+      setIsSubmitting(true);
+      // Simulate API call to register interest
+      setTimeout(() => {
+          setIsSubmitting(false);
+          setIsSuccess(true);
+      }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Navigation */}
@@ -65,7 +82,10 @@ export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pe
               <ArrowLeft size={18} />
               <span className="hidden sm:inline">{t.backToHome}</span>
             </button>
-            <span className="font-bold text-xl text-brand-600">AnyMais</span>
+            <span className="font-bold text-xl">
+               <span className="text-brand-600">Any</span>
+               <span className="text-secondary-500">Mais</span>
+           </span>
             <button 
               onClick={handleShare}
               className="relative p-2 text-gray-400 hover:text-brand-600 transition-colors"
@@ -201,12 +221,32 @@ export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pe
                            )}
 
                            <div className="mt-8 pt-6 border-t border-gray-100">
-                               <Button size="lg" className="w-full text-lg shadow-xl shadow-brand-100" onClick={onSignup}>
-                                   {t.interestBtn}
-                               </Button>
-                               <p className="text-center text-xs text-gray-400 mt-3">
-                                   Ao clicar, você precisará criar uma conta gratuita para prosseguir.
-                               </p>
+                               {isSuccess ? (
+                                   <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center animate-fade-in">
+                                        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <CheckCircle size={24} />
+                                        </div>
+                                        <h4 className="font-bold text-green-800 text-lg mb-1">{t.adoptionSuccessTitle}</h4>
+                                        <p className="text-green-700 text-sm">{t.adoptionSuccessMsg}</p>
+                                   </div>
+                               ) : (
+                                   <>
+                                        <Button 
+                                            size="lg" 
+                                            className="w-full text-lg shadow-xl shadow-brand-100 flex items-center justify-center gap-2" 
+                                            onClick={handleInterest}
+                                            disabled={isSubmitting}
+                                        >
+                                            {isSubmitting && <Loader2 className="animate-spin" size={20} />}
+                                            {t.interestBtn}
+                                        </Button>
+                                        {!isLoggedIn && (
+                                            <p className="text-center text-xs text-gray-400 mt-3">
+                                                Ao clicar, você precisará criar uma conta gratuita para prosseguir.
+                                            </p>
+                                        )}
+                                   </>
+                               )}
                            </div>
                        </div>
                    </div>
