@@ -64,7 +64,9 @@ export type TranslationKey =
   | 'upcomingEvents' | 'noUpcomingEvents' | 'quickActions' | 'viewDetails'
   | 'vaccineCtaTitle' | 'vaccineCtaSubtitle' | 'vaccineCtaFeature1' | 'vaccineCtaFeature2' | 'vaccineCtaBtn'
   | 'datingCtaTitle' | 'datingCtaSubtitle' | 'datingCtaBtn'
-  | 'servicesCtaTitle' | 'servicesCtaSubtitle' | 'servicesCtaBtn';
+  | 'servicesCtaTitle' | 'servicesCtaSubtitle' | 'servicesCtaBtn'
+  | 'aboutTitle' | 'careersTitle' | 'blogTitle' | 'contactTitle' | 'helpTitle'
+  | 'blogPartnerBtn' | 'whatsappBtn' | 'faqTitle';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -137,5 +139,5 @@ export interface ServiceProvider {
   address?: string;
 }
 
-export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile' | 'adoption-pet-profile';
+export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile' | 'adoption-pet-profile' | 'about' | 'careers' | 'blog' | 'contact' | 'help';
 export type DashboardView = 'overview' | 'profile' | 'adoption' | 'dating' | 'health' | 'services' | 'user-profile' | 'create-pet' | 'lost-found' | 'my-ongs';

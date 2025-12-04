@@ -1,5 +1,3 @@
-
-
 import { Language, Pet, ServiceProvider, TranslationKey, Ong } from './types';
 
 export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
@@ -222,14 +220,22 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     vaccineCtaTitle: "Carteira de Vacinação Inteligente",
     vaccineCtaSubtitle: "Mantenha a saúde do seu pet em dia com segurança e facilidade.",
     vaccineCtaFeature1: "Veterinários cadastrados atualizam automaticamente a carteira digital.",
-    vaccineCtaFeature2: "Para outros veterinários, você gera um QRCode exclusivo que autoriza o registro da vacina na hora.",
+    vaccineCtaFeature2: "Para outros veterinários, você gera um QRCode exclusivo que autoriza o registro de vacina na hora.",
     vaccineCtaBtn: "Conhecer o AnyStart",
     datingCtaTitle: "Encontre o Par Perfeito",
     datingCtaSubtitle: "A ferramenta de Namoro e Cruzamento conecta seu pet com o parceiro ideal. Seguro, divertido e exclusivo para membros Premium.",
     datingCtaBtn: "Assinar AnyPremium",
     servicesCtaTitle: "Tudo que seu pet precisa em um só lugar",
     servicesCtaSubtitle: "Do veterinário ao banho e tosa. Agende os melhores serviços com facilidade e segurança.",
-    servicesCtaBtn: "Começar com AnyStart"
+    servicesCtaBtn: "Começar com AnyStart",
+    aboutTitle: "Sobre Nós",
+    careersTitle: "Trabalhe Conosco",
+    blogTitle: "Blog AnyMais",
+    contactTitle: "Fale Conosco",
+    helpTitle: "Central de Ajuda",
+    blogPartnerBtn: "Quero ser um redator parceiro",
+    whatsappBtn: "Falar no WhatsApp",
+    faqTitle: "Perguntas Frequentes"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -457,7 +463,15 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     datingCtaBtn: "Get AnyPremium",
     servicesCtaTitle: "Everything your pet needs in one place",
     servicesCtaSubtitle: "From the vet to grooming. Book the best services with ease and safety.",
-    servicesCtaBtn: "Start with AnyStart"
+    servicesCtaBtn: "Start with AnyStart",
+    aboutTitle: "About Us",
+    careersTitle: "Careers",
+    blogTitle: "AnyMais Blog",
+    contactTitle: "Contact Us",
+    helpTitle: "Help Center",
+    blogPartnerBtn: "Become a partner writer",
+    whatsappBtn: "Chat on WhatsApp",
+    faqTitle: "Frequently Asked Questions"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -685,169 +699,221 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     datingCtaBtn: "Obtener AnyPremium",
     servicesCtaTitle: "Todo lo que tu mascota necesita en un solo lugar",
     servicesCtaSubtitle: "Desde el veterinario hasta la peluquería. Reserva los mejores servicios con facilidad y seguridad.",
-    servicesCtaBtn: "Empezar con AnyStart"
+    servicesCtaBtn: "Empezar con AnyStart",
+    aboutTitle: "Sobre Nosotros",
+    careersTitle: "Trabaja con Nosotros",
+    blogTitle: "Blog AnyMais",
+    contactTitle: "Contacto",
+    helpTitle: "Centro de Ayuda",
+    blogPartnerBtn: "Quiero ser redactor socio",
+    whatsappBtn: "Chat en WhatsApp",
+    faqTitle: "Preguntas Frecuentes"
   }
 };
 
-// Base location: São Paulo (-23.5505, -46.6333) for mock data
+export const MOCK_ONGS: Ong[] = [
+  {
+    id: 'ong-1',
+    name: 'Amigos de Patas',
+    image: 'https://images.unsplash.com/photo-1599401738722-69b7696412eb?auto=format&fit=crop&w=200&q=80',
+    description: 'Resgatando e cuidando de animais abandonados em São Paulo há 10 anos.',
+    location: 'São Paulo, SP',
+    coordinates: { lat: -23.5505, lng: -46.6333 },
+    email: 'contato@amigosdepatas.org',
+    phone: '(11) 99999-9999',
+    website: 'www.amigosdepatas.org',
+    pixKey: '12.345.678/0001-90',
+    bankInfo: { bank: 'Banco do Brasil', agency: '1234-5', account: '12345-6' }
+  },
+  {
+    id: 'ong-2',
+    name: 'Gatos da Vila',
+    image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=200&q=80',
+    description: 'ONG dedicada ao resgate e cuidado de felinos na Vila Madalena.',
+    location: 'São Paulo, SP',
+    coordinates: { lat: -23.5605, lng: -46.6433 },
+    email: 'adote@gatosdavila.com',
+    phone: '(11) 98888-8888',
+    pixKey: 'gatosdavila@email.com'
+  },
+  {
+    id: 'ong-3',
+    name: 'SOS Animais',
+    image: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?auto=format&fit=crop&w=200&q=80',
+    description: 'Atuamos no resgate de animais em situação de risco em todo o estado.',
+    location: 'Campinas, SP',
+    coordinates: { lat: -22.9099, lng: -47.0626 },
+    phone: '(19) 97777-7777',
+    pixKey: 'sosanimais@email.com'
+  },
+   {
+    id: 'ong-4',
+    name: 'Abrigo Feliz',
+    image: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&w=200&q=80',
+    description: 'Um lar temporário cheio de amor para cães idosos.',
+    location: 'Rio de Janeiro, RJ',
+    coordinates: { lat: -22.9068, lng: -43.1729 },
+    phone: '(21) 96666-6666',
+    pixKey: 'abrigofeliz@email.com'
+  }
+];
+
 export const MOCK_ADOPTION_PETS: Pet[] = [
-  { id: '1', name: 'Thor', breed: 'Golden Retriever', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', bio: 'Friendly and energetic.', location: { lat: -23.5605, lng: -46.6433 }, ongId: '1' }, // Near Paulista
-  { id: '2', name: 'Luna', breed: 'Siamese', age: 1, type: 'cat', image: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?auto=format&fit=crop&w=400&q=80', bio: 'Quiet and loving.', location: { lat: -23.5405, lng: -46.6233 }, ongId: '2' },
-  { id: '3', name: 'Bob', breed: 'Bulldog', age: 4, type: 'dog', image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', bio: 'Loves sleeping.', location: { lat: -23.5705, lng: -46.6533 }, ongId: '1' },
-  { id: '6', name: 'Paçoca', breed: 'Vira-lata', age: 2, type: 'dog', image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80', bio: 'Alegre e brincalhão.', location: { lat: -23.5805, lng: -46.6333 }, ongId: '1' },
-  { id: '7', name: 'Simba', breed: 'Persa', age: 3, type: 'cat', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80', bio: 'Rei da casa.', location: { lat: -22.9068, lng: -43.1729 }, ongId: '2' },
+  {
+    id: 'p1',
+    name: 'Thor',
+    breed: 'Labrador Mix',
+    age: 2,
+    type: 'dog',
+    image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80',
+    bio: 'Thor é um cãozinho muito enérgico e adora brincar de buscar bolinha.',
+    ongId: 'ong-1',
+    location: { lat: -23.5505, lng: -46.6333 },
+    weight: 25
+  },
+  {
+    id: 'p2',
+    name: 'Luna',
+    breed: 'Sialata',
+    age: 1,
+    type: 'cat',
+    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80',
+    bio: 'Luna é uma gatinha calma e carinhosa, ideal para apartamento.',
+    ongId: 'ong-2',
+    location: { lat: -23.5605, lng: -46.6433 },
+    weight: 4
+  },
+  {
+    id: 'p3',
+    name: 'Max',
+    breed: 'Golden Retriever',
+    age: 4,
+    type: 'dog',
+    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80',
+    bio: 'Max foi resgatado e agora procura uma família para dar muito amor.',
+    ongId: 'ong-1',
+    location: { lat: -23.5505, lng: -46.6333 },
+    weight: 30
+  },
+  {
+    id: 'p4',
+    name: 'Mel',
+    breed: 'Poodle',
+    age: 6,
+    type: 'dog',
+    image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80',
+    bio: 'Mel é super dócil e se dá bem com crianças e outros animais.',
+    ongId: 'ong-3',
+    location: { lat: -22.9099, lng: -47.0626 },
+    weight: 8
+  },
+  {
+    id: 'p5',
+    name: 'Simba',
+    breed: 'Laranja',
+    age: 2,
+    type: 'cat',
+    image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=400&q=80',
+    bio: 'Simba é um gato aventureiro e curioso.',
+    ongId: 'ong-2',
+    location: { lat: -23.5605, lng: -46.6433 },
+    weight: 5
+  },
+  {
+    id: 'p6',
+    name: 'Lola',
+    breed: 'Bulldog Francês',
+    age: 3,
+    type: 'dog',
+    image: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?auto=format&fit=crop&w=400&q=80',
+    bio: 'Lola adora dormir e roncar no sofá.',
+    ongId: 'ong-4',
+    location: { lat: -22.9068, lng: -43.1729 },
+    weight: 12
+  }
 ];
 
 export const MOCK_DATING_PETS: Pet[] = [
-  { id: '4', name: 'Bella', breed: 'Poodle', age: 3, type: 'dog', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=400&q=80', bio: 'Looking for a playdate.', location: { lat: -23.5555, lng: -46.6355 } },
-  { id: '5', name: 'Max', breed: 'German Shepherd', age: 3, type: 'dog', image: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?auto=format&fit=crop&w=400&q=80', bio: 'Very active and protective.', location: { lat: -23.5805, lng: -46.6133 } },
+  {
+    id: 'd1',
+    name: 'Bella',
+    breed: 'Golden Retriever',
+    age: 3,
+    type: 'dog',
+    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80',
+    bio: 'Procurando um parceiro para corridas no parque.',
+    availableForDating: true,
+    location: { lat: -23.5505, lng: -46.6333 }
+  },
+  {
+    id: 'd2',
+    name: 'Charlie',
+    breed: 'Beagle',
+    age: 4,
+    type: 'dog',
+    image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=400&q=80',
+    bio: 'Gosto de farejar e uivar para a lua.',
+    availableForDating: true,
+    location: { lat: -23.5605, lng: -46.6433 }
+  }
 ];
 
 export const MOCK_SERVICES: ServiceProvider[] = [
-  { id: '1', name: 'Dr. Dolittle Clinic', type: 'veterinarian', rating: 4.8, image: 'https://picsum.photos/200/200?random=10', location: { lat: -23.5615, lng: -46.6559 }, address: 'Av. Paulista, 1000' },
-  { id: '2', name: 'Happy Paws Grooming', type: 'petshop', rating: 4.5, image: 'https://picsum.photos/200/200?random=11', location: { lat: -23.5505, lng: -46.6333 }, address: 'Centro Histórico' },
-  { id: '3', name: 'Walkies with Sarah', type: 'dogwalker', rating: 5.0, image: 'https://picsum.photos/200/200?random=12', location: { lat: -23.5905, lng: -46.6733 }, address: 'Vila Olímpia' },
-  { id: '4', name: 'Pet Paradise Hotel', type: 'hotel', rating: 4.7, image: 'https://picsum.photos/200/200?random=13', location: { lat: -23.5205, lng: -46.6033 }, address: 'Santana' },
+  {
+    id: 's1',
+    name: 'Dr. Paulo Veterinário',
+    type: 'veterinarian',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=200&q=80',
+    location: { lat: -23.5505, lng: -46.6333 },
+    address: 'Av. Paulista, 1000 - São Paulo'
+  },
+  {
+    id: 's2',
+    name: 'Banho & Tosa Fofura',
+    type: 'petshop',
+    rating: 4.5,
+    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=200&q=80',
+    location: { lat: -23.5605, lng: -46.6433 },
+    address: 'Rua Harmonia, 123 - Vila Madalena'
+  },
+  {
+    id: 's3',
+    name: 'Hotel Pet Resort',
+    type: 'hotel',
+    rating: 4.9,
+    image: 'https://images.unsplash.com/photo-1541781777631-fa953224e1ef?auto=format&fit=crop&w=200&q=80',
+    location: { lat: -22.9099, lng: -47.0626 },
+    address: 'Rodovia Dom Pedro I, km 10 - Campinas'
+  },
+  {
+    id: 's4',
+    name: 'Passeios da Ana',
+    type: 'dogwalker',
+    rating: 5.0,
+    image: 'https://images.unsplash.com/photo-1597524206587-5732152a5592?auto=format&fit=crop&w=200&q=80',
+    location: { lat: -23.5505, lng: -46.6333 },
+    address: 'Atendimento em domicílio - SP'
+  }
 ];
 
 export const MOCK_DAILY_PHOTOS = [
-  { url: 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?q=80&w=1000&auto=format&fit=crop', petName: 'Rex', breed: 'Golden Retriever', location: 'São Paulo, SP' },
-  { url: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=1000&auto=format&fit=crop', petName: 'Mia', breed: 'Persa', location: 'Rio de Janeiro, RJ' },
-  { url: 'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?q=80&w=1000&auto=format&fit=crop', petName: 'Buddy', breed: 'Bulldog Francês', location: 'Curitiba, PR' },
-  { url: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?q=80&w=1000&auto=format&fit=crop', petName: 'Thor', breed: 'Husky Siberiano', location: 'Belo Horizonte, MG' },
-];
-
-// Updated MOCK_ONGS with reliable Unsplash images and coordinates
-export const MOCK_ONGS: Ong[] = [
-  { 
-    id: '1', 
-    name: 'Anjos de Patas', 
-    image: 'https://images.unsplash.com/photo-1593134257782-e89567b7718a?auto=format&fit=crop&w=400&q=80', 
-    description: 'Resgatando e cuidando de cães de rua há 10 anos.', 
-    location: 'São Paulo, SP', 
-    coordinates: { lat: -23.5505, lng: -46.6333 },
-    pixKey: 'anjos@patas.org.br', 
-    phone: '(11) 99999-0001', 
-    email: 'contato@anjosdepatas.org.br', 
-    bankInfo: { bank: 'Banco do Brasil', agency: '1234-X', account: '56789-0' } 
+  {
+    url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=800&q=80',
+    petName: 'Rex',
+    breed: 'Bulldog',
+    location: 'Rio de Janeiro, RJ'
   },
-  { 
-    id: '2', 
-    name: 'Gatinhos da Vila', 
-    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80', 
-    description: 'Lar temporário e adoção para felinos.', 
-    location: 'Rio de Janeiro, RJ', 
-    coordinates: { lat: -22.9068, lng: -43.1729 },
-    pixKey: 'gatinhos@vila.com', 
-    phone: '(21) 98888-0002', 
-    email: 'adote@gatinhosdavila.com' 
+  {
+    url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80',
+    petName: 'Mia',
+    breed: 'Gato Persa',
+    location: 'São Paulo, SP'
   },
-  { 
-    id: '3', 
-    name: 'Amigo Fiel', 
-    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80', 
-    description: 'Reabilitação e adoção de animais feridos.', 
-    location: 'Curitiba, PR', 
-    coordinates: { lat: -25.4244, lng: -49.2654 },
-    pixKey: 'amigo@fiel.org', 
-    phone: '(41) 97777-0003' 
-  },
-  { 
-    id: '4', 
-    name: 'Santuário Animal', 
-    image: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?auto=format&fit=crop&w=400&q=80', 
-    description: 'Proteção para animais de grande porte e silvestres.', 
-    location: 'Belo Horizonte, MG', 
-    coordinates: { lat: -19.9167, lng: -43.9345 },
-    pixKey: 'santuario@animal.org', 
-    phone: '(31) 96666-0004' 
-  },
-  { 
-    id: '5', 
-    name: 'Vira-lata Caramelo', 
-    image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=400&q=80', 
-    description: 'Apoio a cães comunitários.', 
-    location: 'Salvador, BA',
-    coordinates: { lat: -12.9777, lng: -38.5016 }
-  },
-  { 
-    id: '6', 
-    name: 'Arca de Noé', 
-    image: 'https://images.unsplash.com/photo-1596272875729-ed2c21d50510?auto=format&fit=crop&w=400&q=80', 
-    description: 'Abrigo para todos os tipos de animais.', 
-    location: 'Porto Alegre, RS',
-    coordinates: { lat: -30.0346, lng: -51.2177 }
-  },
-  { 
-    id: '7', 
-    name: 'Cão Sem Dono', 
-    image: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&w=400&q=80', 
-    description: 'Resgate de animais em situação de risco.', 
-    location: 'Recife, PE',
-    coordinates: { lat: -8.0476, lng: -34.8770 }
-  },
-  { 
-    id: '8', 
-    name: 'Adote um Gatinho', 
-    image: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=400&q=80', 
-    description: 'Maior ONG de resgate de gatos do Brasil.', 
-    location: 'São Paulo, SP',
-    coordinates: { lat: -23.5505, lng: -46.6333 }
-  },
-  { 
-    id: '9', 
-    name: 'Protetores Independentes', 
-    image: 'https://images.unsplash.com/photo-1535930749574-1399327ce78f?auto=format&fit=crop&w=400&q=80', 
-    description: 'Grupo de voluntários unidos pela causa animal.', 
-    location: 'Florianópolis, SC',
-    coordinates: { lat: -27.5954, lng: -48.5480 }
-  },
-  { 
-    id: '10', 
-    name: 'Amor de Bicho', 
-    image: 'https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&w=400&q=80', 
-    description: 'Castração e conscientização.', 
-    location: 'Campinas, SP',
-    coordinates: { lat: -22.9099, lng: -47.0626 }
-  },
-  { 
-    id: '11', 
-    name: 'Vida Animal', 
-    image: 'https://images.unsplash.com/photo-1494913148647-3532a40bf239?auto=format&fit=crop&w=400&q=80', 
-    description: 'Abrigo e hospital veterinário solidário.', 
-    location: 'Fortaleza, CE',
-    coordinates: { lat: -3.7172, lng: -38.5434 }
-  },
-  { 
-    id: '12', 
-    name: 'Patas Dadas', 
-    image: 'https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&w=400&q=80', 
-    description: 'Promovendo encontros felizes.', 
-    location: 'Porto Alegre, RS',
-    coordinates: { lat: -30.0346, lng: -51.2177 }
-  },
-  { 
-    id: '13', 
-    name: 'SOS Animais', 
-    image: 'https://images.unsplash.com/photo-1529472119196-cb724127a98e?auto=format&fit=crop&w=400&q=80', 
-    description: 'Atendimento emergencial para animais de rua.', 
-    location: 'Brasília, DF',
-    coordinates: { lat: -15.7975, lng: -47.8919 }
-  },
-  { 
-    id: '14', 
-    name: 'Bicho Feliz', 
-    image: 'https://images.unsplash.com/photo-1519052537078-e6302a4968ef?auto=format&fit=crop&w=400&q=80', 
-    description: 'Felicidade é ter um lar.', 
-    location: 'Manaus, AM',
-    coordinates: { lat: -3.1190, lng: -60.0217 }
-  },
-  { 
-    id: '15', 
-    name: 'Resgate Pet', 
-    image: 'https://images.unsplash.com/photo-1472491235688-bdc81a63246e?auto=format&fit=crop&w=400&q=80', 
-    description: 'Resgate, reabilitação e amor.', 
-    location: 'Goiânia, GO',
-    coordinates: { lat: -16.6869, lng: -49.2648 }
+  {
+    url: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=800&q=80',
+    petName: 'Bolinha',
+    breed: 'Gato Siamês',
+    location: 'Curitiba, PR'
   }
 ];

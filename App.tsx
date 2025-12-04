@@ -7,6 +7,7 @@ import { PublicOngs } from './components/PublicOngs';
 import { OngProfile } from './components/OngProfile';
 import { AdoptionPetProfile } from './components/AdoptionPetProfile';
 import { LegalPages } from './components/LegalPages';
+import { StaticPages } from './components/StaticPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
 import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe, Calendar, Stethoscope, Scissors, Home as HotelIcon, Footprints, Sparkles } from 'lucide-react';
@@ -333,6 +334,10 @@ const App: React.FC = () => {
 
   if (view === 'terms' || view === 'privacy') {
     return <LegalPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+  }
+
+  if (view === 'about' || view === 'careers' || view === 'blog' || view === 'contact' || view === 'help') {
+    return <StaticPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
   }
 
   if (view === 'ong-register') {
@@ -751,7 +756,7 @@ const App: React.FC = () => {
                       </p>
                       <Button 
                         onClick={() => openSignup('premium')} 
-                        className="bg-white text-rose-600 hover:bg-gray-100 border-none shadow-xl px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
+                        className="bg-white text-brand-600 hover:bg-brand-50 border-none shadow-xl px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
                       >
                           {t.datingCtaBtn}
                       </Button>
@@ -949,10 +954,10 @@ const App: React.FC = () => {
             <div>
               <h4 className="font-bold text-gray-900 mb-4">{t.footerCompany}</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerAbout}</a></li>
-                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerCareers}</a></li>
-                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerBlog}</a></li>
-                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerContact}</a></li>
+                <li><button onClick={() => setView('about')} className="hover:text-brand-600 transition-colors">{t.footerAbout}</button></li>
+                <li><button onClick={() => setView('careers')} className="hover:text-brand-600 transition-colors">{t.footerCareers}</button></li>
+                <li><button onClick={() => setView('blog')} className="hover:text-brand-600 transition-colors">{t.footerBlog}</button></li>
+                <li><button onClick={() => setView('contact')} className="hover:text-brand-600 transition-colors">{t.footerContact}</button></li>
               </ul>
             </div>
 
@@ -961,7 +966,7 @@ const App: React.FC = () => {
               <ul className="space-y-2 text-sm text-gray-500">
                 <li><button onClick={() => setView('terms')} className="hover:text-brand-600 transition-colors">{t.termsTitle}</button></li>
                 <li><button onClick={() => setView('privacy')} className="hover:text-brand-600 transition-colors">{t.privacyTitle}</button></li>
-                <li><a href="#" className="hover:text-brand-600 transition-colors">{t.footerHelp}</a></li>
+                <li><button onClick={() => setView('help')} className="hover:text-brand-600 transition-colors">{t.footerHelp}</button></li>
               </ul>
             </div>
 
