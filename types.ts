@@ -62,7 +62,9 @@ export type TranslationKey =
   | 'linkCopied'
   | 'overviewTitle' | 'statsTotalPets' | 'statsVaccinesDue' | 'statsAppointments' | 'statsMatches'
   | 'upcomingEvents' | 'noUpcomingEvents' | 'quickActions' | 'viewDetails'
-  | 'vaccineCtaTitle' | 'vaccineCtaSubtitle' | 'vaccineCtaFeature1' | 'vaccineCtaFeature2' | 'vaccineCtaBtn';
+  | 'vaccineCtaTitle' | 'vaccineCtaSubtitle' | 'vaccineCtaFeature1' | 'vaccineCtaFeature2' | 'vaccineCtaBtn'
+  | 'datingCtaTitle' | 'datingCtaSubtitle' | 'datingCtaBtn'
+  | 'servicesCtaTitle' | 'servicesCtaSubtitle' | 'servicesCtaBtn';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 

@@ -223,7 +223,13 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     vaccineCtaSubtitle: "Mantenha a saúde do seu pet em dia com segurança e facilidade.",
     vaccineCtaFeature1: "Veterinários cadastrados atualizam automaticamente a carteira digital.",
     vaccineCtaFeature2: "Para outros veterinários, você gera um QRCode exclusivo que autoriza o registro da vacina na hora.",
-    vaccineCtaBtn: "Conhecer o AnyStart"
+    vaccineCtaBtn: "Conhecer o AnyStart",
+    datingCtaTitle: "Encontre o Par Perfeito",
+    datingCtaSubtitle: "A ferramenta de Namoro e Cruzamento conecta seu pet com o parceiro ideal. Seguro, divertido e exclusivo para membros Premium.",
+    datingCtaBtn: "Assinar AnyPremium",
+    servicesCtaTitle: "Tudo que seu pet precisa em um só lugar",
+    servicesCtaSubtitle: "Do veterinário ao banho e tosa. Agende os melhores serviços com facilidade e segurança.",
+    servicesCtaBtn: "Começar com AnyStart"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -445,7 +451,13 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     vaccineCtaSubtitle: "Keep your pet's health on track safely and easily.",
     vaccineCtaFeature1: "Registered vets automatically update the digital card.",
     vaccineCtaFeature2: "For other vets, you generate a unique QR Code that authorizes the vaccine registration instantly.",
-    vaccineCtaBtn: "Learn about AnyStart"
+    vaccineCtaBtn: "Learn about AnyStart",
+    datingCtaTitle: "Find the Perfect Match",
+    datingCtaSubtitle: "The Dating & Breeding tool connects your pet with the ideal partner. Safe, fun, and exclusive to Premium members.",
+    datingCtaBtn: "Get AnyPremium",
+    servicesCtaTitle: "Everything your pet needs in one place",
+    servicesCtaSubtitle: "From the vet to grooming. Book the best services with ease and safety.",
+    servicesCtaBtn: "Start with AnyStart"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -667,7 +679,13 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     vaccineCtaSubtitle: "Mantén la salud de tu mascota al día con seguridad y facilidad.",
     vaccineCtaFeature1: "Los veterinarios registrados actualizan automáticamente la tarjeta digital.",
     vaccineCtaFeature2: "Para otros veterinarios, generas un Código QR exclusivo que autoriza el registro de la vacuna al instante.",
-    vaccineCtaBtn: "Conoce AnyStart"
+    vaccineCtaBtn: "Conoce AnyStart",
+    datingCtaTitle: "Encuentra la Pareja Perfecta",
+    datingCtaSubtitle: "La herramienta de Citas y Cría conecta a tu mascota con el compañero ideal. Seguro, divertido y exclusivo para miembros Premium.",
+    datingCtaBtn: "Obtener AnyPremium",
+    servicesCtaTitle: "Todo lo que tu mascota necesita en un solo lugar",
+    servicesCtaSubtitle: "Desde el veterinario hasta la peluquería. Reserva los mejores servicios con facilidad y seguridad.",
+    servicesCtaBtn: "Empezar con AnyStart"
   }
 };
 

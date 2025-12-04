@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType, Ong, Pet, Coordinates } from './types';
-import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS } from './constants';
+import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS, MOCK_DATING_PETS } from './constants';
 import { Dashboard } from './components/Dashboard';
 import { PublicAdoption } from './components/PublicAdoption';
 import { PublicOngs } from './components/PublicOngs';
@@ -9,7 +9,7 @@ import { AdoptionPetProfile } from './components/AdoptionPetProfile';
 import { LegalPages } from './components/LegalPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe, Calendar, Stethoscope, Scissors, Home as HotelIcon, Footprints, Sparkles } from 'lucide-react';
 import { db } from './services/db';
 import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
@@ -585,6 +585,59 @@ const App: React.FC = () => {
         </div>
       </section>
 
+      {/* Services CTA Section - NEW */}
+      <section className="py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">{t.servicesCtaTitle}</h2>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-12">{t.servicesCtaSubtitle}</p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+               {[
+                 { icon: Stethoscope, label: t.serviceVet, color: 'text-blue-600', bg: 'bg-blue-50' },
+                 { icon: Scissors, label: t.serviceGroom, color: 'text-pink-600', bg: 'bg-pink-50' },
+                 { icon: HotelIcon, label: t.serviceHotel, color: 'text-orange-600', bg: 'bg-orange-50' },
+                 { icon: Footprints, label: t.serviceWalker, color: 'text-green-600', bg: 'bg-green-50' }
+               ].map((service, index) => (
+                  <div key={index} className="flex flex-col items-center justify-center p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 bg-white">
+                      <div className={`w-16 h-16 rounded-full ${service.bg} ${service.color} flex items-center justify-center mb-4`}>
+                          <service.icon size={32} />
+                      </div>
+                      <h3 className="font-bold text-gray-900">{service.label}</h3>
+                  </div>
+               ))}
+            </div>
+
+            <Button onClick={() => openSignup('start')} size="lg" variant="primary" className="shadow-lg shadow-brand-100">
+                {t.servicesCtaBtn} <ArrowRight size={20} className="ml-2" />
+            </Button>
+        </div>
+      </section>
+
+       {/* Lost & Found CTA Section - Moved Here */}
+      <section className="py-24 bg-brand-900 text-white relative overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center relative z-10">
+               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl mb-6 ring-4 ring-white/20">
+                   <Search size={36} className="text-brand-900" />
+               </div>
+               <h2 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">{t.landingLostFoundTitle}</h2>
+               <p className="text-xl text-brand-100 max-w-2xl mb-10 leading-relaxed font-light">
+                   {t.landingLostFoundSubtitle}
+               </p>
+               <Button 
+                   size="lg" 
+                   className="!bg-white !text-brand-900 hover:!bg-gray-100 shadow-xl flex items-center gap-2 border-none px-8 py-4 text-lg"
+                   onClick={openLogin}
+                >
+                   {t.landingLostFoundBtn}
+                   <ArrowRight size={20} />
+                </Button>
+          </div>
+      </section>
+
       {/* NGO Support Section - Dark Teal CTA */}
       <section className="pt-16 pb-8 bg-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -677,28 +730,66 @@ const App: React.FC = () => {
           </div>
       </section>
 
-      {/* Lost & Found CTA Section - HIGH VISIBILITY */}
-      <section className="py-24 bg-brand-900 text-white relative overflow-hidden">
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+      {/* Dating/Match CTA Section - Updated Layout */}
+      <section className="py-24 bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 relative overflow-hidden text-white">
+          <div className="absolute top-10 left-10 opacity-20 animate-pulse">
+             <Heart size={100} fill="currentColor" />
+          </div>
+          <div className="absolute bottom-10 right-10 opacity-20 animate-bounce" style={{ animationDuration: '3s' }}>
+             <Heart size={80} fill="currentColor" />
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                  <div className="text-center md:text-left">
+                      <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-sm font-bold uppercase tracking-wider mb-6 border border-white/20">
+                          AnyPremium
+                      </span>
+                      <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight drop-shadow-sm">{t.datingCtaTitle}</h2>
+                      <p className="text-xl text-white/90 mb-10 max-w-lg mx-auto md:mx-0 font-light leading-relaxed">
+                          {t.datingCtaSubtitle}
+                      </p>
+                      <Button 
+                        onClick={() => openSignup('premium')} 
+                        className="bg-white text-rose-600 hover:bg-gray-100 border-none shadow-xl px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
+                      >
+                          {t.datingCtaBtn}
+                      </Button>
+                  </div>
+                  
+                  <div className="relative h-[400px] flex items-center justify-center">
+                        <div className="absolute inset-0 bg-white/10 rounded-full blur-[80px] scale-75"></div>
+                        
+                        {/* Fake Dating Card 1 */}
+                        <div className="absolute left-0 md:left-10 bottom-10 w-48 h-64 bg-white rounded-2xl shadow-2xl p-2 transform -rotate-12 hover:-rotate-6 transition-transform duration-500 z-10">
+                            <div className="w-full h-full relative overflow-hidden rounded-xl">
+                                <img src={MOCK_DATING_PETS[0].image} className="w-full h-full object-cover" alt="Pet 1" />
+                                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3 text-white">
+                                    <span className="font-bold">{MOCK_DATING_PETS[0].name}</span>, {MOCK_DATING_PETS[0].age}
+                                </div>
+                            </div>
+                        </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center relative z-10">
-               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl mb-6 ring-4 ring-white/20">
-                   <Search size={36} className="text-brand-900" />
-               </div>
-               <h2 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">{t.landingLostFoundTitle}</h2>
-               <p className="text-xl text-brand-100 max-w-2xl mb-10 leading-relaxed font-light">
-                   {t.landingLostFoundSubtitle}
-               </p>
-               <Button 
-                   size="lg" 
-                   className="!bg-white !text-brand-900 hover:!bg-gray-100 shadow-xl flex items-center gap-2 border-none px-8 py-4 text-lg"
-                   onClick={openLogin}
-                >
-                   {t.landingLostFoundBtn}
-                   <ArrowRight size={20} />
-                </Button>
+                         {/* Fake Dating Card 2 */}
+                        <div className="absolute right-0 md:right-10 top-10 w-48 h-64 bg-white rounded-2xl shadow-2xl p-2 transform rotate-6 hover:rotate-3 transition-transform duration-500 z-20">
+                            <div className="w-full h-full relative overflow-hidden rounded-xl">
+                                <img src={MOCK_DATING_PETS[1].image} className="w-full h-full object-cover" alt="Pet 2" />
+                                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3 text-white">
+                                    <span className="font-bold">{MOCK_DATING_PETS[1].name}</span>, {MOCK_DATING_PETS[1].age}
+                                </div>
+                            </div>
+                             {/* Match Badge */}
+                            <div className="absolute -top-4 -right-4 bg-white text-rose-600 px-4 py-1.5 rounded-full font-extrabold text-sm shadow-xl flex items-center gap-1 animate-bounce border-2 border-rose-100">
+                                <Sparkles size={14} fill="currentColor" /> Match!
+                            </div>
+                        </div>
+
+                         {/* Heart Connector */}
+                        <div className="absolute z-30 bg-white p-4 rounded-full shadow-xl text-rose-500 animate-pulse">
+                            <Heart size={32} fill="currentColor" />
+                        </div>
+                  </div>
+              </div>
           </div>
       </section>
 
@@ -850,6 +941,7 @@ const App: React.FC = () => {
                  <span className="font-bold text-2xl text-brand-600">AnyMais</span>
                </div>
                <p className="text-gray-500 text-sm leading-relaxed">
+                 Qualquer animal é bem-vindo: seja piando, miando, relichando ou latindo.  
                  {t.heroSubtitle}
                </p>
             </div>
@@ -885,7 +977,7 @@ const App: React.FC = () => {
                 <a href="https://threads.com/anymaisbr" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black hover:border-gray-400 hover:bg-gray-100 transition-all">
                    <ThreadsIcon size={20} />
                 </a>
-                <a href="https://youtube.com/anymaisbr" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all">
+                <a href="https://youtube.com/@anymaisbr" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all">
                    <Youtube size={20} />
                 </a>
               </div>
@@ -895,7 +987,7 @@ const App: React.FC = () => {
 
           <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-gray-400 text-sm">
-              &copy; 2025 AnyMais Social. {t.footerRights}.
+              &copy; 2025 AnyMais. {t.footerRights}.
             </p>
           </div>
         </div>
@@ -1057,7 +1149,7 @@ const App: React.FC = () => {
               
               <div className="mt-4 text-center text-sm text-gray-500">
                 <Lock size={14} className="inline mr-1" />
-                Secure connection via SSL
+                Conexão Segura via SSL
               </div>
             </div>
           </div>
