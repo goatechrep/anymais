@@ -1,10 +1,10 @@
 
-
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Language, Pet } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
 import { Button } from './Button';
 import { ArrowLeft, Heart, Dog, Cat, Info, Play, Pause, ChevronDown, Globe, MapPin, Navigation, Ruler } from 'lucide-react';
+import { db } from '../services/db';
 
 interface PublicAdoptionProps {
   lang: Language;
@@ -19,6 +19,41 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
   const t = TRANSLATIONS[lang];
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
+  
+  // Favorites State
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const session = db.auth.getSession();
+    if (session && session.favorites) return session.favorites;
+    const local = localStorage.getItem('guest_favorites');
+    try {
+        return local ? JSON.parse(local) : [];
+    } catch {
+        return [];
+    }
+  });
+
+  const toggleFavorite = (e: React.MouseEvent, petId: string) => {
+    e.stopPropagation();
+    const isFav = favorites.includes(petId);
+    let newFavs: string[];
+    
+    if (isFav) {
+        newFavs = favorites.filter(id => id !== petId);
+    } else {
+        newFavs = [...favorites, petId];
+    }
+    setFavorites(newFavs);
+
+    const session = db.auth.getSession();
+    if (session) {
+        // If logged in, update user profile
+        const updatedUser = { ...session, favorites: newFavs };
+        db.auth.updateUser(updatedUser);
+    } else {
+        // If guest, save to local storage
+        localStorage.setItem('guest_favorites', JSON.stringify(newFavs));
+    }
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -115,9 +150,23 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
                             alt={pet.name} 
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
-                          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-full shadow-sm text-brand-600">
+                          
+                          {/* Favorite Button */}
+                          <button 
+                            onClick={(e) => toggleFavorite(e, pet.id)}
+                            className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-full shadow-sm transition-all hover:scale-110 active:scale-95 group/fav z-10"
+                          >
+                            <Heart 
+                                size={18} 
+                                className={`transition-colors ${favorites.includes(pet.id) ? 'fill-red-500 text-red-500' : 'text-gray-400 group-hover/fav:text-red-500'}`} 
+                            />
+                          </button>
+
+                          {/* Pet Type Icon */}
+                          <div className="absolute top-3 right-14 bg-white/95 backdrop-blur-sm p-2 rounded-full shadow-sm text-brand-600">
                               {pet.type === 'cat' ? <Cat size={18} /> : <Dog size={18} />}
                           </div>
+
                           <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1">
                               <MapPin size={10} />
                               {pet.location ? 'São Paulo' : 'Brasil'}
