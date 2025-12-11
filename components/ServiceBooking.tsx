@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ServiceProvider, Language, Coordinates, Pet, Appointment } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
-import { Star, MapPin, Calendar, Clock, ShieldCheck, Dog, Search, Loader2, Filter, X, CheckCircle, Car } from 'lucide-react';
+import { Star, MapPin, Calendar, Clock, ShieldCheck, Dog, Search, Loader2, Filter, X, CheckCircle, Car, QrCode } from 'lucide-react';
 import { calculateDistance, mockGeocode } from '../utils';
 import { db } from '../services/db';
 
@@ -33,6 +33,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [myAppointments, setMyAppointments] = useState<Appointment[]>([]);
+
+  // QR Modal State
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // Form State
   const [bookingDate, setBookingDate] = useState('');
@@ -139,6 +142,15 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
     return '2.5 km';
   };
 
+  const getStatusLabel = (status: Appointment['status']) => {
+      switch(status) {
+          case 'pending': return t.statusPending;
+          case 'confirmed': return t.statusConfirmed;
+          case 'completed': return t.statusCompleted;
+          default: return status;
+      }
+  };
+
   // Filter and Sort Providers
   const filteredProviders = providers.filter(provider => {
       const matchesType = selectedType === 'all' || provider.type === selectedType;
@@ -165,7 +177,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-gray-800">{t.dashServices}</h2>
-          <p className="text-gray-500 mt-1">Encontre os melhores profissionais para seu pet</p>
+          <p className="text-gray-500 mt-1">{t.servicesCtaSubtitle}</p>
         </div>
         
         {/* Tab Switcher */}
@@ -187,6 +199,26 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
 
       {activeTab === 'search' ? (
           <>
+            {/* Quick Access QR Code Card */}
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl shadow-lg p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <QrCode size={32} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-lg">{t.qrCodeTitle}</h3>
+                        <p className="text-white/90 text-sm max-w-md">{t.qrCodeDesc}</p>
+                    </div>
+                </div>
+                <Button 
+                    size="sm" 
+                    onClick={() => setShowQrModal(true)} 
+                    className="!bg-white !text-blue-600 hover:!bg-blue-50 border-none shadow-sm whitespace-nowrap"
+                >
+                    {t.generateQrBtn}
+                </Button>
+            </div>
+
             <div className="flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto flex-1">
                     <div className="relative flex-1">
@@ -308,7 +340,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                             </div>
                             <div className="flex items-center text-gray-500 text-sm">
                             <Clock size={16} className="mr-2 text-gray-400" />
-                            <span className="text-green-600 font-medium">Aberto agora</span>
+                            <span className="text-green-600 font-medium">{t.openNow}</span>
                             </div>
                         </div>
 
@@ -327,7 +359,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                             <Search className="text-gray-400" size={24} />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-700">Nenhum serviço encontrado</h3>
+                        <h3 className="text-lg font-bold text-gray-700">{t.noServicesFound}</h3>
                         <p className="text-gray-500 mt-1">Tente ajustar seus filtros de busca.</p>
                         <Button variant="ghost" className="mt-4" onClick={resetFilters}>
                         {t.clearFilters}
@@ -346,14 +378,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                           <div key={appointment.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow">
                                 <div className="flex flex-col items-center justify-center bg-brand-50 rounded-xl p-4 w-full md:w-32">
                                     <span className="text-3xl font-bold text-brand-600">{appointment.date.split('-')[2]}</span>
-                                    <span className="text-sm font-bold text-brand-400 uppercase">{new Date(appointment.date).toLocaleString('default', { month: 'short' })}</span>
+                                    <span className="text-sm font-bold text-brand-400 uppercase">{new Date(appointment.date).toLocaleString(lang, { month: 'short' })}</span>
                                     <span className="text-xs text-brand-300 font-medium mt-1">{appointment.time}</span>
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="text-xl font-bold text-gray-900">{appointment.providerName}</h3>
                                         <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${appointment.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                            {appointment.status}
+                                            {getStatusLabel(appointment.status)}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-500">
@@ -482,6 +514,36 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                   )}
               </div>
           </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQrModal && (
+           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+               <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center relative overflow-hidden">
+                    <button onClick={() => setShowQrModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                    
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <QrCode size={32} />
+                    </div>
+                    
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{t.qrModalTitle}</h3>
+                    <p className="text-gray-500 text-sm mb-6 px-4">{t.qrModalInstruction}</p>
+                    
+                    <div className="bg-white p-4 rounded-xl border-4 border-gray-900 inline-block shadow-xl mb-6">
+                        <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=AnyMais-User-${userId || 'guest'}`} 
+                            alt="QR Code" 
+                            className="w-48 h-48"
+                        />
+                    </div>
+                    
+                    <div className="bg-gray-50 p-3 rounded-lg text-xs text-gray-400 font-mono break-all">
+                        ID: {userId || 'guest-session'}
+                    </div>
+
+                    <Button onClick={() => setShowQrModal(false)} className="w-full mt-6" variant="outline">{t.close}</Button>
+               </div>
+           </div>
       )}
     </div>
   );
