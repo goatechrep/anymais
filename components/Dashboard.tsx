@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType, Ong, AdoptionInterest } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
@@ -1482,3 +1476,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+};
