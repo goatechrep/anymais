@@ -1,9 +1,10 @@
 
+
 import React, { useState } from 'react';
 import { Language, Ong, Pet } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
 import { Button } from './Button';
-import { ArrowLeft, MapPin, Mail, Phone, Globe, Copy, Check, Info, Dog, Cat, Heart, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Mail, Phone, Globe, Copy, Check, Info, Dog, Cat, Heart, Calendar, TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText } from 'lucide-react';
 
 interface OngProfileProps {
   lang: Language;
@@ -15,6 +16,7 @@ interface OngProfileProps {
 export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onViewPet }) => {
   const t = TRANSLATIONS[lang];
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'about' | 'transparency'>('about');
 
   // Filter pets that belong to this NGO
   const availablePets = MOCK_ADOPTION_PETS.filter(pet => pet.ongId === ong.id);
@@ -25,6 +27,16 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const calculateTotalExpenses = () => {
+      if (!ong.transparency) return 0;
+      const { food, vet, maintenance, other } = ong.transparency.expenses;
+      return food + vet + maintenance + other;
+  };
+
+  const formatCurrency = (val: number) => {
+      return new Intl.NumberFormat(lang === Language.PT ? 'pt-BR' : 'en-US', { style: 'currency', currency: lang === Language.PT ? 'BRL' : 'USD' }).format(val);
   };
 
   return (
@@ -44,7 +56,7 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
 
       <main className="pt-24 pb-20">
          {/* Hero */}
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div className="relative h-64 md:h-80 rounded-3xl overflow-hidden mb-8 shadow-xl">
                 <img src={ong.image} alt={ong.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -56,76 +68,192 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Left Column: Info & Pets */}
-                <div className="lg:col-span-2 space-y-12">
-                    <section>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4 border-l-4 border-brand-500 pl-4">{t.aboutOng}</h2>
-                        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                            <p className="text-gray-600 text-lg leading-relaxed">{ong.description}</p>
-                        </div>
-                    </section>
-                    
-                    <section>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 border-l-4 border-brand-500 pl-4">{t.availablePets}</h2>
-                            <span className="bg-brand-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md transform hover:scale-105 transition-transform">
-                                {availablePets.length} pets
-                            </span>
-                        </div>
-                        
-                        {availablePets.length > 0 ? (
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                {availablePets.map(pet => (
-                                    <div key={pet.id} className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                        <div className="h-56 relative overflow-hidden">
-                                            <img src={pet.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={pet.name} />
-                                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-brand-600">
-                                                {pet.type === 'cat' ? <Cat size={20} /> : <Dog size={20} />}
-                                            </div>
-                                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                                                <h3 className="font-bold text-xl text-white">{pet.name}</h3>
-                                            </div>
-                                        </div>
-                                        <div className="p-5">
-                                            <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                                                <div className="flex items-center gap-1">
-                                                    <Info size={14} className="text-brand-500" />
-                                                    <span>{pet.breed}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar size={14} className="text-brand-500" />
-                                                    <span>{pet.age} {t.ageLabel.split(' ')[0]}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <p className="text-gray-600 text-sm line-clamp-2 mb-4 italic bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                "{pet.bio}"
-                                            </p>
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200 mb-8">
+                <button 
+                    onClick={() => setActiveTab('about')}
+                    className={`pb-4 px-6 text-sm md:text-base font-bold transition-all border-b-2 ${activeTab === 'about' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    {t.tabAbout}
+                </button>
+                <button 
+                    onClick={() => setActiveTab('transparency')}
+                    className={`pb-4 px-6 text-sm md:text-base font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'transparency' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    <PieChart size={18} />
+                    {t.tabTransparency}
+                </button>
+            </div>
 
-                                            <Button 
-                                                onClick={() => onViewPet(pet)}
-                                                className="w-full flex items-center justify-center gap-2 font-bold py-3"
-                                            >
-                                                <Heart size={18} className="fill-white/20" /> {t.interestBtn}
-                                            </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Left Column: Info & Pets (Changes based on Tab) */}
+                <div className="lg:col-span-2 space-y-12">
+                    
+                    {activeTab === 'about' ? (
+                        <>
+                            <section>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-4 border-l-4 border-brand-500 pl-4">{t.aboutOng}</h2>
+                                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                                    <p className="text-gray-600 text-lg leading-relaxed">{ong.description}</p>
+                                </div>
+                            </section>
+                            
+                            <section>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900 border-l-4 border-brand-500 pl-4">{t.availablePets}</h2>
+                                    <span className="bg-brand-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md transform hover:scale-105 transition-transform">
+                                        {availablePets.length} pets
+                                    </span>
+                                </div>
+                                
+                                {availablePets.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        {availablePets.map(pet => (
+                                            <div key={pet.id} className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                                <div className="h-56 relative overflow-hidden">
+                                                    <img src={pet.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={pet.name} />
+                                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-brand-600">
+                                                        {pet.type === 'cat' ? <Cat size={20} /> : <Dog size={20} />}
+                                                    </div>
+                                                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                                                        <h3 className="font-bold text-xl text-white">{pet.name}</h3>
+                                                    </div>
+                                                </div>
+                                                <div className="p-5">
+                                                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                                                        <div className="flex items-center gap-1">
+                                                            <Info size={14} className="text-brand-500" />
+                                                            <span>{pet.breed}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1">
+                                                            <Calendar size={14} className="text-brand-500" />
+                                                            <span>{pet.age} {t.ageLabel.split(' ')[0]}</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <p className="text-gray-600 text-sm line-clamp-2 mb-4 italic bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                        "{pet.bio}"
+                                                    </p>
+
+                                                    <Button 
+                                                        onClick={() => onViewPet(pet)}
+                                                        className="w-full flex items-center justify-center gap-2 font-bold py-3"
+                                                    >
+                                                        <Heart size={18} className="fill-white/20" /> {t.interestBtn}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="bg-gray-50 rounded-2xl p-12 text-center border border-dashed border-gray-300">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Dog size={32} className="text-gray-400" />
+                                        </div>
+                                        <p className="text-gray-500 text-lg">{t.noPets}</p>
+                                        <p className="text-gray-400 text-sm mt-2">Esta ONG não tem pets cadastrados no momento.</p>
+                                    </div>
+                                )}
+                            </section>
+                        </>
+                    ) : (
+                        /* TRANSPARENCY TAB CONTENT */
+                        <div className="space-y-8 animate-fade-in">
+                            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">{t.transparencyTitle}</h2>
+                                <p className="text-gray-600">{t.transparencyDesc}</p>
+                                {ong.transparency && <p className="text-xs text-gray-400 mt-2">{t.lastUpdate}: {ong.transparency.month}/{ong.transparency.year}</p>}
+                            </div>
+
+                            {ong.transparency ? (
+                                <>
+                                    {/* Financial Cards */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2 text-green-600 font-bold uppercase text-xs tracking-wider">
+                                                <TrendingUp size={16} /> {t.financialIncome}
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-900">{formatCurrency(ong.transparency.income)}</div>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2 text-red-500 font-bold uppercase text-xs tracking-wider">
+                                                <TrendingDown size={16} /> {t.financialExpenses}
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-900">{formatCurrency(calculateTotalExpenses())}</div>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-2 text-blue-600 font-bold uppercase text-xs tracking-wider">
+                                                <DollarSign size={16} /> {t.financialBalance}
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-900">{formatCurrency(ong.transparency.income - calculateTotalExpenses())}</div>
                                         </div>
                                     </div>
-                                ))}
-                             </div>
-                        ) : (
-                            <div className="bg-gray-50 rounded-2xl p-12 text-center border border-dashed border-gray-300">
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Dog size={32} className="text-gray-400" />
+
+                                    {/* Expenses Breakdown */}
+                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-6 flex items-center gap-2">
+                                            <PieChart size={20} className="text-brand-500" /> Detalhamento de Despesas
+                                        </h3>
+                                        <div className="space-y-6">
+                                            {[
+                                                { label: t.expenseFood, value: ong.transparency.expenses.food, color: 'bg-orange-400' },
+                                                { label: t.expenseVet, value: ong.transparency.expenses.vet, color: 'bg-red-400' },
+                                                { label: t.expenseMaintenance, value: ong.transparency.expenses.maintenance, color: 'bg-blue-400' },
+                                                { label: t.expenseOther, value: ong.transparency.expenses.other, color: 'bg-gray-400' }
+                                            ].map((item, idx) => (
+                                                <div key={idx}>
+                                                    <div className="flex justify-between text-sm mb-1 font-medium">
+                                                        <span className="text-gray-600">{item.label}</span>
+                                                        <span className="text-gray-900">{formatCurrency(item.value)}</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-100 rounded-full h-2.5">
+                                                        <div className={`${item.color} h-2.5 rounded-full`} style={{ width: `${(item.value / calculateTotalExpenses()) * 100}%` }}></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Donors & Community */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                                            <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                                                <Users size={20} className="text-brand-500" /> {t.topDonors}
+                                            </h3>
+                                            <ul className="space-y-3">
+                                                {ong.transparency.topDonors.map((donor, i) => (
+                                                    <li key={i} className="flex items-center gap-3 text-gray-600 text-sm p-3 bg-gray-50 rounded-xl">
+                                                        <Heart size={16} className="text-pink-500 fill-pink-500" />
+                                                        {donor}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="bg-brand-50 rounded-2xl border border-brand-100 p-8 flex flex-col justify-center text-center">
+                                            <Users size={40} className="text-brand-600 mx-auto mb-4" />
+                                            <div className="text-4xl font-extrabold text-gray-900 mb-2">{ong.transparency.donorsCount}</div>
+                                            <p className="text-gray-600 font-medium">{t.donorsCount} este mês</p>
+                                            <p className="text-xs text-gray-400 mt-4">Junte-se a essa comunidade de heróis!</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center pt-8">
+                                        <Button variant="outline" className="gap-2 mx-auto">
+                                            <FileText size={18} /> Baixar Relatório Completo (PDF)
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-12 text-gray-500">
+                                    <Info size={32} className="mx-auto mb-2 opacity-50" />
+                                    <p>Informações de transparência não disponíveis para o período.</p>
                                 </div>
-                                <p className="text-gray-500 text-lg">{t.noPets}</p>
-                                <p className="text-gray-400 text-sm mt-2">Esta ONG não tem pets cadastrados no momento.</p>
-                            </div>
-                        )}
-                    </section>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                {/* Right Column: Contact & Donate */}
+                {/* Right Column: Contact & Donate (Sticky) */}
                 <div className="space-y-8">
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 sticky top-24">
                         <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -169,7 +297,7 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
 
                         <hr className="my-6 border-gray-100" />
 
-                        {/* Updated Donation Card with Solid Dark Background */}
+                        {/* Donation Card */}
                         <div className="bg-gray-900 rounded-2xl shadow-xl text-white p-8 relative overflow-hidden">
                             <h3 className="text-xl font-bold mb-3 relative z-10 text-white">{t.donateBtn}</h3>
                             <p className="text-gray-300 mb-6 text-sm relative z-10 leading-relaxed">Ajude {ong.name} a continuar salvando vidas. Sua contribuição faz a diferença.</p>

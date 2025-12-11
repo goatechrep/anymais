@@ -1,3 +1,5 @@
+
+
 import { Language, Pet, ServiceProvider, TranslationKey, Ong } from './types';
 
 export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
@@ -235,7 +237,40 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     helpTitle: "Central de Ajuda",
     blogPartnerBtn: "Quero ser um redator parceiro",
     whatsappBtn: "Falar no WhatsApp",
-    faqTitle: "Perguntas Frequentes"
+    faqTitle: "Perguntas Frequentes",
+    tabFindServices: "Buscar Profissionais",
+    tabMyAppointments: "Meus Agendamentos",
+    bookServiceTitle: "Agendar Serviço",
+    selectDate: "Selecione a Data",
+    selectTime: "Selecione o Horário",
+    transportLabel: "Transporte do Pet",
+    transportOwner: "Eu levarei o pet",
+    transportPickup: "Solicitar busca (Taxi Pet)",
+    confirmBooking: "Confirmar Agendamento",
+    bookingSuccess: "Agendamento realizado com sucesso!",
+    noAppointments: "Você não possui agendamentos futuros.",
+    appointmentWith: "Com",
+    at: "às",
+    interestSuccess: "Seu interesse em adotar este pet foi registrado. Logo entraremos em contato.",
+    myInterestsTab: "Meus Interesses",
+    findPetsTab: "Encontrar Pets",
+    noInterests: "Você ainda não demonstrou interesse em nenhum pet.",
+    statusLabel: "Status da Candidatura",
+    statusPending: "Pendente - Aguardando contato da ONG",
+    tabAbout: "Sobre a ONG",
+    tabTransparency: "Portal da Transparência",
+    transparencyTitle: "Prestação de Contas",
+    transparencyDesc: "Veja como utilizamos as doações para cuidar dos nossos animais.",
+    financialIncome: "Arrecadado",
+    financialExpenses: "Despesas",
+    financialBalance: "Saldo",
+    expenseFood: "Ração e Alimentação",
+    expenseVet: "Veterinário e Saúde",
+    expenseMaintenance: "Manutenção e Limpeza",
+    expenseOther: "Outros (Contas/Admin)",
+    topDonors: "Doadores Frequentes",
+    donorsCount: "Total de Doadores",
+    lastUpdate: "Última atualização"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -255,7 +290,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     dashAdoption: "Adoption",
     dashDating: "Dating",
     dashHealth: "Health Card",
-    dashServices: "Services",
+    dashServices: "Appointments",
     dashProfile: "Pet Profile",
     dashLostFound: "Lost & Found",
     dashMyOngs: "My NGOs",
@@ -471,7 +506,40 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     helpTitle: "Help Center",
     blogPartnerBtn: "Become a partner writer",
     whatsappBtn: "Chat on WhatsApp",
-    faqTitle: "Frequently Asked Questions"
+    faqTitle: "Frequently Asked Questions",
+    tabFindServices: "Find Professionals",
+    tabMyAppointments: "My Appointments",
+    bookServiceTitle: "Book Service",
+    selectDate: "Select Date",
+    selectTime: "Select Time",
+    transportLabel: "Pet Transport",
+    transportOwner: "I will drop off",
+    transportPickup: "Request Pickup (Pet Taxi)",
+    confirmBooking: "Confirm Booking",
+    bookingSuccess: "Booking confirmed successfully!",
+    noAppointments: "You have no upcoming appointments.",
+    appointmentWith: "With",
+    at: "at",
+    interestSuccess: "Your interest in adopting this pet has been registered. We will contact you soon.",
+    myInterestsTab: "My Interests",
+    findPetsTab: "Find Pets",
+    noInterests: "You haven't shown interest in any pets yet.",
+    statusLabel: "Application Status",
+    statusPending: "Pending - Waiting for NGO contact",
+    tabAbout: "About NGO",
+    tabTransparency: "Transparency Portal",
+    transparencyTitle: "Accountability",
+    transparencyDesc: "See how we use donations to care for our animals.",
+    financialIncome: "Raised",
+    financialExpenses: "Expenses",
+    financialBalance: "Balance",
+    expenseFood: "Food & Feed",
+    expenseVet: "Vet & Health",
+    expenseMaintenance: "Maintenance & Cleaning",
+    expenseOther: "Other (Bills/Admin)",
+    topDonors: "Frequent Donors",
+    donorsCount: "Total Donors",
+    lastUpdate: "Last updated"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -491,7 +559,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     dashAdoption: "Adopción",
     dashDating: "Citas",
     dashHealth: "Cartilla",
-    dashServices: "Servicios",
+    dashServices: "Citas",
     dashProfile: "Perfil de Mascota",
     dashLostFound: "Perdidos y Encontrados",
     dashMyOngs: "Mis ONG",
@@ -695,7 +763,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     vaccineCtaFeature2: "Para otros veterinarios, generas un Código QR exclusivo que autoriza el registro de la vacuna al instante.",
     vaccineCtaBtn: "Conoce AnyStart",
     datingCtaTitle: "Encuentra la Pareja Perfecta",
-    datingCtaSubtitle: "La herramienta de Citas y Cría conecta a tu mascota con el compañero ideal. Seguro, divertido y exclusivo para miembros Premium.",
+    datingCtaSubtitle: "La herramienta de Citas y Cría conecta a tu mascota con el compañero ideal. Seguro, divertido e exclusivo para miembros Premium.",
     datingCtaBtn: "Obtener AnyPremium",
     servicesCtaTitle: "Todo lo que tu mascota necesita en un solo lugar",
     servicesCtaSubtitle: "Desde el veterinario hasta la peluquería. Reserva los mejores servicios con facilidad y seguridad.",
@@ -707,7 +775,40 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     helpTitle: "Centro de Ayuda",
     blogPartnerBtn: "Quiero ser redactor socio",
     whatsappBtn: "Chat en WhatsApp",
-    faqTitle: "Preguntas Frecuentes"
+    faqTitle: "Preguntas Frecuentes",
+    tabFindServices: "Buscar Profesionales",
+    tabMyAppointments: "Mis Citas",
+    bookServiceTitle: "Reservar Servicio",
+    selectDate: "Selecciona Fecha",
+    selectTime: "Selecciona Hora",
+    transportLabel: "Transporte",
+    transportOwner: "Llevaré a la mascota",
+    transportPickup: "Pedir recogida (Taxi Pet)",
+    confirmBooking: "Confirmar Reserva",
+    bookingSuccess: "¡Reserva confirmada con éxito!",
+    noAppointments: "No tienes citas próximas.",
+    appointmentWith: "Con",
+    at: "a las",
+    interestSuccess: "Su interés en adoptar esta mascota ha sido registrado. Nos pondremos en contacto pronto.",
+    myInterestsTab: "Mis Intereses",
+    findPetsTab: "Encontrar Mascotas",
+    noInterests: "Aún no has mostrado interés en ninguna mascota.",
+    statusLabel: "Estado de la Solicitud",
+    statusPending: "Pendiente - Esperando contacto de la ONG",
+    tabAbout: "Sobre la ONG",
+    tabTransparency: "Portal de Transparencia",
+    transparencyTitle: "Rendición de Cuentas",
+    transparencyDesc: "Vea cómo usamos las donaciones para cuidar a nuestros animales.",
+    financialIncome: "Recaudado",
+    financialExpenses: "Gastos",
+    financialBalance: "Saldo",
+    expenseFood: "Alimentos y Pienso",
+    expenseVet: "Veterinario y Salud",
+    expenseMaintenance: "Mantenimiento y Limpieza",
+    expenseOther: "Otros (Facturas/Admin)",
+    topDonors: "Donantes Frecuentes",
+    donorsCount: "Total de Donantes",
+    lastUpdate: "Última actualización"
   }
 };
 
@@ -715,144 +816,160 @@ export const MOCK_ONGS: Ong[] = [
   {
     id: 'ong-1',
     name: 'Amigos de Patas',
-    image: 'https://images.unsplash.com/photo-1599401738722-69b7696412eb?auto=format&fit=crop&w=200&q=80',
-    description: 'Resgatando e cuidando de animais abandonados em São Paulo há 10 anos.',
+    image: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=400&auto=format&fit=crop&q=60',
+    description: 'Resgatamos e cuidamos de animais abandonados em São Paulo há 10 anos.',
     location: 'São Paulo, SP',
     coordinates: { lat: -23.5505, lng: -46.6333 },
     email: 'contato@amigosdepatas.org',
-    phone: '(11) 99999-9999',
+    phone: '(11) 99999-1234',
     website: 'www.amigosdepatas.org',
     pixKey: '12.345.678/0001-90',
-    bankInfo: { bank: 'Banco do Brasil', agency: '1234-5', account: '12345-6' }
+    bankInfo: { bank: 'Banco do Brasil', agency: '1234-5', account: '12345-6' },
+    transparency: {
+        month: 'Outubro',
+        year: 2024,
+        income: 15450.00,
+        expenses: {
+            food: 6500.00,
+            vet: 4800.00,
+            maintenance: 2500.00,
+            other: 1200.00
+        },
+        donorsCount: 142,
+        topDonors: ['Maria S.', 'João P.', 'Ana C.', 'Pedro H.']
+    }
   },
   {
     id: 'ong-2',
-    name: 'Gatos da Vila',
-    image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=200&q=80',
-    description: 'ONG dedicada ao resgate e cuidado de felinos na Vila Madalena.',
-    location: 'São Paulo, SP',
-    coordinates: { lat: -23.5605, lng: -46.6433 },
-    email: 'adote@gatosdavila.com',
-    phone: '(11) 98888-8888',
-    pixKey: 'gatosdavila@email.com'
+    name: 'Gatinhos da Vila',
+    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&auto=format&fit=crop&q=60',
+    description: 'ONG focada no resgate e adoção de felinos.',
+    location: 'Rio de Janeiro, RJ',
+    coordinates: { lat: -22.9068, lng: -43.1729 },
+    email: 'adote@gatinhosdavila.com',
+    phone: '(21) 98888-5678',
+    pixKey: 'gatinhos@pix.com',
+    transparency: {
+        month: 'Outubro',
+        year: 2024,
+        income: 8200.00,
+        expenses: {
+            food: 3000.00,
+            vet: 3500.00,
+            maintenance: 1000.00,
+            other: 800.00
+        },
+        donorsCount: 85,
+        topDonors: ['Carla M.', 'Roberto F.', 'Luciana T.']
+    }
   },
   {
     id: 'ong-3',
     name: 'SOS Animais',
-    image: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?auto=format&fit=crop&w=200&q=80',
-    description: 'Atuamos no resgate de animais em situação de risco em todo o estado.',
-    location: 'Campinas, SP',
-    coordinates: { lat: -22.9099, lng: -47.0626 },
-    phone: '(19) 97777-7777',
-    pixKey: 'sosanimais@email.com'
-  },
-   {
-    id: 'ong-4',
-    name: 'Abrigo Feliz',
-    image: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&w=200&q=80',
-    description: 'Um lar temporário cheio de amor para cães idosos.',
-    location: 'Rio de Janeiro, RJ',
-    coordinates: { lat: -22.9068, lng: -43.1729 },
-    phone: '(21) 96666-6666',
-    pixKey: 'abrigofeliz@email.com'
+    image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&auto=format&fit=crop&q=60',
+    description: 'Abrigo para cães e gatos em situação de risco.',
+    location: 'Curitiba, PR',
+    coordinates: { lat: -25.4284, lng: -49.2733 },
+    phone: '(41) 3333-4444',
+    transparency: {
+        month: 'Outubro',
+        year: 2024,
+        income: 12000.00,
+        expenses: {
+            food: 5000.00,
+            vet: 4000.00,
+            maintenance: 2500.00,
+            other: 1000.00
+        },
+        donorsCount: 110,
+        topDonors: ['Empresa X', 'Jorge L.', 'Amanda B.']
+    }
   }
 ];
 
 export const MOCK_ADOPTION_PETS: Pet[] = [
   {
-    id: 'p1',
+    id: 'adopt-1',
     name: 'Thor',
-    breed: 'Labrador Mix',
+    breed: 'Labrador',
     age: 2,
+    weight: 25,
     type: 'dog',
-    image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=400&q=80',
-    bio: 'Thor é um cãozinho muito enérgico e adora brincar de buscar bolinha.',
+    image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&auto=format&fit=crop&q=60',
+    bio: 'Thor é cheio de energia e adora nadar. Procura uma família ativa!',
     ongId: 'ong-1',
-    location: { lat: -23.5505, lng: -46.6333 },
-    weight: 25
+    location: { lat: -23.5505, lng: -46.6333 }
   },
   {
-    id: 'p2',
+    id: 'adopt-2',
     name: 'Luna',
-    breed: 'Sialata',
+    breed: 'Siamês',
     age: 1,
+    weight: 3,
     type: 'cat',
-    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80',
-    bio: 'Luna é uma gatinha calma e carinhosa, ideal para apartamento.',
+    image: 'https://images.unsplash.com/photo-1513245543132-31f507417b26?w=400&auto=format&fit=crop&q=60',
+    bio: 'Luna é carinhosa e adora dormir no sol.',
     ongId: 'ong-2',
-    location: { lat: -23.5605, lng: -46.6433 },
-    weight: 4
+    location: { lat: -22.9068, lng: -43.1729 }
   },
   {
-    id: 'p3',
-    name: 'Max',
-    breed: 'Golden Retriever',
+    id: 'adopt-3',
+    name: 'Bob',
+    breed: 'Vira-lata',
     age: 4,
+    weight: 15,
     type: 'dog',
-    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80',
-    bio: 'Max foi resgatado e agora procura uma família para dar muito amor.',
-    ongId: 'ong-1',
-    location: { lat: -23.5505, lng: -46.6333 },
-    weight: 30
-  },
-  {
-    id: 'p4',
-    name: 'Mel',
-    breed: 'Poodle',
-    age: 6,
-    type: 'dog',
-    image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80',
-    bio: 'Mel é super dócil e se dá bem com crianças e outros animais.',
+    image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400&auto=format&fit=crop&q=60',
+    bio: 'Bob é muito tranquilo e se dá bem com outros cães.',
     ongId: 'ong-3',
-    location: { lat: -22.9099, lng: -47.0626 },
-    weight: 8
+    location: { lat: -25.4284, lng: -49.2733 }
   },
   {
-    id: 'p5',
-    name: 'Simba',
-    breed: 'Laranja',
-    age: 2,
-    type: 'cat',
-    image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=400&q=80',
-    bio: 'Simba é um gato aventureiro e curioso.',
-    ongId: 'ong-2',
-    location: { lat: -23.5605, lng: -46.6433 },
-    weight: 5
-  },
-  {
-    id: 'p6',
-    name: 'Lola',
-    breed: 'Bulldog Francês',
+    id: 'adopt-4',
+    name: 'Mia',
+    breed: 'Persa',
     age: 3,
+    weight: 4,
+    type: 'cat',
+    image: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400&auto=format&fit=crop&q=60',
+    bio: 'Mia precisa de cuidados especiais com a pelagem e muito amor.',
+    ongId: 'ong-2',
+    location: { lat: -22.9068, lng: -43.1729 }
+  },
+  {
+    id: 'adopt-5',
+    name: 'Caramelo',
+    breed: 'Vira-lata',
+    age: 2,
+    weight: 12,
     type: 'dog',
-    image: 'https://images.unsplash.com/photo-1583511655826-05700d52f4d9?auto=format&fit=crop&w=400&q=80',
-    bio: 'Lola adora dormir e roncar no sofá.',
-    ongId: 'ong-4',
-    location: { lat: -22.9068, lng: -43.1729 },
-    weight: 12
+    image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&auto=format&fit=crop&q=60',
+    bio: 'O clássico vira-lata caramelo brasileiro, amigo de todos.',
+    ongId: 'ong-1',
+    location: { lat: -23.56, lng: -46.64 }
   }
 ];
 
 export const MOCK_DATING_PETS: Pet[] = [
   {
-    id: 'd1',
-    name: 'Bella',
-    breed: 'Golden Retriever',
+    id: 'date-1',
+    name: 'Princesa',
+    breed: 'Poodle',
     age: 3,
     type: 'dog',
-    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80',
-    bio: 'Procurando um parceiro para corridas no parque.',
+    image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&auto=format&fit=crop&q=60',
+    bio: 'Sou uma dama procurando um cavalheiro.',
     availableForDating: true,
     location: { lat: -23.5505, lng: -46.6333 }
   },
   {
-    id: 'd2',
-    name: 'Charlie',
-    breed: 'Beagle',
+    id: 'date-2',
+    name: 'Max',
+    breed: 'Golden Retriever',
     age: 4,
     type: 'dog',
-    image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=400&q=80',
-    bio: 'Gosto de farejar e uivar para a lua.',
+    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&auto=format&fit=crop&q=60',
+    bio: 'Adoro longas caminhadas no parque.',
     availableForDating: true,
     location: { lat: -23.5605, lng: -46.6433 }
   }
@@ -861,59 +978,65 @@ export const MOCK_DATING_PETS: Pet[] = [
 export const MOCK_SERVICES: ServiceProvider[] = [
   {
     id: 's1',
-    name: 'Dr. Paulo Veterinário',
+    name: 'Dr. Pet Vet',
     type: 'veterinarian',
     rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=200&q=80',
-    location: { lat: -23.5505, lng: -46.6333 },
-    address: 'Av. Paulista, 1000 - São Paulo'
+    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&auto=format&fit=crop&q=60',
+    address: 'Av. Paulista, 1000',
+    location: { lat: -23.5630, lng: -46.6544 }
   },
   {
     id: 's2',
     name: 'Banho & Tosa Fofura',
     type: 'petshop',
     rating: 4.5,
-    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=200&q=80',
-    location: { lat: -23.5605, lng: -46.6433 },
-    address: 'Rua Harmonia, 123 - Vila Madalena'
+    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&auto=format&fit=crop&q=60',
+    address: 'Rua Augusta, 500',
+    location: { lat: -23.5500, lng: -46.6400 }
   },
   {
     id: 's3',
-    name: 'Hotel Pet Resort',
+    name: 'Hotel Bom Pra Cachorro',
     type: 'hotel',
     rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1541781777631-fa953224e1ef?auto=format&fit=crop&w=200&q=80',
-    location: { lat: -22.9099, lng: -47.0626 },
-    address: 'Rodovia Dom Pedro I, km 10 - Campinas'
+    image: 'https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?w=400&auto=format&fit=crop&q=60',
+    address: 'Vila Madalena',
+    location: { lat: -23.5550, lng: -46.6900 }
   },
   {
     id: 's4',
-    name: 'Passeios da Ana',
+    name: 'Passeios Felizes',
     type: 'dogwalker',
-    rating: 5.0,
-    image: 'https://images.unsplash.com/photo-1597524206587-5732152a5592?auto=format&fit=crop&w=200&q=80',
-    location: { lat: -23.5505, lng: -46.6333 },
-    address: 'Atendimento em domicílio - SP'
+    rating: 4.7,
+    image: 'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?w=400&auto=format&fit=crop&q=60',
+    address: 'Parque Ibirapuera',
+    location: { lat: -23.5874, lng: -46.6576 }
   }
 ];
 
 export const MOCK_DAILY_PHOTOS = [
-  {
-    url: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=800&q=80',
-    petName: 'Rex',
-    breed: 'Bulldog',
-    location: 'Rio de Janeiro, RJ'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80',
-    petName: 'Mia',
-    breed: 'Gato Persa',
-    location: 'São Paulo, SP'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=800&q=80',
-    petName: 'Bolinha',
-    breed: 'Gato Siamês',
-    location: 'Curitiba, PR'
-  }
+    {
+        url: "https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=800&auto=format&fit=crop",
+        petName: "Buddy",
+        breed: "Golden Retriever",
+        location: "Ibirapuera, SP"
+    },
+    {
+        url: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?q=80&w=800&auto=format&fit=crop",
+        petName: "Luna",
+        breed: "Gato Siamês",
+        location: "Copacabana, RJ"
+    },
+    {
+        url: "https://images.unsplash.com/photo-1444212477490-ca407925329e?q=80&w=800&auto=format&fit=crop",
+        petName: "Toby",
+        breed: "Bulldog Francês",
+        location: "Centro, Curitiba"
+    },
+    {
+        url: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=800&auto=format&fit=crop",
+        petName: "Max",
+        breed: "Pastor Alemão",
+        location: "Lago Sul, Brasília"
+    }
 ];

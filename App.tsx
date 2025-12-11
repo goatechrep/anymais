@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { Language, AppView, User, PlanType, Ong, Pet, Coordinates } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS, MOCK_DATING_PETS } from './constants';
@@ -30,6 +32,7 @@ const App: React.FC = () => {
   const [ongCurrentIndex, setOngCurrentIndex] = useState(0);
   const [selectedOng, setSelectedOng] = useState<Ong | null>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+  const [pendingInterestPet, setPendingInterestPet] = useState<Pet | null>(null);
   
   // Auth Form States
   const [email, setEmail] = useState('');
@@ -130,6 +133,19 @@ const App: React.FC = () => {
       setView('adoption-pet-profile');
   };
 
+  const handleInterest = (pet: Pet) => {
+      const session = db.auth.getSession();
+      if (session) {
+          // If logged in, register interest immediately
+          db.adoptionInterests.create({ userId: session.id, petId: pet.id });
+          alert(t.interestSuccess);
+      } else {
+          // If not logged in, queue interest and open signup for Basic plan
+          setPendingInterestPet(pet);
+          openSignup('basic');
+      }
+  };
+
   // Phone Mask Helper
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '').slice(0, 11);
@@ -192,7 +208,23 @@ const App: React.FC = () => {
       const user = db.auth.login(email, password);
       if (user) {
         setShowLogin(false);
-        setView('dashboard');
+        // If there was a pending interest, process it and don't go to dashboard yet
+        if (pendingInterestPet) {
+            db.adoptionInterests.create({ userId: user.id, petId: pendingInterestPet.id });
+            alert(t.interestSuccess);
+            setPendingInterestPet(null);
+            // Optionally redirect to dashboard or stay on pet page?
+            // Prompt says: "return to the chosen pet... with message"
+            // We already showed alert. User is now logged in.
+            // If we are currently on adoption-pet-profile, stay there but with logged in header.
+            if (view === 'adoption-pet-profile') {
+                // Do nothing, just close modal. App will re-render with auth state.
+            } else {
+                setView('dashboard');
+            }
+        } else {
+            setView('dashboard');
+        }
         resetForm();
       } else {
         setAuthError(lang === Language.PT ? 'E-mail ou senha inválidos.' : 'Invalid email or password.');
@@ -220,7 +252,20 @@ const App: React.FC = () => {
 
       if (newUser) {
         setShowLogin(false);
-        setView('dashboard');
+        // Handle Pending Interest
+        if (pendingInterestPet) {
+             db.adoptionInterests.create({ userId: newUser.id, petId: pendingInterestPet.id });
+             alert(t.interestSuccess);
+             setPendingInterestPet(null);
+             
+             // Prompt: "voltar ao pet escolhido pra adoção".
+             // We ensure we stay on the relevant view if possible.
+             if (view !== 'adoption-pet-profile' && view !== 'public-adoption') {
+                setView('dashboard'); // Default fallback
+             }
+        } else {
+             setView('dashboard');
+        }
         resetForm();
       } else {
         setAuthError(lang === Language.PT ? 'E-mail já cadastrado.' : 'Email already exists.');
@@ -294,6 +339,7 @@ const App: React.FC = () => {
         onBack={() => setView('landing')} 
         onSignup={() => openSignup('basic')}
         onViewPet={handleViewPet}
+        onInterest={handleInterest}
       />
     );
   }
@@ -327,7 +373,10 @@ const App: React.FC = () => {
             lang={lang} 
             pet={selectedPet} 
             onBack={() => setView('public-adoption')}
-            onSignup={() => openSignup('basic')}
+            onSignup={(pet) => {
+                if(pet) setPendingInterestPet(pet);
+                handleInterest(pet || selectedPet);
+            }}
         />
       );
   }

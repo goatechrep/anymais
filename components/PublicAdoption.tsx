@@ -1,3 +1,5 @@
+
+
 import React, { useRef, useState } from 'react';
 import { Language, Pet } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
@@ -10,9 +12,10 @@ interface PublicAdoptionProps {
   onBack: () => void;
   onSignup: () => void;
   onViewPet?: (pet: Pet) => void;
+  onInterest?: (pet: Pet) => void;
 }
 
-export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, onBack, onSignup, onViewPet }) => {
+export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, onBack, onSignup, onViewPet, onInterest }) => {
   const t = TRANSLATIONS[lang];
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -147,7 +150,8 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
                             className="w-full mt-auto flex items-center justify-center gap-2 group-hover:bg-brand-700 shadow-md shadow-brand-100" 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (onViewPet) onViewPet(pet);
+                                if (onInterest) onInterest(pet);
+                                else if (onSignup) onSignup();
                             }}
                           >
                               <Heart size={16} className="text-pink-200 fill-pink-200" />

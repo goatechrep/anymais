@@ -66,7 +66,15 @@ export type TranslationKey =
   | 'datingCtaTitle' | 'datingCtaSubtitle' | 'datingCtaBtn'
   | 'servicesCtaTitle' | 'servicesCtaSubtitle' | 'servicesCtaBtn'
   | 'aboutTitle' | 'careersTitle' | 'blogTitle' | 'contactTitle' | 'helpTitle'
-  | 'blogPartnerBtn' | 'whatsappBtn' | 'faqTitle';
+  | 'blogPartnerBtn' | 'whatsappBtn' | 'faqTitle'
+  | 'tabFindServices' | 'tabMyAppointments' | 'bookServiceTitle' | 'selectDate' | 'selectTime' 
+  | 'transportLabel' | 'transportOwner' | 'transportPickup' | 'confirmBooking' | 'bookingSuccess'
+  | 'noAppointments' | 'appointmentWith' | 'at'
+  | 'interestSuccess' | 'myInterestsTab' | 'findPetsTab' | 'noInterests' | 'statusLabel' | 'statusPending'
+  | 'tabAbout' | 'tabTransparency' | 'transparencyTitle' | 'transparencyDesc'
+  | 'financialIncome' | 'financialExpenses' | 'financialBalance'
+  | 'expenseFood' | 'expenseVet' | 'expenseMaintenance' | 'expenseOther'
+  | 'topDonors' | 'donorsCount' | 'lastUpdate';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -103,6 +111,20 @@ export interface Pet {
   location?: Coordinates;
 }
 
+export interface OngTransparency {
+  month: string;
+  year: number;
+  income: number;
+  expenses: {
+    food: number;
+    vet: number;
+    maintenance: number;
+    other: number;
+  };
+  donorsCount: number;
+  topDonors: string[]; // Names or Initials
+}
+
 export interface Ong {
   id: string;
   ownerId?: string;
@@ -120,6 +142,7 @@ export interface Ong {
     agency: string;
     account: string;
   };
+  transparency?: OngTransparency;
 }
 
 export interface Vaccine {
@@ -137,6 +160,27 @@ export interface ServiceProvider {
   image: string;
   location?: Coordinates;
   address?: string;
+}
+
+export interface Appointment {
+  id: string;
+  userId: string;
+  petId: string;
+  providerId: string;
+  providerName: string; // Store name for easier display
+  providerType: ServiceProvider['type'];
+  date: string;
+  time: string;
+  transport: 'owner' | 'pickup';
+  status: 'pending' | 'confirmed' | 'completed';
+}
+
+export interface AdoptionInterest {
+  id: string;
+  userId: string;
+  petId: string;
+  date: string;
+  status: 'pending' | 'approved' | 'rejected';
 }
 
 export type AppView = 'landing' | 'dashboard' | 'public-adoption' | 'terms' | 'privacy' | 'ong-register' | 'public-ongs' | 'ong-profile' | 'adoption-pet-profile' | 'about' | 'careers' | 'blog' | 'contact' | 'help';

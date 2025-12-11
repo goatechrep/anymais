@@ -1,6 +1,9 @@
 
 
-import { User, Pet, ServiceProvider, Ong } from '../types';
+
+
+
+import { User, Pet, ServiceProvider, Ong, Appointment, AdoptionInterest } from '../types';
 import { MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES, MOCK_ONGS } from '../constants';
 
 const DB_KEY = 'anymais_db_v1';
@@ -10,6 +13,8 @@ interface Schema {
   users: User[];
   pets: Pet[];
   ongs: Ong[];
+  appointments: Appointment[];
+  adoptionInterests: AdoptionInterest[];
 }
 
 // Initial Seed Data
@@ -56,7 +61,22 @@ const INITIAL_DATA: Schema = {
       vaccines: []
     }
   ],
-  ongs: MOCK_ONGS // Seed with constant mock ONGs
+  ongs: MOCK_ONGS, // Seed with constant mock ONGs
+  appointments: [
+      {
+          id: 'apt-1',
+          userId: 'u1',
+          petId: 'pet-1',
+          providerId: 's2',
+          providerName: 'Banho & Tosa Fofura',
+          providerType: 'petshop',
+          date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+          time: '14:00',
+          transport: 'owner',
+          status: 'confirmed'
+      }
+  ],
+  adoptionInterests: []
 };
 
 // Helper to load DB
@@ -67,9 +87,17 @@ const loadDB = (): Schema => {
     return INITIAL_DATA;
   }
   const data = JSON.parse(stored);
-  // Migration check: if ongs missing in stored data, add them
+  // Migration check: if ongs/appointments missing in stored data, add them
   if (!data.ongs) {
       data.ongs = MOCK_ONGS;
+      saveDB(data);
+  }
+  if (!data.appointments) {
+      data.appointments = INITIAL_DATA.appointments;
+      saveDB(data);
+  }
+  if (!data.adoptionInterests) {
+      data.adoptionInterests = [];
       saveDB(data);
   }
   return data;
@@ -152,6 +180,8 @@ export const db = {
     delete: (petId: string) => {
       const data = loadDB();
       data.pets = data.pets.filter(p => p.id !== petId);
+      // Also cleanup appointments
+      data.appointments = data.appointments.filter(a => a.petId !== petId);
       saveDB(data);
     }
   },
@@ -171,5 +201,36 @@ export const db = {
         const data = loadDB();
         return data.ongs;
     }
+  },
+  appointments: {
+      create: (appointment: Omit<Appointment, 'id'>): Appointment => {
+          const data = loadDB();
+          const newApt = { ...appointment, id: `apt-${Date.now()}` };
+          data.appointments.push(newApt);
+          saveDB(data);
+          return newApt;
+      },
+      listByUser: (userId: string): Appointment[] => {
+          const data = loadDB();
+          return data.appointments.filter(a => a.userId === userId).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      }
+  },
+  adoptionInterests: {
+      create: (interest: Omit<AdoptionInterest, 'id' | 'date' | 'status'>): AdoptionInterest => {
+          const data = loadDB();
+          const newInterest: AdoptionInterest = {
+              ...interest,
+              id: `int-${Date.now()}`,
+              date: new Date().toISOString(),
+              status: 'pending'
+          };
+          data.adoptionInterests.push(newInterest);
+          saveDB(data);
+          return newInterest;
+      },
+      listByUser: (userId: string): AdoptionInterest[] => {
+          const data = loadDB();
+          return data.adoptionInterests.filter(i => i.userId === userId).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      }
   }
 };

@@ -10,7 +10,7 @@ interface AdoptionPetProfileProps {
   lang: Language;
   pet: Pet;
   onBack: () => void;
-  onSignup: () => void;
+  onSignup: (pet?: Pet) => void;
 }
 
 export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pet, onBack, onSignup }) => {
@@ -202,11 +202,11 @@ export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pe
                            )}
 
                            <div className="mt-8 pt-6 border-t border-gray-100">
-                               <Button size="lg" className="w-full text-lg shadow-xl shadow-brand-100 py-4 h-auto" onClick={onSignup}>
+                               <Button size="lg" className="w-full text-lg shadow-xl shadow-brand-100 py-4 h-auto" onClick={() => onSignup(pet)}>
                                    {t.interestBtn}
                                </Button>
                                <p className="text-center text-xs text-gray-400 mt-4 leading-normal">
-                                   Ao clicar, você precisará criar uma conta gratuita para prosseguir com o processo de adoção.
+                                   Ao clicar, você manifesta interesse. Se não tiver conta, faremos seu cadastro rápido.
                                </p>
                            </div>
                        </div>
