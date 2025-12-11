@@ -852,10 +852,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <Button size="sm" onClick={() => setActiveView('services')} className="bg-white text-brand-600 hover:bg-gray-100 border-none">
+                        <Button size="sm" onClick={() => setActiveView('services')} className="!bg-white !text-brand-600 hover:!bg-gray-100 border-none shadow-sm">
                             {t.dashServices}
                         </Button>
-                        <Button size="sm" onClick={() => setActiveView('health')} className="bg-brand-800 text-white hover:bg-brand-900 border-none">
+                        <Button size="sm" onClick={() => setActiveView('health')} className="!bg-brand-900 !text-white hover:!bg-black/20 border-none shadow-sm">
                             {t.dashHealth}
                         </Button>
                     </div>

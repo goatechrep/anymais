@@ -116,7 +116,7 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
                 <video 
                     ref={videoRef}
                     className="w-full h-full object-cover"
-                    src="https://videos.pexels.com/video-files/5801170/5801170-hd_1920_1080_24fps.mp4" 
+                    src="https://cdn.pixabay.com/video/2023/09/24/182069-867966838_large.mp4" 
                     autoPlay 
                     muted 
                     loop 
@@ -199,8 +199,13 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
                             className="w-full mt-auto flex items-center justify-center gap-2 group-hover:bg-brand-700 shadow-md shadow-brand-100" 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (onInterest) onInterest(pet);
-                                else if (onSignup) onSignup();
+                                if (onInterest) {
+                                    // Wrap in anonymous function to prevent event object being passed incorrectly
+                                    onInterest(pet); 
+                                } else if (onSignup) {
+                                    // Explicitly call onSignup without arguments to ensure it triggers 'basic' plan modal correctly in parent
+                                    onSignup();
+                                }
                             }}
                           >
                               <Heart size={16} className="text-pink-200 fill-pink-200" />

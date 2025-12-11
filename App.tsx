@@ -440,7 +440,7 @@ const App: React.FC = () => {
                               </option>
                           ))}
                       </select>
-                      <ChevronDown size={10} className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-brand-200 group-hover:text-white transition-colors" />
+                      <ChevronDown size={10} className="absolute right-0 top-1/2 -translate-y-1/2 text-brand-200 pointer-events-none group-hover:text-white transition-colors" />
                    </div>
                </div>
            </div>
@@ -796,7 +796,7 @@ const App: React.FC = () => {
                         </p>
                         <Button 
                           onClick={() => openSignup('premium')} 
-                          className="bg-white text-brand-600 hover:bg-brand-50 border-none shadow-xl px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
+                          className="!bg-white !text-pink-600 hover:!bg-gray-50 border-none shadow-xl px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
                         >
                             {t.datingCtaBtn}
                         </Button>
