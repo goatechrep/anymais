@@ -109,7 +109,11 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
                                 {availablePets.length > 0 ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         {availablePets.map(pet => (
-                                            <div key={pet.id} className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                            <div 
+                                                key={pet.id} 
+                                                className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                                                onClick={() => onViewPet(pet)}
+                                            >
                                                 <div className="h-56 relative overflow-hidden">
                                                     <img src={pet.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={pet.name} />
                                                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-brand-600">
@@ -136,7 +140,10 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
                                                     </p>
 
                                                     <Button 
-                                                        onClick={() => onViewPet(pet)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onViewPet(pet);
+                                                        }}
                                                         className="w-full flex items-center justify-center gap-2 font-bold py-3"
                                                     >
                                                         <Heart size={18} className="fill-white/20" /> {t.interestBtn}

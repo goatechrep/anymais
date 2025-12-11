@@ -218,7 +218,7 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
                </div>
                <p className="text-gray-500 mb-2 font-medium">Não encontrou o que procurava?</p>
                <h3 className="text-2xl font-bold text-gray-900 mb-8">Cadastre-se para receber alertas de novos pets!</h3>
-               <Button size="lg" onClick={onSignup} className="px-8 shadow-xl shadow-brand-100">{t.createAccount}</Button>
+               <Button size="lg" onClick={() => onSignup()} className="px-8 shadow-xl shadow-brand-100">{t.createAccount}</Button>
             </div>
          </div>
       </main>
