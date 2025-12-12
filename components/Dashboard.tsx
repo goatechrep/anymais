@@ -707,7 +707,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         <div className="md:hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowPetDropdown(false)}>
             <div className="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
                 <h3 className="font-bold text-gray-700 mb-4">{t.switchPet}</h3>
-                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar p-1">
                      {pets.map(pet => (
                         <button key={pet.id} onClick={() => { setActivePetId(pet.id); setShowPetDropdown(false); }} className={`flex items-center gap-3 w-full p-3 rounded-xl border transition-all ${activePetId === pet.id ? 'bg-brand-50 border-pink-200 text-brand-900' : 'border-transparent hover:bg-gray-50'}`}>
                             <img src={pet.image} className={`w-12 h-12 rounded-full object-cover ${activePetId === pet.id ? 'ring-2 ring-brand-500 ring-offset-2' : ''}`} />
@@ -1389,7 +1389,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                     <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
                   </h2>
                   <Button size="sm" variant="outline" onClick={() => setShowAddVaccineModal(true)} className="flex items-center gap-2">
-                      <Plus size={16} /> {t.addManual}
+                      <Plus size={16} /> <span className="hidden sm:inline">{t.addManual}</span>
                   </Button>
               </div>
 
@@ -1415,24 +1415,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
               {/* Health Table */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
-                    <tr><th className="px-6 py-3">{t.healthVaccine}</th><th className="px-6 py-3">{t.healthDate}</th><th className="px-6 py-3">{t.healthNextDue}</th><th className="px-6 py-3">{t.healthStatus}</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {activePet.vaccines && activePet.vaccines.length > 0 ? (
-                      activePet.vaccines.map(v => (
-                      <tr key={v.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 font-medium text-gray-900">{v.name}</td>
-                        <td className="px-6 py-4 text-gray-500">{new Date(v.date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-brand-600 font-medium">{v.nextDueDate ? new Date(v.nextDueDate).toLocaleDateString() : '-'}</td>
-                        <td className="px-6 py-4"><span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">OK</span></td>
-                      </tr>
-                    ))) : (
-                        <tr><td colSpan={4} className="p-8 text-center text-gray-500">{t.healthNoRecords}</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left whitespace-nowrap">
+                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
+                      <tr><th className="px-6 py-3">{t.healthVaccine}</th><th className="px-6 py-3">{t.healthDate}</th><th className="px-6 py-3">{t.healthNextDue}</th><th className="px-6 py-3">{t.healthStatus}</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {activePet.vaccines && activePet.vaccines.length > 0 ? (
+                        activePet.vaccines.map(v => (
+                        <tr key={v.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 font-medium text-gray-900">{v.name}</td>
+                          <td className="px-6 py-4 text-gray-500">{new Date(v.date).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-brand-600 font-medium">{v.nextDueDate ? new Date(v.nextDueDate).toLocaleDateString() : '-'}</td>
+                          <td className="px-6 py-4"><span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">OK</span></td>
+                        </tr>
+                      ))) : (
+                          <tr><td colSpan={4} className="p-8 text-center text-gray-500">{t.healthNoRecords}</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">{t.healthTip}</div>
             </div>
