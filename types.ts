@@ -70,13 +70,15 @@ export type TranslationKey =
   | 'tabFindServices' | 'tabMyAppointments' | 'bookServiceTitle' | 'selectDate' | 'selectTime' 
   | 'transportLabel' | 'transportOwner' | 'transportPickup' | 'confirmBooking' | 'bookingSuccess'
   | 'noAppointments' | 'appointmentWith' | 'at' | 'openNow' | 'noServicesFound'
-  | 'statusPending' | 'statusConfirmed' | 'statusCompleted'
+  | 'statusPending' | 'statusConfirmed' | 'statusCompleted' | 'statusCancelled'
   | 'qrCodeTitle' | 'qrCodeDesc' | 'generateQrBtn' | 'qrModalTitle' | 'qrModalInstruction' | 'close'
   | 'interestSuccess' | 'myInterestsTab' | 'findPetsTab' | 'noInterests' | 'statusLabel'
   | 'tabAbout' | 'tabTransparency' | 'transparencyTitle' | 'transparencyDesc'
   | 'financialIncome' | 'financialExpenses' | 'financialBalance'
   | 'expenseFood' | 'expenseVet' | 'expenseMaintenance' | 'expenseOther'
-  | 'topDonors' | 'donorsCount' | 'lastUpdate';
+  | 'topDonors' | 'donorsCount' | 'lastUpdate'
+  | 'cancelAppointment' | 'cancelReason' | 'refundPolicy' | 'confirmCancellation' | 'serviceCompleted' | 'confirmService'
+  | 'addVaccine' | 'addVaccineTitle' | 'vaccineName' | 'addManual';
 
 export type PlanType = 'basic' | 'start' | 'premium';
 
@@ -174,7 +176,7 @@ export interface Appointment {
   date: string;
   time: string;
   transport: 'owner' | 'pickup';
-  status: 'pending' | 'confirmed' | 'completed';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
 }
 
 export interface AdoptionInterest {

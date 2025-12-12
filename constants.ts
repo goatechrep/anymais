@@ -254,6 +254,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     statusPending: "Pendente",
     statusConfirmed: "Confirmado",
     statusCompleted: "Concluído",
+    statusCancelled: "Cancelado",
     qrCodeTitle: "Veterinário Externo?",
     qrCodeDesc: "Gere um QR Code para que seu veterinário de confiança registre as vacinas.",
     generateQrBtn: "Gerar QR Code",
@@ -278,7 +279,17 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     expenseOther: "Outros (Contas/Admin)",
     topDonors: "Doadores Frequentes",
     donorsCount: "Total de Doadores",
-    lastUpdate: "Última atualização"
+    lastUpdate: "Última atualização",
+    cancelAppointment: "Cancelar Agendamento",
+    cancelReason: "Motivo do cancelamento",
+    refundPolicy: "Política de Reembolso: Cancelamentos com até 24h de antecedência têm reembolso integral. Menos de 24h, taxa de 20%.",
+    confirmCancellation: "Confirmar Cancelamento",
+    serviceCompleted: "Confirmar Serviço Realizado",
+    confirmService: "Confirmar que o serviço foi atendido",
+    addVaccine: "Adicionar Vacina",
+    addVaccineTitle: "Registrar Vacina Manualmente",
+    vaccineName: "Nome da Vacina",
+    addManual: "Adicionar Manualmente"
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -533,6 +544,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     statusPending: "Pending",
     statusConfirmed: "Confirmed",
     statusCompleted: "Completed",
+    statusCancelled: "Cancelled",
     qrCodeTitle: "External Veterinarian?",
     qrCodeDesc: "Generate a QR Code so your trusted vet can register the vaccines.",
     generateQrBtn: "Generate QR Code",
@@ -557,7 +569,17 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     expenseOther: "Other (Bills/Admin)",
     topDonors: "Frequent Donors",
     donorsCount: "Total Donors",
-    lastUpdate: "Last updated"
+    lastUpdate: "Last updated",
+    cancelAppointment: "Cancel Appointment",
+    cancelReason: "Reason for cancellation",
+    refundPolicy: "Refund Policy: Cancellations up to 24h before are fully refunded. Less than 24h, 20% fee applies.",
+    confirmCancellation: "Confirm Cancellation",
+    serviceCompleted: "Confirm Service Completed",
+    confirmService: "Confirm the service was done",
+    addVaccine: "Add Vaccine",
+    addVaccineTitle: "Manually Register Vaccine",
+    vaccineName: "Vaccine Name",
+    addManual: "Add Manually"
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -812,6 +834,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     statusPending: "Pendiente",
     statusConfirmed: "Confirmado",
     statusCompleted: "Completado",
+    statusCancelled: "Cancelado",
     qrCodeTitle: "¿Veterinario Externo?",
     qrCodeDesc: "Genere un Código QR para que su veterinario de confianza registre las vacunas.",
     generateQrBtn: "Generar Código QR",
@@ -836,7 +859,17 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     expenseOther: "Otros (Facturas/Admin)",
     topDonors: "Donantes Frecuentes",
     donorsCount: "Total de Donantes",
-    lastUpdate: "Última actualización"
+    lastUpdate: "Última actualización",
+    cancelAppointment: "Cancelar Cita",
+    cancelReason: "Motivo de cancelación",
+    refundPolicy: "Política de Reembolso: Cancelaciones con hasta 24h de antelación tienen reembolso total. Menos de 24h, tasa del 20%.",
+    confirmCancellation: "Confirmar Cancelación",
+    serviceCompleted: "Confirmar Servicio Realizado",
+    confirmService: "Confirmar que el servicio fue atendido",
+    addVaccine: "Agregar Vacuna",
+    addVaccineTitle: "Registrar Vacina Manualmente",
+    vaccineName: "Nombre de la Vacuna",
+    addManual: "Añadir Manualmente"
   }
 };
 
@@ -927,7 +960,7 @@ export const MOCK_ADOPTION_PETS: Pet[] = [
         breed: 'Bulldog',
         age: 4,
         type: 'dog',
-        image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80',
+        image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=400&q=80',
         bio: 'Um companheiro leal e muito preguiçoso. Adora dormir no sofá e ganhar carinho na barriga.',
         ongId: 'ong-1',
         location: { lat: -23.56, lng: -46.64 },

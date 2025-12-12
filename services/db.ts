@@ -1,9 +1,4 @@
-
-
-
-
-
-import { User, Pet, ServiceProvider, Ong, Appointment, AdoptionInterest } from '../types';
+import { User, Pet, ServiceProvider, Ong, Appointment, AdoptionInterest, Vaccine } from '../types';
 import { MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES, MOCK_ONGS } from '../constants';
 
 const DB_KEY = 'anymais_db_v1';
@@ -183,6 +178,20 @@ export const db = {
       // Also cleanup appointments
       data.appointments = data.appointments.filter(a => a.petId !== petId);
       saveDB(data);
+    },
+    addVaccine: (petId: string, vaccine: Omit<Vaccine, 'id'>) => {
+      const data = loadDB();
+      const index = data.pets.findIndex(p => p.id === petId);
+      if (index !== -1) {
+        if (!data.pets[index].vaccines) {
+          data.pets[index].vaccines = [];
+        }
+        data.pets[index].vaccines?.push({
+          id: `vac-${Date.now()}`,
+          ...vaccine
+        });
+        saveDB(data);
+      }
     }
   },
   ongs: {
@@ -213,6 +222,14 @@ export const db = {
       listByUser: (userId: string): Appointment[] => {
           const data = loadDB();
           return data.appointments.filter(a => a.userId === userId).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      },
+      updateStatus: (appointmentId: string, status: Appointment['status']) => {
+          const data = loadDB();
+          const index = data.appointments.findIndex(a => a.id === appointmentId);
+          if (index !== -1) {
+              data.appointments[index].status = status;
+              saveDB(data);
+          }
       }
   },
   adoptionInterests: {

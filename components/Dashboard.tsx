@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType, Ong, AdoptionInterest } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
@@ -99,10 +98,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const [isEditingPet, setIsEditingPet] = useState(false);
   const [editedPet, setEditedPet] = useState<Pet | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // New modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false); 
   const [datingAlert, setDatingAlert] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showAddVaccineModal, setShowAddVaccineModal] = useState(false);
+  const [newVaccine, setNewVaccine] = useState({ name: '', date: '', nextDueDate: '' });
 
   // New Pet State
   const [newPet, setNewPet] = useState<Pet>({
@@ -146,7 +147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       const interests = db.adoptionInterests.listByUser(session.id);
       setAdoptionInterests(interests);
     } else {
-      onLogout(); // Should not happen if App.tsx handles auth correctly
+      onLogout(); 
     }
   }, []);
 
@@ -170,7 +171,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
     } else {
         setLocationAddress('');
     }
-  }, [currentUser.location, editedUser.location, isEditingUser]); // Depend on location objects changing
+  }, [currentUser.location, editedUser.location, isEditingUser]); 
 
   // Reset verification status when entering edit mode or changing location
   useEffect(() => {
@@ -433,6 +434,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
     }
   };
 
+  const handleAddVaccine = () => {
+      if (activePetId && newVaccine.name && newVaccine.date) {
+          db.pets.addVaccine(activePetId, newVaccine);
+          // Refresh pets
+          const userPets = db.pets.listByOwner(currentUser.id);
+          setPets(userPets);
+          setShowAddVaccineModal(false);
+          setNewVaccine({ name: '', date: '', nextDueDate: '' });
+      }
+  };
+
   const getPlanName = (plan: PlanType) => {
     switch(plan) {
       case 'basic': return t.planBasic;
@@ -656,7 +668,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
             <NavItem view="services" icon={Calendar} label={t.dashServices} locked={!checkPlanAccess('services')} description={t.tooltipServices} planReq={t.reqPlanStart} />
             
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3 mt-6">Comunidade</p>
-            {/* Tooltips removed for Adoption, Lost & Found, My ONGs */}
             <NavItem view="adoption" icon={PawPrint} label={t.dashAdoption} planReq={t.reqPlanBasic} />
             <NavItem view="lost-found" icon={Search} label={t.dashLostFound} planReq={t.reqPlanBasic} />
             <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} planReq={t.reqPlanBasic} />
@@ -718,6 +729,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         {/* OVERVIEW DASHBOARD */}
         {activeView === 'overview' && (
             <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+                {/* ... (Overview Content unchanged) ... */}
                 <div className="flex justify-between items-center">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-900">{t.overviewTitle}</h2>
@@ -728,7 +740,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                     </Button>
                 </div>
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start">
@@ -763,7 +774,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* My Pets List */}
                     <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                             <h3 className="font-bold text-gray-800 text-lg">{t.myPets}</h3>
@@ -793,7 +803,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                         </div>
                     </div>
 
-                    {/* Upcoming Events */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-fit">
                         <div className="p-6 border-b border-gray-100">
                             <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
@@ -842,7 +851,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                     </div>
                 </div>
 
-                {/* Quick Actions Bar */}
                 <div className="bg-gradient-to-r from-brand-600 to-pink-600 rounded-2xl shadow-lg p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
@@ -866,10 +874,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         )}
 
         {/* ... (Create Pet, Lost & Found, My ONGs, User Profile Views - No Changes) ... */}
-        
         {activeView === 'create-pet' && (
            <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-              {/* Content identical to previous, included for XML completeness if needed, but omitted for brevity in thought process */}
               <h2 className="text-2xl font-bold text-gray-800 mb-6">{t.addNewPet}</h2>
               <div className="flex justify-center mb-6">
                   <div className="relative group">
@@ -966,7 +972,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
         {activeView === 'user-profile' && (
              <div className="max-w-2xl mx-auto space-y-6">
-                 {/* ... (User Profile Content - Same as previous) ... */}
                  <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
                          <h2 className="text-2xl font-bold text-gray-800">{t.userProfile}</h2>
@@ -1013,11 +1018,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                             ) : (<p className="text-lg font-medium text-gray-900">{currentUser.phone}</p>)}
                          </div>
 
-                         {/* Location Section */}
                          <div>
                              <label className="block text-sm font-bold text-gray-500 mb-2">{t.locationLabel}</label>
                              <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-brand-200 transition-colors">
-                                 {/* Background Pattern to simulate map */}
                                  <div className="absolute inset-0 opacity-[0.03]" 
                                      style={{ 
                                          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
@@ -1026,12 +1029,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                  
                                  <div className="relative p-6">
                                      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                                         {/* Icon */}
                                          <div className={`p-4 rounded-full shadow-lg border-4 border-white shrink-0 ${currentUser.location ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                                              <MapPin size={24} />
                                          </div>
                                          
-                                         {/* Text Info - Flex Grow to take available space */}
                                          <div className="text-center sm:text-left flex-1 min-w-0"> 
                                              <h4 className="text-lg font-bold text-gray-900 leading-tight">
                                                  {locationAddress || (currentUser.location ? t.detecting : t.locationNotFound)}
@@ -1045,7 +1046,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                              )}
                                          </div>
 
-                                         {/* Action Button - Shrink 0 */}
                                          <div className="flex gap-2 shrink-0">
                                             {!isEditingUser && currentUser.location && (
                                                 <Button
@@ -1073,7 +1073,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                          </div>
                                      </div>
 
-                                     {/* Verification Status Message - New Row */}
                                      {!isEditingUser && currentUser.location && (verificationStatus === 'match' || verificationStatus === 'mismatch') && (
                                          <div className={`mt-4 flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-sm font-bold animate-fade-in ${verificationStatus === 'match' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
                                               {verificationStatus === 'match' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
@@ -1082,7 +1081,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                      )}
                                 </div>
                                 
-                                {/* Banner if not editing */}
                                 {!isEditingUser && currentUser.location && (
                                       <div className="absolute top-0 right-0 bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider shadow-sm">
                                          GPS Ativo
@@ -1093,7 +1091,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                      </div>
                  </div>
                 
-                 {/* Plan Management Card */}
                  <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
                     <div className="flex justify-between items-start">
                         <div><h3 className="text-lg font-bold text-gray-800 mb-2">{t.currentPlan}</h3><span className={`inline-block px-3 py-1 rounded-full text-sm font-bold border ${getPlanColor(currentUser.plan || 'basic')}`}>{getPlanName(currentUser.plan || 'basic')}</span></div>
@@ -1102,7 +1099,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                     <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500">{t.planBenefits}: {getPlanDescription(currentUser.plan || 'basic')}</div>
                  </div>
 
-                 {/* Pets Management Card */}
                  <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
                      <h3 className="font-bold text-gray-800 mb-4">{t.myPets} ({pets.length})</h3>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1116,7 +1112,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                      </div>
                  </div>
 
-                 {/* Favorites Card */}
                  <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
                      <h3 className="font-bold text-gray-800 mb-4">{t.myFavorites}</h3>
                      {currentUser.favorites && currentUser.favorites.length > 0 ? (
@@ -1155,8 +1150,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
         )}
 
-        {/* IF NO ACTIVE PET AND NOT CREATING/EDITING USER */}
-        {/* Updated condition to allow adoption, lost-found, my-ongs views without pet */}
         {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && activeView !== 'adoption' && activeView !== 'overview' && (
              <div className="text-center py-20">
                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">🐾</span></div>
@@ -1166,11 +1159,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
         )}
         
-        {/* PET PROFILE VIEW */}
         {activePet && activeView === 'profile' && editedPet && (
            <div className="max-w-3xl mx-auto">
              <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 relative animate-fade-in">
-               {/* ... (Existing Profile Content) ... */}
                 <div className="absolute top-6 right-6 flex gap-2">
                   {!isEditingPet ? (
                     <Button variant="outline" size="sm" onClick={() => { setEditedPet(activePet); setIsEditingPet(true); }} className="flex items-center gap-2"><Pencil size={16} /> {t.editProfile}</Button>
@@ -1200,7 +1191,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                       </>
                     ) : (
                       <div className="space-y-4 w-full animate-fade-in">
-                        {/* ... Editing fields same as before ... */}
                          <div><label className="block text-sm font-bold text-gray-700 mb-1">{t.petName}</label><input type="text" value={editedPet.name} onChange={(e) => setEditedPet({...editedPet, name: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" /></div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div><label className="block text-sm font-bold text-gray-700 mb-1">{t.breedLabel}</label><input type="text" value={editedPet.breed} onChange={(e) => setEditedPet({...editedPet, breed: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" /></div>
@@ -1245,7 +1235,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           </div>
         )}
 
-        {/* Adoption View - UPDATED WITH TABS */}
+        {/* Adoption View */}
         {activeView === 'adoption' && (
           <div>
             <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
@@ -1354,8 +1344,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
           </div>
         )}
 
-        {/* ... (Dating, Health, Services, Mobile Bottom Nav, Modals - No changes) ... */}
-        
         {/* Dating View */}
         {activeView === 'dating' && activePet && (
           checkPlanAccess('dating') ? (
@@ -1396,9 +1384,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         {activeView === 'health' && activePet && (
           checkPlanAccess('health') ? (
             <div className="max-w-3xl">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-                <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
-              </h2>
+              <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
+                  </h2>
+                  <Button size="sm" variant="outline" onClick={() => setShowAddVaccineModal(true)} className="flex items-center gap-2">
+                      <Plus size={16} /> {t.addManual}
+                  </Button>
+              </div>
 
               {/* Quick Access QR Code Card */}
               <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl shadow-lg p-6 mb-8 text-white flex flex-col md:flex-row justify-between items-center gap-4">
@@ -1420,7 +1413,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                   </Button>
               </div>
 
-              {/* ... (Health table UI same as before) ... */}
+              {/* Health Table */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <table className="w-full text-left">
                   <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
@@ -1431,8 +1424,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                       activePet.vaccines.map(v => (
                       <tr key={v.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 font-medium text-gray-900">{v.name}</td>
-                        <td className="px-6 py-4 text-gray-500">{v.date}</td>
-                        <td className="px-6 py-4 text-brand-600 font-medium">{v.nextDueDate}</td>
+                        <td className="px-6 py-4 text-gray-500">{new Date(v.date).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-brand-600 font-medium">{v.nextDueDate ? new Date(v.nextDueDate).toLocaleDateString() : '-'}</td>
                         <td className="px-6 py-4"><span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">OK</span></td>
                       </tr>
                     ))) : (
@@ -1526,6 +1519,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                     <Button onClick={() => setShowQrModal(false)} className="w-full mt-6" variant="outline">{t.close}</Button>
                </div>
            </div>
+      )}
+
+      {/* Add Vaccine Modal */}
+      {showAddVaccineModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative">
+                  <button onClick={() => setShowAddVaccineModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">{t.addVaccineTitle}</h3>
+                  
+                  <div className="space-y-4">
+                      <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-1">{t.vaccineName}</label>
+                          <input 
+                              type="text" 
+                              className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500"
+                              value={newVaccine.name}
+                              onChange={e => setNewVaccine({...newVaccine, name: e.target.value})}
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-1">{t.healthDate}</label>
+                          <input 
+                              type="date" 
+                              className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500"
+                              value={newVaccine.date}
+                              onChange={e => setNewVaccine({...newVaccine, date: e.target.value})}
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-1">{t.healthNextDue} (Opcional)</label>
+                          <input 
+                              type="date" 
+                              className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500"
+                              value={newVaccine.nextDueDate}
+                              onChange={e => setNewVaccine({...newVaccine, nextDueDate: e.target.value})}
+                          />
+                      </div>
+                      <Button onClick={handleAddVaccine} className="w-full mt-4">{t.addVaccine}</Button>
+                  </div>
+              </div>
+          </div>
       )}
     </div>
   );

@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { ServiceProvider, Language, Coordinates, Pet, Appointment } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
-import { Star, MapPin, Calendar, Clock, ShieldCheck, Dog, Search, Loader2, Filter, X, CheckCircle, Car } from 'lucide-react';
+import { Star, MapPin, Calendar, Clock, ShieldCheck, Dog, Search, Loader2, Filter, X, CheckCircle, Car, AlertTriangle } from 'lucide-react';
 import { calculateDistance, mockGeocode } from '../utils';
 import { db } from '../services/db';
 
@@ -33,6 +32,11 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [myAppointments, setMyAppointments] = useState<Appointment[]>([]);
 
+  // Cancellation Modal State
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+
   // Form State
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('');
@@ -40,11 +44,15 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
   const [transportType, setTransportType] = useState<'owner' | 'pickup'>('owner');
 
   // Load appointments
-  useEffect(() => {
+  const refreshAppointments = () => {
       if (userId) {
           const apps = db.appointments.listByUser(userId);
           setMyAppointments(apps);
       }
+  };
+
+  useEffect(() => {
+      refreshAppointments();
   }, [userId, activeTab, bookingSuccess]); // Reload when tab changes or after booking
 
   // Sync reference location
@@ -102,12 +110,35 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
 
       db.appointments.create(newAppointment);
       setBookingSuccess(true);
+      refreshAppointments();
       
       // Close modal after delay and switch to appointments tab
       setTimeout(() => {
           setIsBookingModalOpen(false);
           setActiveTab('appointments');
       }, 2000);
+  };
+
+  const handleOpenCancelModal = (aptId: string) => {
+      setAppointmentToCancel(aptId);
+      setCancelReason('');
+      setIsCancelModalOpen(true);
+  };
+
+  const confirmCancellation = () => {
+      if (appointmentToCancel) {
+          db.appointments.updateStatus(appointmentToCancel, 'cancelled');
+          refreshAppointments();
+          setIsCancelModalOpen(false);
+          setAppointmentToCancel(null);
+      }
+  };
+
+  const handleCompleteService = (aptId: string) => {
+      if (window.confirm(t.confirmService)) {
+          db.appointments.updateStatus(aptId, 'completed');
+          refreshAppointments();
+      }
   };
 
   const getServiceLabel = (type: ServiceProvider['type']) => {
@@ -143,7 +174,18 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
           case 'pending': return t.statusPending;
           case 'confirmed': return t.statusConfirmed;
           case 'completed': return t.statusCompleted;
+          case 'cancelled': return t.statusCancelled;
           default: return status;
+      }
+  };
+
+  const getStatusColor = (status: Appointment['status']) => {
+      switch(status) {
+          case 'pending': return 'bg-yellow-100 text-yellow-700';
+          case 'confirmed': return 'bg-green-100 text-green-700';
+          case 'completed': return 'bg-blue-100 text-blue-700';
+          case 'cancelled': return 'bg-red-100 text-red-700';
+          default: return 'bg-gray-100 text-gray-700';
       }
   };
 
@@ -195,6 +237,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
 
       {activeTab === 'search' ? (
           <>
+            {/* Search UI */}
             <div className="flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto flex-1">
                     <div className="relative flex-1">
@@ -350,36 +393,63 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
               {myAppointments.length > 0 ? (
                   myAppointments.map(appointment => {
                       const pet = pets.find(p => p.id === appointment.petId);
+                      const isPast = new Date(appointment.date) < new Date();
+                      
                       return (
-                          <div key={appointment.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow">
-                                <div className="flex flex-col items-center justify-center bg-brand-50 rounded-xl p-4 w-full md:w-32">
-                                    <span className="text-3xl font-bold text-brand-600">{appointment.date.split('-')[2]}</span>
-                                    <span className="text-sm font-bold text-brand-400 uppercase">{new Date(appointment.date).toLocaleString(lang, { month: 'short' })}</span>
-                                    <span className="text-xs text-brand-300 font-medium mt-1">{appointment.time}</span>
+                          <div key={appointment.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col gap-6 hover:shadow-md transition-shadow">
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    <div className="flex flex-col items-center justify-center bg-brand-50 rounded-xl p-4 w-full md:w-32 self-start">
+                                        <span className="text-3xl font-bold text-brand-600">{appointment.date.split('-')[2]}</span>
+                                        <span className="text-sm font-bold text-brand-400 uppercase">{new Date(appointment.date).toLocaleString(lang, { month: 'short' })}</span>
+                                        <span className="text-xs text-brand-300 font-medium mt-1">{appointment.time}</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="text-xl font-bold text-gray-900">{appointment.providerName}</h3>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(appointment.status)}`}>
+                                                {getStatusLabel(appointment.status)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-500">
+                                            <span className={`px-2 py-0.5 rounded border ${getServiceColor(appointment.providerType)} bg-opacity-10 text-[10px] uppercase`}>
+                                                {getServiceLabel(appointment.providerType)}
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                                            <div className="flex items-center gap-2">
+                                                {pet ? <img src={pet.image} className="w-6 h-6 rounded-full object-cover" /> : <Dog size={16} />}
+                                                <span className="font-medium">{pet ? pet.name : 'Pet'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Car size={16} className="text-gray-400" />
+                                                <span>{appointment.transport === 'owner' ? t.transportOwner : t.transportPickup}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="text-xl font-bold text-gray-900">{appointment.providerName}</h3>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${appointment.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                            {getStatusLabel(appointment.status)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-500">
-                                         <span className={`px-2 py-0.5 rounded border ${getServiceColor(appointment.providerType)} bg-opacity-10 text-[10px] uppercase`}>
-                                            {getServiceLabel(appointment.providerType)}
-                                         </span>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                                        <div className="flex items-center gap-2">
-                                            {pet ? <img src={pet.image} className="w-6 h-6 rounded-full object-cover" /> : <Dog size={16} />}
-                                            <span className="font-medium">{pet ? pet.name : 'Pet'}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Car size={16} className="text-gray-400" />
-                                            <span>{appointment.transport === 'owner' ? t.transportOwner : t.transportPickup}</span>
-                                        </div>
-                                    </div>
+
+                                {/* Actions Footer */}
+                                <div className="border-t border-gray-100 pt-4 flex flex-wrap gap-3 justify-end">
+                                    {appointment.status === 'confirmed' && !isPast && (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => handleOpenCancelModal(appointment.id)}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                        >
+                                            {t.cancelAppointment}
+                                        </Button>
+                                    )}
+                                    {appointment.status === 'confirmed' && isPast && (
+                                        <Button 
+                                            size="sm" 
+                                            onClick={() => handleCompleteService(appointment.id)}
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                        >
+                                            {t.serviceCompleted}
+                                        </Button>
+                                    )}
                                 </div>
                           </div>
                       );
@@ -488,6 +558,49 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
                           </p>
                       </div>
                   )}
+              </div>
+          </div>
+      )}
+
+      {/* Cancellation Modal */}
+      {isCancelModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">{t.cancelAppointment}</h3>
+                  
+                  <div className="space-y-4 mb-6">
+                      <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-1">{t.cancelReason}</label>
+                          <select 
+                              value={cancelReason}
+                              onChange={(e) => setCancelReason(e.target.value)}
+                              className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                          >
+                              <option value="">Selecione...</option>
+                              <option value="imprevisto">Imprevisto pessoal</option>
+                              <option value="doenca">Pet doente</option>
+                              <option value="outro">Outro motivo</option>
+                          </select>
+                      </div>
+                      
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex gap-2">
+                          <AlertTriangle size={16} className="text-yellow-600 shrink-0 mt-0.5" />
+                          <p className="text-xs text-yellow-700 leading-snug">{t.refundPolicy}</p>
+                      </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                      <Button variant="ghost" onClick={() => setIsCancelModalOpen(false)} className="flex-1">
+                          {t.cancel}
+                      </Button>
+                      <Button 
+                          onClick={confirmCancellation}
+                          className="flex-1 !bg-red-600 hover:!bg-red-700"
+                          disabled={!cancelReason}
+                      >
+                          {t.confirm}
+                      </Button>
+                  </div>
               </div>
           </div>
       )}
