@@ -11,7 +11,7 @@ import { LegalPages } from './components/LegalPages';
 import { StaticPages } from './components/StaticPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
-import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe, Calendar, Stethoscope, Scissors, Home as HotelIcon, Footprints, Sparkles } from 'lucide-react';
+import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe, Calendar, Stethoscope, Scissors, Home as HotelIcon, Footprints, Sparkles, LayoutDashboard } from 'lucide-react';
 import { db } from './services/db';
 import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
@@ -21,6 +21,9 @@ const App: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   
+  // User Session State
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
   // UI State
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -64,6 +67,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const session = db.auth.getSession();
     if (session) {
+      setCurrentUser(session);
       setView('dashboard');
     }
   }, []);
@@ -208,20 +212,16 @@ const App: React.FC = () => {
       const user = db.auth.login(email, password);
       if (user) {
         setShowLogin(false);
-        // If there was a pending interest, process it and don't go to dashboard yet
+        setCurrentUser(user);
+        
+        // If there was a pending interest, process it
         if (pendingInterestPet) {
             db.adoptionInterests.create({ userId: user.id, petId: pendingInterestPet.id });
             alert(t.interestSuccess);
             setPendingInterestPet(null);
-            // If we are currently on adoption-pet-profile, stay there but with logged in header (via re-render)
-            // But 'view' determines which component renders. Dashboard replaces everything.
-            // If we want to stay on public view, we need to handle that. 
-            // For simplicity, we redirect to dashboard as per common flow, 
-            // unless we are deep in a flow. Let's redirect to dashboard for logged in users.
-            setView('dashboard');
-        } else {
-            setView('dashboard');
         }
+        
+        setView('dashboard');
         resetForm();
       } else {
         setAuthError(lang === Language.PT ? 'E-mail ou senha inválidos.' : 'Invalid email or password.');
@@ -249,15 +249,16 @@ const App: React.FC = () => {
 
       if (newUser) {
         setShowLogin(false);
+        setCurrentUser(newUser);
+
         // Handle Pending Interest
         if (pendingInterestPet) {
              db.adoptionInterests.create({ userId: newUser.id, petId: pendingInterestPet.id });
              alert(t.interestSuccess);
              setPendingInterestPet(null);
-             setView('dashboard');
-        } else {
-             setView('dashboard');
         }
+        
+        setView('dashboard');
         resetForm();
       } else {
         setAuthError(lang === Language.PT ? 'E-mail já cadastrado.' : 'Email already exists.');
@@ -295,6 +296,7 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     db.auth.logout();
+    setCurrentUser(null);
     setView('landing');
   };
 
@@ -460,8 +462,28 @@ const App: React.FC = () => {
               </div>
               
               <div className="hidden md:flex items-center gap-4">
-                <Button variant="ghost" onClick={openLogin}>{t.ctaLogin}</Button>
-                <Button onClick={() => openSignup('basic')}>{t.createAccount}</Button>
+                {currentUser ? (
+                    <button 
+                        onClick={() => setView('dashboard')}
+                        className="flex items-center gap-3 pl-1 pr-4 py-1 rounded-full border border-gray-200 hover:bg-gray-50 hover:border-brand-200 transition-all group"
+                    >
+                        <img 
+                            src={currentUser.image} 
+                            alt={currentUser.name} 
+                            className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
+                        />
+                        <div className="text-left">
+                            <p className="text-xs text-gray-500 font-medium leading-none mb-0.5">{t.welcome}</p>
+                            <p className="text-sm font-bold text-brand-600 leading-none group-hover:text-brand-700">{currentUser.name.split(' ')[0]}</p>
+                        </div>
+                        <LayoutDashboard size={16} className="text-gray-400 group-hover:text-brand-500 ml-1" />
+                    </button>
+                ) : (
+                    <>
+                        <Button variant="ghost" onClick={openLogin}>{t.ctaLogin}</Button>
+                        <Button onClick={() => openSignup('basic')}>{t.createAccount}</Button>
+                    </>
+                )}
               </div>
   
               <button 
@@ -492,12 +514,21 @@ const App: React.FC = () => {
             
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
                <div className="flex flex-col gap-4">
-                 <Button size="lg" className="w-full justify-center" onClick={() => openSignup('basic')}>
-                    {t.createAccount}
-                 </Button>
-                 <Button size="lg" variant="outline" className="w-full justify-center" onClick={openLogin}>
-                    {t.ctaLogin}
-                 </Button>
+                 {currentUser ? (
+                     <Button size="lg" className="w-full justify-center flex items-center gap-2" onClick={() => { setView('dashboard'); setMobileMenuOpen(false); }}>
+                        <LayoutDashboard size={20} />
+                        {t.dashOverview}
+                     </Button>
+                 ) : (
+                     <>
+                        <Button size="lg" className="w-full justify-center" onClick={() => openSignup('basic')}>
+                            {t.createAccount}
+                        </Button>
+                        <Button size="lg" variant="outline" className="w-full justify-center" onClick={openLogin}>
+                            {t.ctaLogin}
+                        </Button>
+                     </>
+                 )}
                </div>
                <hr className="border-gray-100" />
                <div className="p-4 bg-gray-50 rounded-xl text-center">
@@ -521,8 +552,17 @@ const App: React.FC = () => {
                   {t.heroSubtitle}
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-                  <Button size="lg" onClick={() => openSignup('start')}>{t.ctaStart}</Button>
-                  <Button size="lg" variant="outline" onClick={openLogin}>{t.ctaLogin}</Button>
+                  {currentUser ? (
+                      <Button size="lg" onClick={() => setView('dashboard')} className="flex items-center gap-2">
+                          <LayoutDashboard size={20} />
+                          {t.dashOverview}
+                      </Button>
+                  ) : (
+                      <>
+                        <Button size="lg" onClick={() => openSignup('start')}>{t.ctaStart}</Button>
+                        <Button size="lg" variant="outline" onClick={openLogin}>{t.ctaLogin}</Button>
+                      </>
+                  )}
                 </div>
               </div>
   
@@ -652,7 +692,7 @@ const App: React.FC = () => {
                  ))}
               </div>
   
-              <Button onClick={() => openSignup('start')} size="lg" variant="primary" className="shadow-lg shadow-brand-100">
+              <Button onClick={() => currentUser ? setView('dashboard') : openSignup('start')} size="lg" variant="primary" className="shadow-lg shadow-brand-100">
                   {t.servicesCtaBtn} <ArrowRight size={20} className="ml-2" />
               </Button>
           </div>
@@ -675,7 +715,7 @@ const App: React.FC = () => {
                  <Button 
                      size="lg" 
                      className="!bg-white !text-brand-900 hover:!bg-gray-100 shadow-xl flex items-center gap-2 border-none px-8 py-4 text-lg"
-                     onClick={openLogin}
+                     onClick={currentUser ? () => setView('dashboard') : openLogin}
                   >
                      {t.landingLostFoundBtn}
                      <ArrowRight size={20} />
@@ -795,7 +835,7 @@ const App: React.FC = () => {
                             {t.datingCtaSubtitle}
                         </p>
                         <Button 
-                          onClick={() => openSignup('premium')} 
+                          onClick={() => currentUser ? setView('dashboard') : openSignup('premium')} 
                           className="!bg-white !text-pink-600 hover:!bg-gray-50 border-none shadow-xl px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
                         >
                             {t.datingCtaBtn}
@@ -891,7 +931,7 @@ const App: React.FC = () => {
                      <Button 
                          size="lg" 
                          className="bg-secondary-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-200"
-                         onClick={() => openSignup('start')}
+                         onClick={() => currentUser ? setView('dashboard') : openSignup('start')}
                      >
                          {t.vaccineCtaBtn} <ArrowRight size={20} className="ml-2" />
                      </Button>
@@ -927,7 +967,7 @@ const App: React.FC = () => {
                     <Check size={16} className="text-green-500 mr-2" /> {t.featOngRegister}
                   </li>
                 </ul>
-                <Button variant="outline" className="w-full mt-8" onClick={() => openSignup('basic')}>{t.btnChooseBasic}</Button>
+                <Button variant="outline" className="w-full mt-8" onClick={() => currentUser ? setView('dashboard') : openSignup('basic')}>{t.btnChooseBasic}</Button>
               </div>
   
               <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-brand-500 relative transform md:-translate-y-4">
@@ -946,7 +986,7 @@ const App: React.FC = () => {
                   </li>
                    <li className="flex items-center text-sm text-gray-500"><Check size={14} className="text-brand-500 mr-2" /> {t.featScheduling}</li>
                 </ul>
-                <Button className="w-full mt-8" onClick={() => openSignup('start')}>{t.btnChooseStart}</Button>
+                <Button className="w-full mt-8" onClick={() => currentUser ? setView('dashboard') : openSignup('start')}>{t.btnChooseStart}</Button>
               </div>
   
               <div className="bg-gray-900 rounded-2xl shadow-sm p-8 text-white border border-gray-800">
@@ -969,7 +1009,7 @@ const App: React.FC = () => {
                     <Check size={16} className="text-brand-400 mr-2" /> {t.featSupport}
                   </li>
                 </ul>
-                <Button variant="secondary" className="w-full mt-8" onClick={() => openSignup('premium')}>{t.btnChoosePremium}</Button>
+                <Button variant="secondary" className="w-full mt-8" onClick={() => currentUser ? setView('dashboard') : openSignup('premium')}>{t.btnChoosePremium}</Button>
               </div>
             </div>
           </div>
