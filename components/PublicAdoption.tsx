@@ -1,9 +1,10 @@
 
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Language, Pet } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
 import { Button } from './Button';
-import { ArrowLeft, Heart, Dog, Cat, Info, Play, Pause, ChevronDown, Globe, MapPin, Navigation, Ruler } from 'lucide-react';
+import { ArrowLeft, Heart, Dog, Cat, Info, Play, Pause, ChevronDown, Globe, MapPin, Navigation, Ruler, Check } from 'lucide-react';
 import { db } from '../services/db';
 
 interface PublicAdoptionProps {
@@ -19,6 +20,7 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
   const t = TRANSLATIONS[lang];
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [successId, setSuccessId] = useState<string | null>(null);
   
   // Favorites State
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -64,6 +66,25 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
       }
       setIsPlaying(!isPlaying);
     }
+  };
+
+  const handleInterestClick = (e: React.MouseEvent, pet: Pet) => {
+      e.stopPropagation();
+      
+      // Visual feedback
+      setSuccessId(pet.id);
+      
+      // Execute logic
+      if (onInterest) {
+          onInterest(pet); 
+      } else if (onSignup) {
+          onSignup();
+      }
+
+      // Reset feedback after delay
+      setTimeout(() => {
+          setSuccessId(null);
+      }, 2000);
   };
 
   return (
@@ -138,7 +159,9 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-               {MOCK_ADOPTION_PETS.map(pet => (
+               {MOCK_ADOPTION_PETS.map(pet => {
+                  const isSuccess = successId === pet.id;
+                  return (
                   <div 
                     key={pet.id} 
                     className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer flex flex-col h-full"
@@ -196,24 +219,23 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
                           </p>
                           
                           <Button 
-                            className="w-full mt-auto flex items-center justify-center gap-2 group-hover:bg-brand-700 shadow-md shadow-brand-100" 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (onInterest) {
-                                    // Wrap in anonymous function to prevent event object being passed incorrectly
-                                    onInterest(pet); 
-                                } else if (onSignup) {
-                                    // Explicitly call onSignup without arguments to ensure it triggers 'basic' plan modal correctly in parent
-                                    onSignup();
-                                }
-                            }}
+                            className={`w-full mt-auto flex items-center justify-center gap-2 shadow-md transition-all duration-300 ${
+                                isSuccess 
+                                ? 'bg-green-500 hover:bg-green-600 border-transparent text-white' 
+                                : 'group-hover:bg-brand-700 shadow-brand-100'
+                            }`}
+                            onClick={(e) => handleInterestClick(e, pet)}
                           >
-                              <Heart size={16} className="text-pink-200 fill-pink-200" />
+                              {isSuccess ? (
+                                  <Check size={18} />
+                              ) : (
+                                  <Heart size={16} className="text-pink-200 fill-pink-200" />
+                              )}
                               {t.interestBtn}
                           </Button>
                       </div>
                   </div>
-               ))}
+               )})}
             </div>
 
             {/* Empty State / CTA */}

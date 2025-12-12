@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType, Ong, AdoptionInterest } from '../types';
 import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
-import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2, CheckCircle, Crosshair, Search, Building2, LayoutDashboard, Clock, Activity, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
+import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2, CheckCircle, Crosshair, Search, Building2, LayoutDashboard, Clock, Activity, ArrowRight, AlertTriangle, FileText, QrCode } from 'lucide-react';
 import { ServiceBooking } from './ServiceBooking';
 import { Button } from './Button';
 import { db } from '../services/db';
@@ -101,6 +102,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   const [showDeleteModal, setShowDeleteModal] = useState(false); // New modal state
   const [datingAlert, setDatingAlert] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // New Pet State
   const [newPet, setNewPet] = useState<Pet>({
@@ -1022,73 +1024,70 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                                      }} 
                                  />
                                  
-                                 <div className="relative p-6 flex flex-col sm:flex-row items-center sm:justify-between gap-6">
-                                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                                         <div className={`p-4 rounded-full shadow-lg border-4 border-white ${currentUser.location ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                                 <div className="relative p-6">
+                                     <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                                         {/* Icon */}
+                                         <div className={`p-4 rounded-full shadow-lg border-4 border-white shrink-0 ${currentUser.location ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                                              <MapPin size={24} />
                                          </div>
-                                         <div>
-                                             <h4 className="text-lg font-bold text-gray-900">
+                                         
+                                         {/* Text Info - Flex Grow to take available space */}
+                                         <div className="text-center sm:text-left flex-1 min-w-0"> 
+                                             <h4 className="text-lg font-bold text-gray-900 leading-tight">
                                                  {locationAddress || (currentUser.location ? t.detecting : t.locationNotFound)}
                                              </h4>
                                              {currentUser.location ? (
-                                                 <p className="text-xs font-mono text-gray-500 bg-white/50 px-2 py-1 rounded-md inline-block border border-gray-200 mt-1">
-                                                     LAT: {currentUser.location.lat.toFixed(5)} • LNG: {currentUser.location.lng.toFixed(5)}
+                                                 <p className="text-xs font-mono text-gray-500 bg-white/50 px-2 py-1 rounded-md inline-block border border-gray-200 mt-2">
+                                                     {currentUser.location.lat.toFixed(5)}, {currentUser.location.lng.toFixed(5)}
                                                  </p>
                                              ) : (
                                                  <p className="text-sm text-gray-500">{t.locationError}</p>
                                              )}
                                          </div>
-                                     </div>
-                                     
-                                     <div className="flex gap-2 shrink-0 items-center">
-                                        {!isEditingUser && currentUser.location && (
-                                            <>
-                                              {verificationStatus === 'match' && (
-                                                <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1.5 rounded-lg border border-green-200 text-xs font-bold animate-fade-in">
-                                                  <CheckCircle size={14} />
-                                                  <span>{t.locationMatch}</span>
-                                                </div>
-                                              )}
-                                              {verificationStatus === 'mismatch' && (
-                                                <div className="flex items-center gap-1 text-orange-600 bg-orange-50 px-2 py-1.5 rounded-lg border border-orange-200 text-xs font-bold animate-fade-in">
-                                                  <AlertCircle size={14} />
-                                                  <span>{t.locationMismatch}</span>
-                                                </div>
-                                              )}
 
-                                              <Button
-                                                  onClick={handleVerifyLocation}
-                                                  disabled={isVerifyingLocation}
-                                                  variant="outline"
-                                                  className="shadow-sm flex items-center gap-2 bg-white"
-                                                  title={t.verifyLocationBtn}
-                                              >
-                                                  {isVerifyingLocation ? <Loader2 className="animate-spin" size={18} /> : <Crosshair size={18} />}
-                                                  <span className="hidden md:inline">{t.verifyLocationBtn}</span>
-                                              </Button>
-                                            </>
-                                        )}
-                                        {isEditingUser && (
-                                            <Button 
-                                                onClick={handleGetLocation} 
-                                                disabled={isUpdatingLocation}
-                                                variant="primary"
-                                                className="shadow-md flex items-center gap-2"
-                                            >
-                                            {isUpdatingLocation ? <Loader2 className="animate-spin" size={18} /> : <Navigation size={18} />}
-                                            {t.getLocationBtn}
-                                            </Button>
-                                        )}
+                                         {/* Action Button - Shrink 0 */}
+                                         <div className="flex gap-2 shrink-0">
+                                            {!isEditingUser && currentUser.location && (
+                                                <Button
+                                                    onClick={handleVerifyLocation}
+                                                    disabled={isVerifyingLocation}
+                                                    variant="outline"
+                                                    className="shadow-sm flex items-center gap-2 bg-white whitespace-nowrap"
+                                                    title={t.verifyLocationBtn}
+                                                >
+                                                    {isVerifyingLocation ? <Loader2 className="animate-spin" size={18} /> : <Crosshair size={18} />}
+                                                    <span className="hidden sm:inline">{t.verifyLocationBtn}</span>
+                                                </Button>
+                                            )}
+                                            {isEditingUser && (
+                                                <Button 
+                                                    onClick={handleGetLocation} 
+                                                    disabled={isUpdatingLocation}
+                                                    variant="primary"
+                                                    className="shadow-md flex items-center gap-2 whitespace-nowrap"
+                                                >
+                                                {isUpdatingLocation ? <Loader2 className="animate-spin" size={18} /> : <Navigation size={18} />}
+                                                {t.getLocationBtn}
+                                                </Button>
+                                            )}
+                                         </div>
                                      </div>
-                                 </div>
-                                 
-                                 {/* Banner if not editing */}
-                                 {!isEditingUser && currentUser.location && (
+
+                                     {/* Verification Status Message - New Row */}
+                                     {!isEditingUser && currentUser.location && (verificationStatus === 'match' || verificationStatus === 'mismatch') && (
+                                         <div className={`mt-4 flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-sm font-bold animate-fade-in ${verificationStatus === 'match' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
+                                              {verificationStatus === 'match' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                                              <span>{verificationStatus === 'match' ? t.locationMatch : t.locationMismatch}</span>
+                                         </div>
+                                     )}
+                                </div>
+                                
+                                {/* Banner if not editing */}
+                                {!isEditingUser && currentUser.location && (
                                       <div className="absolute top-0 right-0 bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider shadow-sm">
                                          GPS Ativo
                                       </div>
-                                 )}
+                                )}
                              </div>
                          </div>
                      </div>
@@ -1400,6 +1399,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
               <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
                 <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
               </h2>
+
+              {/* Quick Access QR Code Card */}
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl shadow-lg p-6 mb-8 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="flex items-center gap-4">
+                      <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <QrCode size={32} />
+                      </div>
+                      <div>
+                          <h3 className="font-bold text-lg">{t.qrCodeTitle}</h3>
+                          <p className="text-white/90 text-sm max-w-md">{t.qrCodeDesc}</p>
+                      </div>
+                  </div>
+                  <Button 
+                      size="sm" 
+                      onClick={() => setShowQrModal(true)} 
+                      className="!bg-white !text-blue-600 hover:!bg-blue-50 border-none shadow-sm whitespace-nowrap"
+                  >
+                      {t.generateQrBtn}
+                  </Button>
+              </div>
+
               {/* ... (Health table UI same as before) ... */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <table className="w-full text-left">
@@ -1476,6 +1496,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
              </div>
           </div>
         </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQrModal && (
+           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+               <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center relative overflow-hidden">
+                    <button onClick={() => setShowQrModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                    
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <QrCode size={32} />
+                    </div>
+                    
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{t.qrModalTitle}</h3>
+                    <p className="text-gray-500 text-sm mb-6 px-4">{t.qrModalInstruction}</p>
+                    
+                    <div className="bg-white p-4 rounded-xl border-4 border-gray-900 inline-block shadow-xl mb-6">
+                        <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=AnyMais-User-${currentUser.id || 'guest'}`} 
+                            alt="QR Code" 
+                            className="w-48 h-48"
+                        />
+                    </div>
+                    
+                    <div className="bg-gray-50 p-3 rounded-lg text-xs text-gray-400 font-mono break-all">
+                        ID: {currentUser.id || 'guest-session'}
+                    </div>
+
+                    <Button onClick={() => setShowQrModal(false)} className="w-full mt-6" variant="outline">{t.close}</Button>
+               </div>
+           </div>
       )}
     </div>
   );
