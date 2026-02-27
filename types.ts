@@ -44,7 +44,7 @@ export type TranslationKey =
   | 'termsTitle' | 'privacyTitle' | 'emailError'
   | 'myFavorites' | 'noFavorites'
   | 'footerRights' | 'footerCompany' | 'footerLegal' | 'footerAbout' | 'footerContact' 
-  | 'footerFollowUs' | 'footerBlog' | 'footerCareers' | 'footerHelp'
+  | 'footerFollowUs' | 'footerBlog' | 'footerCareers' | 'footerHelp' | 'versionLabel' | 'developedBy'
   | 'searchLocationPlaceholder' | 'searchBtn' | 'locationNotFound'
   | 'filterAll' | 'filterType' | 'minRating' | 'clearFilters'
   | 'detecting' | 'setLocation'

@@ -1074,6 +1074,12 @@ const App: React.FC = () => {
               <p className="text-gray-400 text-sm">
                 &copy; 2026 AnyMais. {t.footerRights}.
               </p>
+              <p className="text-gray-400 text-sm">
+                  {t.versionLabel}: 1.0.0
+              </p>
+              <p className="text-gray-400 text-sm">
+                {t.developedBy} <a href="https://goatech.com.br" target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">GOATech</a>.
+              </p> 
             </div>
           </div>
         </footer>
