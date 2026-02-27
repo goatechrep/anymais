@@ -1072,7 +1072,7 @@ const App: React.FC = () => {
   
             <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
               <p className="text-gray-400 text-sm">
-                &copy; 2025 AnyMais. {t.footerRights}.
+                &copy; 2026 AnyMais. {t.footerRights}.
               </p>
             </div>
           </div>
