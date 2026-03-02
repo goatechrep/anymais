@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Language, AppView, User, PlanType, Ong, Pet, Coordinates } from './types';
 import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS, MOCK_DATING_PETS } from './constants';
 import { Dashboard } from './components/Dashboard';
@@ -1253,6 +1254,7 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+      <SpeedInsights />
     </>
   );
 };
