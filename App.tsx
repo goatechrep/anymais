@@ -12,6 +12,7 @@ import { StaticPages } from './components/StaticPages';
 import { OngRegistration } from './components/OngRegistration';
 import { Button } from './components/Button';
 import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe, Calendar, Stethoscope, Scissors, Home as HotelIcon, Footprints, Sparkles, LayoutDashboard } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { db } from './services/db';
 import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
 
@@ -1253,6 +1254,7 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+      <SpeedInsights />
     </>
   );
 };
