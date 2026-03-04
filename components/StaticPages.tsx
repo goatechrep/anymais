@@ -39,7 +39,7 @@ export const StaticPages: React.FC<StaticPagesProps> = ({ type, lang, setLang, o
             <section className="text-center max-w-3xl mx-auto">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Nossa Missão</h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                O AnyMais nasceu de um sonho: criar um ecossistema único onde o amor pelos animais se conecta com a facilidade da tecnologia. 
+                A AnyMais nasceu de um sonho: criar um ecossistema único onde o amor pelos animais se conecta com a facilidade da tecnologia. 
                 Não somos apenas um app; somos uma startup apaixonada por transformar a vida de pets e seus donos.
                 Nosso objetivo é integrar adoção, saúde, serviços e comunidade em uma única plataforma segura e intuitiva.
               </p>
@@ -123,8 +123,9 @@ export const StaticPages: React.FC<StaticPagesProps> = ({ type, lang, setLang, o
              <div className="bg-brand-50 rounded-2xl p-8 text-center border border-brand-100">
                 <FileText size={40} className="mx-auto text-brand-600 mb-4" />
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Ama escrever sobre pets?</h3>
-                <p className="text-gray-600 mb-6">Torne-se um redator parceiro do blog AnyMais e compartilhe seu conhecimento com nossa comunidade.</p>
+                <p className="text-gray-600 mb-6">Torne-se um redator parceiro do blog AnyMais e compartilhe seu conhecimento com nossa comunidade além da possibildade de <strong>ganhar com publicidade*</strong>. Interessou? <a href="/contact" className="text-brand-600 font-bold text-sm hover:underline">Fale Conosco</a>.</p>
                 <Button>{t.blogPartnerBtn}</Button>
+                
              </div>
           </div>
         );
@@ -260,7 +261,8 @@ export const StaticPages: React.FC<StaticPagesProps> = ({ type, lang, setLang, o
       </main>
 
       <footer className="bg-gray-50 border-t border-gray-200 py-8 text-center">
-         <p className="text-gray-500 text-sm">&copy; 2025 AnyMais. {t.footerRights}.</p>
+         <p className="text-gray-500 text-sm">&copy; 2026 - AnyMais. {t.footerRights}.</p>
+         <p className="text-gray-500 text-sm">Desenvolvido por <a href="https://goatech.com.br" target="_blank" className="text-brand-600 hover:underline">GOATech</a></p>
       </footer>
     </div>
   );

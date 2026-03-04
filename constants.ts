@@ -291,7 +291,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     addVaccine: "Adicionar Vacina",
     addVaccineTitle: "Registrar Vacina Manualmente",
     vaccineName: "Nome da Vacina",
-    addManual: "Adicionar Manualmente"
+    addManual: "Adicionar Manualmente",
   },
   [Language.EN]: {
     heroTitle: "Your Pet's World in One Place",
@@ -583,7 +583,7 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     addVaccine: "Add Vaccine",
     addVaccineTitle: "Manually Register Vaccine",
     vaccineName: "Vaccine Name",
-    addManual: "Add Manually"
+    addManual: "Add Manually",
   },
   [Language.ES]: {
     heroTitle: "El Mundo de tu Mascota en un Solo Lugar",
@@ -875,14 +875,13 @@ export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
     addVaccine: "Agregar Vacuna",
     addVaccineTitle: "Registrar Vacina Manualmente",
     vaccineName: "Nombre de la Vacuna",
-    addManual: "Añadir Manualmente"
+    addManual: "Añadir Manualmente",
   }
 };
 
 export const MOCK_DAILY_PHOTOS = [
     { url: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80', petName: 'Buddy', breed: 'Golden Retriever', location: 'São Paulo, SP' },
     { url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80', petName: 'Luna', breed: 'Persian', location: 'Rio de Janeiro, RJ' },
-    { url: 'https://images.unsplash.com/photo-1552728089-57bdde30beb8?auto=format&fit=crop&w=600&q=80', petName: 'Rio', breed: 'Parrot', location: 'Salvador, BA' },
     { url: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=600&q=80', petName: 'Max', breed: 'Beagle', location: 'Curitiba, PR' },
     { url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80', petName: 'Charlie', breed: 'Mix', location: 'Porto Alegre, RS' },
 ];
