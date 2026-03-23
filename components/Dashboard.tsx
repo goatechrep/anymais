@@ -1,12 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { DashboardView, Language, Pet, User, PlanType, Ong, AdoptionInterest } from '../types';
-import { TRANSLATIONS, MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import { Heart, Home, Stethoscope, Calendar, User as UserIcon, LogOut, Syringe, Pencil, Save, X, Camera, Plus, ChevronDown, Settings, Trash2, CreditCard, Check, AlertCircle, Menu, Lock, PawPrint, Sparkles, MapPin, Navigation, Loader2, CheckCircle, Crosshair, Search, Building2, LayoutDashboard, Clock, Activity, ArrowRight, AlertTriangle, FileText, QrCode } from 'lucide-react';
-import { ServiceBooking } from './ServiceBooking';
 import { Button } from './Button';
+import { DashboardNavItem } from './dashboard/DashboardNavItem';
+import { LockedFeature } from './dashboard/LockedFeature';
 import { db } from '../services/db';
 import { generatePetBio } from '../services/geminiService';
-import { calculateDistance, mockReverseGeocode } from '../utils';
+import { calculateDistance, formatPhone } from '../utils';
+import { authService } from '../services/auth/authService';
+import { adoptionService } from '../services/adoption/adoptionService';
+import { ongService } from '../services/ongs/ongService';
+import { providerService } from '../services/providers/providerService';
+import { appointmentService } from '../services/appointments/appointmentService';
+import { locationService } from '../services/location/locationService';
+import { feedbackService } from '../services/browser/feedbackService';
+
+const ServiceBooking = lazy(() => import('./ServiceBooking').then((module) => ({ default: module.ServiceBooking })));
+const AdoptionView = lazy(() => import('./dashboard/views/AdoptionView').then((module) => ({ default: module.AdoptionView })));
+const DatingView = lazy(() => import('./dashboard/views/DatingView').then((module) => ({ default: module.DatingView })));
+const OverviewView = lazy(() => import('./dashboard/views/OverviewView').then((module) => ({ default: module.OverviewView })));
+const HealthView = lazy(() => import('./dashboard/views/HealthView').then((module) => ({ default: module.HealthView })));
+const UserProfileView = lazy(() => import('./dashboard/views/UserProfileView').then((module) => ({ default: module.UserProfileView })));
+const PetProfileView = lazy(() => import('./dashboard/views/PetProfileView').then((module) => ({ default: module.PetProfileView })));
 
 interface DashboardProps {
   lang: Language;
@@ -70,6 +86,9 @@ const optimizeImage = (file: File, maxWidth = 800, quality = 0.8): Promise<strin
 
 export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, onViewPet }) => {
   const t = TRANSLATIONS[lang];
+  const adoptionPets = adoptionService.listPublicPets();
+  const datingPets = adoptionService.listDatingPets();
+  const serviceProviders = providerService.listAll();
   
   // --- State: User ---
   // Initialize with a placeholder, then load from DB
@@ -127,7 +146,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
 
   // --- Effects: Load Data ---
   useEffect(() => {
-    const session = db.auth.getSession();
+    const session = authService.getSession();
     if (session) {
       setCurrentUser(session);
       setEditedUser(session);
@@ -140,11 +159,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       }
       
       // Load ONGs for this user
-      const userOngs = db.ongs.listByOwner(session.id);
+      const userOngs = ongService.listByOwner(session.id);
       setMyOngs(userOngs);
 
       // Load Adoption Interests
-      const interests = db.adoptionInterests.listByUser(session.id);
+      const interests = adoptionService.listInterestsByUser(session.id);
       setAdoptionInterests(interests);
     } else {
       onLogout(); 
@@ -160,7 +179,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         const fetchAddress = async () => {
             try {
                 // If we have lat/lng but no text address, fetch it
-                const addr = await mockReverseGeocode(targetUser.location!.lat, targetUser.location!.lng);
+                const addr = await locationService.reverseGeocode(targetUser.location!.lat, targetUser.location!.lng);
                 setLocationAddress(addr);
             } catch (e) {
                 // Fallback or empty if error
@@ -210,14 +229,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   };
 
   // --- Handlers: User ---
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '').slice(0, 11);
-    if (numbers.length > 10) return numbers.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
-    else if (numbers.length > 6) return numbers.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-    else if (numbers.length > 2) return numbers.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
-    else return numbers.replace(/^(\d*)/, '($1');
-  };
-
   const handleUserPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -243,8 +254,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         // Also update immediately if not in full edit mode, for better UX
         if (!isEditingUser) {
            setCurrentUser(updated);
-           db.auth.updateUser(updated);
-           alert(t.locationUpdated);
+           authService.updateUser(updated);
+           feedbackService.alert(t.locationUpdated);
         }
         setIsUpdatingLocation(false);
       }, (error) => {
@@ -255,19 +266,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         setEditedUser(updated);
         if (!isEditingUser) {
            setCurrentUser(updated);
-           db.auth.updateUser(updated);
+           authService.updateUser(updated);
         }
-        alert(t.locationError + " (Usando localização padrão para demonstração)");
+        feedbackService.alert(t.locationError + " (Usando localização padrão para demonstração)");
         setIsUpdatingLocation(false);
       });
     } else {
-      alert("Geolocation not supported");
+      feedbackService.alert("Geolocation not supported");
     }
   };
 
   const handleVerifyLocation = () => {
       if (!currentUser.location) {
-          alert(t.locationNotFound);
+          feedbackService.alert(t.locationNotFound);
           return;
       }
       
@@ -295,21 +306,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
               setIsVerifyingLocation(false);
           }, (error) => {
               console.error("Error verifying location", error);
-              alert(t.locationError);
+              feedbackService.alert(t.locationError);
               setIsVerifyingLocation(false);
           });
       }
   };
 
   const saveUser = () => {
-    db.auth.updateUser(editedUser); // Save to DB
+    authService.updateUser(editedUser); // Save to DB
     setCurrentUser(editedUser);
     setIsEditingUser(false);
   };
 
   const handleUpdatePlan = (newPlan: PlanType) => {
     const updatedUser = { ...currentUser, plan: newPlan };
-    db.auth.updateUser(updatedUser);
+    authService.updateUser(updatedUser);
     setCurrentUser(updatedUser);
     setEditedUser(updatedUser); // Sync edited state
     setShowPlanModal(false);
@@ -328,7 +339,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
     const updatedUser = { ...currentUser, favorites: newFavorites };
     setCurrentUser(updatedUser);
     setEditedUser(updatedUser);
-    db.auth.updateUser(updatedUser);
+    authService.updateUser(updatedUser);
   };
 
   // --- Handlers: Pet Actions ---
@@ -515,7 +526,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
       });
 
       // Get real appointments count
-      const userAppointments = currentUser.id ? db.appointments.listByUser(currentUser.id) : [];
+      const userAppointments = currentUser.id ? appointmentService.listByUser(currentUser.id) : [];
       const upcomingAppointments = userAppointments.filter(a => new Date(a.date) >= today);
 
       // Sort upcoming vaccines by date
@@ -525,59 +536,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
   };
 
   const overviewStats = getStats();
-
-
-  // --- Render Components ---
-
-  const NavItem = ({ view, icon: Icon, label, locked, description, planReq }: { view: DashboardView, icon: any, label: string, locked?: boolean, description?: string, planReq?: string }) => {
-    // Check if view is available even without a pet
+  const renderNavItem = (
+    view: DashboardView,
+    icon: React.ComponentType<{ size?: number; className?: string }>,
+    label: string,
+    locked?: boolean,
+    description?: string,
+    planReq?: string
+  ) => {
     const isAlwaysAvailable = view === 'overview' || view === 'user-profile' || view === 'create-pet' || view === 'lost-found' || view === 'my-ongs' || view === 'adoption';
     const isDisabled = !activePet && !isAlwaysAvailable;
-    
+
     return (
-    <button
-      onClick={() => { setActiveView(view); setMobileMenuOpen(false); }}
-      disabled={isDisabled}
-      className={`relative group flex items-center w-full p-3 rounded-lg mb-2 transition-colors justify-between ${
-        activeView === view 
-          ? 'bg-brand-50 text-brand-600 font-medium' 
-          : isDisabled
-            ? 'text-gray-300 cursor-not-allowed'
-            : 'text-gray-600 hover:bg-gray-50'
-      }`}
-    >
-      <div className="flex items-center">
-        <Icon size={20} className="mr-3" />
-        {label}
+      <DashboardNavItem
+        view={view}
+        icon={icon}
+        label={label}
+        activeView={activeView}
+        onSelect={(nextView) => {
+          setActiveView(nextView);
+          setMobileMenuOpen(false);
+        }}
+        locked={locked}
+        disabled={isDisabled}
+        description={description}
+        planReq={planReq}
+      />
+    );
+  };
+
+  const renderViewLoader = () => (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 flex items-center justify-center">
+      <div className="flex items-center gap-3 text-brand-600 font-bold">
+        <Loader2 size={18} className="animate-spin" />
+        <span>Carregando...</span>
       </div>
-      {locked && <Lock size={14} className="text-gray-400 group-hover:text-brand-500" />}
-
-      {/* Tooltip (Desktop Only) */}
-      {description && (
-        <div className="hidden md:block invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-3 w-56 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            <div className="font-bold mb-1 text-sm">{label}</div>
-            <div className="text-gray-300 mb-2 leading-tight">{description}</div>
-            {planReq && (
-                <div className={`font-bold uppercase text-[10px] tracking-wider ${locked ? 'text-red-300' : 'text-green-300'}`}>
-                    {planReq}
-                </div>
-            )}
-            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-        </div>
-      )}
-    </button>
-  )};
-
-  const LockedFeature = ({ feature }: { feature: string }) => (
-    <div className="flex flex-col items-center justify-center text-center py-20 px-4">
-       <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-           <Lock size={40} className="text-gray-400" />
-       </div>
-       <h2 className="text-2xl font-bold text-gray-800 mb-2">{t.featureLocked}</h2>
-       <p className="text-gray-500 mb-8 max-w-md">{t.upgradeToAccess}</p>
-       <Button onClick={() => setShowPlanModal(true)} className="flex items-center gap-2 shadow-lg shadow-brand-100">
-          <CreditCard size={18} /> {t.unlockNow}
-       </Button>
     </div>
   );
 
@@ -661,16 +654,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         <nav className="flex-1 p-4 overflow-y-auto md:overflow-visible overflow-x-hidden">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">Menu</p>
           <div className="relative z-30">
-            <NavItem view="overview" icon={LayoutDashboard} label={t.dashOverview} />
-            <NavItem view="profile" icon={Home} label={t.dashProfile} description={t.tooltipProfile} planReq={t.reqPlanBasic} />
-            <NavItem view="dating" icon={Heart} label={t.dashDating} locked={!checkPlanAccess('dating')} description={t.tooltipDating} planReq={t.reqPlanPremium} />
-            <NavItem view="health" icon={Stethoscope} label={t.dashHealth} locked={!checkPlanAccess('health')} description={t.tooltipHealth} planReq={t.reqPlanStart} />
-            <NavItem view="services" icon={Calendar} label={t.dashServices} locked={!checkPlanAccess('services')} description={t.tooltipServices} planReq={t.reqPlanStart} />
+            {renderNavItem('overview', LayoutDashboard, t.dashOverview)}
+            {renderNavItem('profile', Home, t.dashProfile, false, t.tooltipProfile, t.reqPlanBasic)}
+            {renderNavItem('dating', Heart, t.dashDating, !checkPlanAccess('dating'), t.tooltipDating, t.reqPlanPremium)}
+            {renderNavItem('health', Stethoscope, t.dashHealth, !checkPlanAccess('health'), t.tooltipHealth, t.reqPlanStart)}
+            {renderNavItem('services', Calendar, t.dashServices, !checkPlanAccess('services'), t.tooltipServices, t.reqPlanStart)}
             
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-3 mt-6">Comunidade</p>
-            <NavItem view="adoption" icon={PawPrint} label={t.dashAdoption} planReq={t.reqPlanBasic} />
-            <NavItem view="lost-found" icon={Search} label={t.dashLostFound} planReq={t.reqPlanBasic} />
-            <NavItem view="my-ongs" icon={Building2} label={t.dashMyOngs} planReq={t.reqPlanBasic} />
+            {renderNavItem('adoption', PawPrint, t.dashAdoption, false, undefined, t.reqPlanBasic)}
+            {renderNavItem('lost-found', Search, t.dashLostFound, false, undefined, t.reqPlanBasic)}
+            {renderNavItem('my-ongs', Building2, t.dashMyOngs, false, undefined, t.reqPlanBasic)}
           </div>
         </nav>
 
@@ -728,149 +721,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         
         {/* OVERVIEW DASHBOARD */}
         {activeView === 'overview' && (
-            <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
-                {/* ... (Overview Content unchanged) ... */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h2 className="text-3xl font-bold text-gray-900">{t.overviewTitle}</h2>
-                        <p className="text-gray-500 mt-1">{t.welcome}, {currentUser.name.split(' ')[0]}!</p>
-                    </div>
-                    <Button onClick={() => setActiveView('create-pet')} size="sm" className="hidden sm:flex items-center gap-2">
-                        <Plus size={16} /> {t.addNewPet}
-                    </Button>
-                </div>
-
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start">
-                            <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsTotalPets}</span>
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><PawPrint size={18} /></div>
-                        </div>
-                        <div className="text-3xl font-bold text-gray-900">{overviewStats.totalPets}</div>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveView('health')}>
-                        <div className="flex justify-between items-start">
-                             <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsVaccinesDue}</span>
-                            <div className={`p-2 rounded-lg ${overviewStats.pendingVaccines > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                <Syringe size={18} />
-                            </div>
-                        </div>
-                        <div className="text-3xl font-bold text-gray-900">{overviewStats.pendingVaccines}</div>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveView('dating')}>
-                        <div className="flex justify-between items-start">
-                             <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsMatches}</span>
-                            <div className="p-2 bg-pink-50 text-pink-600 rounded-lg"><Heart size={18} /></div>
-                        </div>
-                        <div className="text-3xl font-bold text-gray-900">{overviewStats.activeMatches}</div>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-32 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveView('services')}>
-                        <div className="flex justify-between items-start">
-                             <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{t.statsAppointments}</span>
-                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Calendar size={18} /></div>
-                        </div>
-                        <div className="text-3xl font-bold text-gray-900">{overviewStats.upcomingAppointments.length}</div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h3 className="font-bold text-gray-800 text-lg">{t.myPets}</h3>
-                            <button onClick={() => setActiveView('create-pet')} className="text-brand-600 text-sm font-medium hover:text-brand-800">{t.addNewPet}</button>
-                        </div>
-                        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {pets.map(pet => (
-                                <div key={pet.id} 
-                                    className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${activePetId === pet.id ? 'border-brand-200 bg-brand-50' : 'border-gray-200 hover:border-brand-200 hover:bg-gray-50'}`}
-                                    onClick={() => { setActivePetId(pet.id); setActiveView('profile'); }}
-                                >
-                                    <img src={pet.image} alt={pet.name} className="w-14 h-14 rounded-full object-cover bg-gray-100" />
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-gray-900 truncate">{pet.name}</h4>
-                                        <p className="text-sm text-gray-500 truncate">{pet.breed}</p>
-                                    </div>
-                                    <div className="text-gray-400 hover:text-brand-600">
-                                        <ArrowRight size={18} />
-                                    </div>
-                                </div>
-                            ))}
-                            {pets.length === 0 && (
-                                <div className="col-span-full text-center py-8 text-gray-500">
-                                    {t.noPets}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-fit">
-                        <div className="p-6 border-b border-gray-100">
-                            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                <Clock size={18} className="text-brand-500" /> {t.upcomingEvents}
-                            </h3>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            {overviewStats.upcomingVaccineList.length > 0 ? (
-                                overviewStats.upcomingVaccineList.map((v, i) => (
-                                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
-                                        <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${v.daysLeft < 0 ? 'bg-red-500' : v.daysLeft <= 7 ? 'bg-yellow-500' : 'bg-green-500'}`} />
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-800">{v.vaccineName} ({v.petName})</p>
-                                            <p className="text-xs text-gray-500">
-                                                {v.daysLeft < 0 ? `Atrasada ${Math.abs(v.daysLeft)} dias` : v.daysLeft === 0 ? 'Vence hoje!' : `Vence em ${v.daysLeft} dias`}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : null}
-
-                            {overviewStats.upcomingAppointments.length > 0 ? (
-                                overviewStats.upcomingAppointments.map((apt, i) => (
-                                     <div key={i} className="flex items-start gap-3 pt-2">
-                                         <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
-                                         <div>
-                                             <p className="text-sm font-bold text-gray-800">{apt.providerName}</p>
-                                             <p className="text-xs text-gray-500">{new Date(apt.date).toLocaleDateString()} - {apt.time}</p>
-                                         </div>
-                                     </div>
-                                ))
-                            ) : null}
-                            
-                            {overviewStats.upcomingVaccineList.length === 0 && overviewStats.upcomingAppointments.length === 0 && (
-                                <div className="text-center py-6 text-gray-400 text-sm">
-                                    <CheckCircle size={24} className="mx-auto mb-2 opacity-50" />
-                                    {t.noUpcomingEvents}
-                                </div>
-                            )}
-                        </div>
-                        <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
-                             <button onClick={() => setActiveView('services')} className="text-sm font-bold text-brand-600 hover:text-brand-800">
-                                 {t.viewDetails}
-                             </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-brand-600 to-pink-600 rounded-2xl shadow-lg p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                            <Activity size={24} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-lg">{t.quickActions}</h3>
-                            <p className="text-white/80 text-sm">Gerencie o dia a dia do seu pet com facilidade.</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button size="sm" onClick={() => setActiveView('services')} className="!bg-white !text-brand-600 hover:!bg-gray-100 border-none shadow-sm">
-                            {t.dashServices}
-                        </Button>
-                        <Button size="sm" onClick={() => setActiveView('health')} className="!bg-brand-900 !text-white hover:!bg-black/20 border-none shadow-sm">
-                            {t.dashHealth}
-                        </Button>
-                    </div>
-                </div>
-            </div>
+          <Suspense fallback={renderViewLoader()}>
+            <OverviewView
+              lang={lang}
+              currentUser={currentUser}
+              pets={pets}
+              activePetId={activePetId}
+              overviewStats={overviewStats}
+              favoritePets={adoptionService.listFavoritePets(currentUser.favorites || [])}
+              onSetView={setActiveView}
+              onSelectPet={setActivePetId}
+              onToggleFavorite={toggleFavorite}
+              getDistanceText={getDistanceText}
+            />
+          </Suspense>
         )}
 
         {/* ... (Create Pet, Lost & Found, My ONGs, User Profile Views - No Changes) ... */}
@@ -964,190 +828,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
                         <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6"><Building2 size={32} className="text-gray-300" /></div>
                         <h3 className="text-xl font-bold text-gray-800 mb-2">{t.noMyOngs}</h3>
                         <p className="text-gray-500 mb-6">Cadastre sua organização para ajudar mais animais.</p>
-                        <Button onClick={() => alert('Use o link na página inicial para cadastrar (fluxo simplificado).')} variant="outline">{t.ongBtn}</Button>
+                        <Button onClick={() => feedbackService.alert('Use o link na página inicial para cadastrar (fluxo simplificado).')} variant="outline">{t.ongBtn}</Button>
                     </div>
                 )}
              </div>
         )}
 
         {activeView === 'user-profile' && (
-             <div className="max-w-2xl mx-auto space-y-6">
-                 <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-                         <h2 className="text-2xl font-bold text-gray-800">{t.userProfile}</h2>
-                         {!isEditingUser ? (
-                             <Button variant="outline" size="sm" onClick={() => { setEditedUser(currentUser); setIsEditingUser(true); }}>
-                                 <Pencil size={16} className="mr-2" /> {t.editProfile}
-                             </Button>
-                         ) : (
-                            <div className="flex gap-2">
-                                <Button variant="ghost" onClick={() => setIsEditingUser(false)}>{t.cancel}</Button>
-                                <Button onClick={saveUser}>{t.saveChanges}</Button>
-                            </div>
-                         )}
-                     </div>
-
-                     <div className="flex flex-col items-center mb-8">
-                        <div className="relative">
-                            <img src={isEditingUser ? editedUser.image : currentUser.image} alt="User" className="w-32 h-32 rounded-full object-cover border-4 border-gray-100" />
-                            {isEditingUser && (
-                                 <label className="absolute bottom-0 right-0 bg-brand-600 text-white p-2 rounded-full cursor-pointer hover:bg-brand-600 transition-transform hover:scale-110">
-                                    <Camera size={20} /><input type="file" accept="image/*" className="hidden" onChange={handleUserPhotoUpload} />
-                                 </label>
-                            )}
-                        </div>
-                     </div>
-
-                     <div className="space-y-6">
-                         <div>
-                            <label className="block text-sm font-bold text-gray-500 mb-1">{t.name}</label>
-                            {isEditingUser ? (
-                                <input type="text" value={editedUser.name} onChange={e => setEditedUser({...editedUser, name: e.target.value})} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" />
-                            ) : (<p className="text-lg font-medium text-gray-900">{currentUser.name}</p>)}
-                         </div>
-                         <div>
-                            <label className="block text-sm font-bold text-gray-500 mb-1">{t.email}</label>
-                            {isEditingUser ? (
-                                <input type="email" value={editedUser.email} onChange={e => setEditedUser({...editedUser, email: e.target.value})} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" />
-                            ) : (<p className="text-lg font-medium text-gray-900">{currentUser.email}</p>)}
-                         </div>
-                         <div>
-                            <label className="block text-sm font-bold text-gray-500 mb-1">{t.phone}</label>
-                             {isEditingUser ? (
-                                <input type="tel" value={editedUser.phone} onChange={e => setEditedUser({...editedUser, phone: formatPhone(e.target.value)})} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" placeholder="(XX) XXXXX-XXXX" />
-                            ) : (<p className="text-lg font-medium text-gray-900">{currentUser.phone}</p>)}
-                         </div>
-
-                         <div>
-                             <label className="block text-sm font-bold text-gray-500 mb-2">{t.locationLabel}</label>
-                             <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-brand-200 transition-colors">
-                                 <div className="absolute inset-0 opacity-[0.03]" 
-                                     style={{ 
-                                         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
-                                     }} 
-                                 />
-                                 
-                                 <div className="relative p-6">
-                                     <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                                         <div className={`p-4 rounded-full shadow-lg border-4 border-white shrink-0 ${currentUser.location ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
-                                             <MapPin size={24} />
-                                         </div>
-                                         
-                                         <div className="text-center sm:text-left flex-1 min-w-0"> 
-                                             <h4 className="text-lg font-bold text-gray-900 leading-tight">
-                                                 {locationAddress || (currentUser.location ? t.detecting : t.locationNotFound)}
-                                             </h4>
-                                             {currentUser.location ? (
-                                                 <p className="text-xs font-mono text-gray-500 bg-white/50 px-2 py-1 rounded-md inline-block border border-gray-200 mt-2">
-                                                     {currentUser.location.lat.toFixed(5)}, {currentUser.location.lng.toFixed(5)}
-                                                 </p>
-                                             ) : (
-                                                 <p className="text-sm text-gray-500">{t.locationError}</p>
-                                             )}
-                                         </div>
-
-                                         <div className="flex gap-2 shrink-0">
-                                            {!isEditingUser && currentUser.location && (
-                                                <Button
-                                                    onClick={handleVerifyLocation}
-                                                    disabled={isVerifyingLocation}
-                                                    variant="outline"
-                                                    className="shadow-sm flex items-center gap-2 bg-white whitespace-nowrap"
-                                                    title={t.verifyLocationBtn}
-                                                >
-                                                    {isVerifyingLocation ? <Loader2 className="animate-spin" size={18} /> : <Crosshair size={18} />}
-                                                    <span className="hidden sm:inline">{t.verifyLocationBtn}</span>
-                                                </Button>
-                                            )}
-                                            {isEditingUser && (
-                                                <Button 
-                                                    onClick={handleGetLocation} 
-                                                    disabled={isUpdatingLocation}
-                                                    variant="primary"
-                                                    className="shadow-md flex items-center gap-2 whitespace-nowrap"
-                                                >
-                                                {isUpdatingLocation ? <Loader2 className="animate-spin" size={18} /> : <Navigation size={18} />}
-                                                {t.getLocationBtn}
-                                                </Button>
-                                            )}
-                                         </div>
-                                     </div>
-
-                                     {!isEditingUser && currentUser.location && (verificationStatus === 'match' || verificationStatus === 'mismatch') && (
-                                         <div className={`mt-4 flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-sm font-bold animate-fade-in ${verificationStatus === 'match' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
-                                              {verificationStatus === 'match' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                                              <span>{verificationStatus === 'match' ? t.locationMatch : t.locationMismatch}</span>
-                                         </div>
-                                     )}
-                                </div>
-                                
-                                {!isEditingUser && currentUser.location && (
-                                      <div className="absolute top-0 right-0 bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider shadow-sm">
-                                         GPS Ativo
-                                      </div>
-                                )}
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-                
-                 <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-                    <div className="flex justify-between items-start">
-                        <div><h3 className="text-lg font-bold text-gray-800 mb-2">{t.currentPlan}</h3><span className={`inline-block px-3 py-1 rounded-full text-sm font-bold border ${getPlanColor(currentUser.plan || 'basic')}`}>{getPlanName(currentUser.plan || 'basic')}</span></div>
-                        <Button variant="outline" size="sm" onClick={() => setShowPlanModal(true)}><CreditCard size={16} className="mr-2" /> {t.upgradePlan}</Button>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500">{t.planBenefits}: {getPlanDescription(currentUser.plan || 'basic')}</div>
-                 </div>
-
-                 <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-                     <h3 className="font-bold text-gray-800 mb-4">{t.myPets} ({pets.length})</h3>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         {pets.map(p => (
-                             <div key={p.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:border-brand-200 hover:bg-white transition-all" onClick={() => { setActivePetId(p.id); setActiveView('profile'); }}>
-                                 <img src={p.image} className="w-12 h-12 rounded-full object-cover" />
-                                 <div className="overflow-hidden"><p className="font-bold text-gray-900 truncate">{p.name}</p><p className="text-xs text-gray-500 truncate">{p.breed}</p></div>
-                             </div>
-                         ))}
-                         <button onClick={() => setActiveView('create-pet')} className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand-400 hover:text-brand-600 transition-all"><Plus size={20} /> {t.addNewPet}</button>
-                     </div>
-                 </div>
-
-                 <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-                     <h3 className="font-bold text-gray-800 mb-4">{t.myFavorites}</h3>
-                     {currentUser.favorites && currentUser.favorites.length > 0 ? (
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                             {MOCK_ADOPTION_PETS.filter(pet => currentUser.favorites?.includes(pet.id)).map(pet => (
-                                 <div key={pet.id} className="relative group flex items-start gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50">
-                                     <img src={pet.image} className="w-16 h-16 rounded-lg object-cover" />
-                                     <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="font-bold text-gray-900 truncate">{pet.name}</h4>
-                                            <button 
-                                              onClick={() => toggleFavorite(pet.id)}
-                                              className="text-red-500 hover:text-red-700 transition-colors"
-                                            >
-                                                <Heart size={16} fill="currentColor" />
-                                            </button>
-                                        </div>
-                                        <p className="text-xs text-gray-500 truncate mb-2">{pet.breed}</p>
-                                        <div className="flex items-center gap-1 text-xs text-brand-600 font-medium">
-                                          {getDistanceText(pet.location)}
-                                        </div>
-                                     </div>
-                                 </div>
-                             ))}
-                         </div>
-                     ) : (
-                         <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                             <Heart className="mx-auto text-gray-300 mb-2" size={32} />
-                             <p className="text-gray-500 text-sm">{t.noFavorites}</p>
-                             <Button variant="ghost" size="sm" className="mt-2 text-brand-600" onClick={() => setActiveView('adoption')}>
-                                 {t.landingAdoptionBtn}
-                             </Button>
-                         </div>
-                     )}
-                 </div>
-             </div>
+          <Suspense fallback={renderViewLoader()}>
+            <UserProfileView
+              lang={lang}
+              currentUser={currentUser}
+              editedUser={editedUser}
+              isEditingUser={isEditingUser}
+              setEditedUser={setEditedUser}
+              setIsEditingUser={setIsEditingUser}
+              saveUser={saveUser}
+              handleUserPhotoUpload={handleUserPhotoUpload}
+              handleGetLocation={handleGetLocation}
+              handleVerifyLocation={handleVerifyLocation}
+              isUpdatingLocation={isUpdatingLocation}
+              isVerifyingLocation={isVerifyingLocation}
+              verificationStatus={verificationStatus}
+              locationAddress={locationAddress}
+              getPlanColor={getPlanColor}
+              getPlanName={getPlanName}
+              getPlanDescription={getPlanDescription}
+              setShowPlanModal={setShowPlanModal}
+              pets={pets}
+              onSelectPet={setActivePetId}
+              onSetView={(view) => setActiveView(view)}
+              favoritePets={adoptionService.listFavoritePets(currentUser.favorites || [])}
+              toggleFavorite={toggleFavorite}
+              getDistanceText={getDistanceText}
+            />
+          </Suspense>
         )}
 
         {!activePet && activeView !== 'create-pet' && activeView !== 'user-profile' && activeView !== 'lost-found' && activeView !== 'my-ongs' && activeView !== 'adoption' && activeView !== 'overview' && (
@@ -1160,301 +875,89 @@ export const Dashboard: React.FC<DashboardProps> = ({ lang, setLang, onLogout, o
         )}
         
         {activePet && activeView === 'profile' && editedPet && (
-           <div className="max-w-3xl mx-auto">
-             <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 relative animate-fade-in">
-                <div className="absolute top-6 right-6 flex gap-2">
-                  {!isEditingPet ? (
-                    <Button variant="outline" size="sm" onClick={() => { setEditedPet(activePet); setIsEditingPet(true); }} className="flex items-center gap-2"><Pencil size={16} /> {t.editProfile}</Button>
-                  ) : (
-                    <div className="flex gap-2"><Button variant="ghost" size="sm" onClick={() => { setIsEditingPet(false); setEditedPet(activePet); }} className="text-gray-500 hover:bg-gray-100"><X size={20} /></Button><Button variant="primary" size="sm" onClick={savePetChanges} className="flex items-center gap-2"><Save size={16} /> {t.saveChanges}</Button></div>
-                  )}
-                </div>
-                <div className="flex flex-col md:flex-row gap-8 items-start mt-4">
-                  <div className="flex flex-col items-center space-y-4 relative">
-                    <div className="relative">
-                      <img src={isEditingPet ? editedPet.image : activePet.image} alt={activePet.name} className="w-40 h-40 rounded-full object-cover border-4 border-brand-100 shadow-sm bg-gray-100" />
-                      {isEditingPet && (<label className="absolute bottom-0 right-0 bg-brand-600 text-white p-2 rounded-full cursor-pointer hover:bg-brand-600 shadow-lg transition-transform hover:scale-110"><Camera size={20} /><input type="file" accept="image/*" className="hidden" onChange={handlePetPhotoUpload} /></label>)}
-                    </div>
-                    {isEditingPet && (<p className="text-xs text-gray-500">{t.changePhoto}</p>)}
-                  </div>
-                  <div className="flex-1 w-full">
-                    {!isEditingPet ? (
-                      <>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">{activePet.name}</h2>
-                        <div className="flex flex-wrap gap-4 text-gray-600 mb-6">
-                          <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">{t.breedLabel}: <span className="font-semibold text-gray-800">{activePet.breed}</span></span>
-                          <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">{t.ageLabel}: <span className="font-semibold text-gray-800">{activePet.age}</span></span>
-                          <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">{t.weight}: <span className="font-semibold text-gray-800">{activePet.weight}kg</span></span>
-                        </div>
-                        <div><h3 className="text-lg font-semibold text-gray-800 mb-2">Bio</h3><p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">{activePet.bio}</p></div>
-                        {activePet.availableForDating && (<div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-sm font-bold border border-pink-100"><Heart size={14} fill="currentColor" />{t.availableForDatingLabel}</div>)}
-                      </>
-                    ) : (
-                      <div className="space-y-4 w-full animate-fade-in">
-                         <div><label className="block text-sm font-bold text-gray-700 mb-1">{t.petName}</label><input type="text" value={editedPet.name} onChange={(e) => setEditedPet({...editedPet, name: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" /></div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div><label className="block text-sm font-bold text-gray-700 mb-1">{t.breedLabel}</label><input type="text" value={editedPet.breed} onChange={(e) => setEditedPet({...editedPet, breed: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" /></div>
-                          <div><label className="block text-sm font-bold text-gray-700 mb-1">{t.ageLabel}</label><input type="number" value={editedPet.age} onChange={(e) => setEditedPet({...editedPet, age: parseInt(e.target.value) || 0})} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" /></div>
-                          <div><label className="block text-sm font-bold text-gray-700 mb-1">{t.weight}</label><input type="number" value={editedPet.weight} onChange={(e) => setEditedPet({...editedPet, weight: parseFloat(e.target.value) || 0})} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900" /></div>
-                        </div>
-                        <div>
-                           <label className="block text-sm font-bold text-gray-700 mb-1">{t.petType}</label>
-                            <select value={editedPet.type} onChange={e => setEditedPet({...editedPet, type: e.target.value as Pet['type']})} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white text-gray-900">
-                                <option value="dog">{t.typeDog}</option><option value="cat">{t.typeCat}</option><option value="bird">{t.typeBird}</option><option value="other">{t.typeOther}</option>
-                            </select>
-                        </div>
-                         <div className="pt-2">
-                            <label className="flex items-center space-x-3 cursor-pointer group">
-                                <div className="relative">
-                                    <input type="checkbox" className="peer sr-only" checked={editedPet.availableForDating || false} onChange={(e) => { if (e.target.checked && currentUser.plan !== 'premium') { setDatingAlert(true); return; } setDatingAlert(false); setEditedPet({...editedPet, availableForDating: e.target.checked}); }}/>
-                                    <div className="w-10 h-6 bg-gray-200 rounded-full peer peer-checked:bg-brand-600 transition-colors"></div>
-                                    <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
-                                </div>
-                                <span className="font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{t.availableForDatingLabel}</span>
-                            </label>
-                             {datingAlert && (<div className="mt-2 p-3 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm flex items-center animate-fade-in"><AlertCircle size={16} className="mr-2 flex-shrink-0" />{t.datingPlanWarning}</div>)}
-                         </div>
-                        <div>
-                          <div className="flex justify-between items-end mb-1">
-                                <label className="block text-sm font-bold text-gray-700">Bio</label>
-                                <button onClick={() => handleGenerateBio('edit')} disabled={isGeneratingBio} className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded-full transition-all ${currentUser.plan === 'premium' ? 'text-purple-600 bg-purple-50 hover:bg-purple-100' : 'text-gray-400 bg-gray-100 hover:bg-gray-200'}`}>
-                                    {currentUser.plan === 'premium' ? (<Sparkles size={12} className={isGeneratingBio ? "animate-spin" : ""} />) : (<Lock size={10} />)} {t.generateBio}
-                                </button>
-                          </div>
-                          <textarea value={editedPet.bio} onChange={(e) => setEditedPet({...editedPet, bio: e.target.value})} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none h-32 bg-white text-gray-900" />
-                        </div>
-                        <div className="pt-8 mt-8 border-t border-gray-100">
-                          <h3 className="text-sm font-bold text-red-600 mb-2">{t.deletePetWarning}</h3>
-                          <button onClick={handleDeleteClick} className="flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors font-medium text-sm"><Trash2 size={16} />{t.deletePet}</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-             </div>
-          </div>
+          <Suspense fallback={renderViewLoader()}>
+            <PetProfileView
+              lang={lang}
+              activePet={activePet}
+              editedPet={editedPet}
+              currentUser={currentUser}
+              isEditingPet={isEditingPet}
+              isGeneratingBio={isGeneratingBio}
+              datingAlert={datingAlert}
+              setEditedPet={setEditedPet}
+              setIsEditingPet={setIsEditingPet}
+              setDatingAlert={setDatingAlert}
+              savePetChanges={savePetChanges}
+              handlePetPhotoUpload={handlePetPhotoUpload}
+              handleGenerateBio={handleGenerateBio}
+              handleDeleteClick={handleDeleteClick}
+            />
+          </Suspense>
         )}
 
         {/* Adoption View */}
         {activeView === 'adoption' && (
-          <div>
-            <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
-                 <h2 className="text-2xl font-bold text-gray-800">{t.dashAdoption}</h2>
-                 
-                 {/* Tabs */}
-                 <div className="flex bg-gray-100 p-1 rounded-xl">
-                    <button 
-                        onClick={() => setAdoptionTab('find')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${adoptionTab === 'find' ? 'bg-white shadow-sm text-brand-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        {t.findPetsTab}
-                    </button>
-                    <button 
-                        onClick={() => setAdoptionTab('interests')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${adoptionTab === 'interests' ? 'bg-white shadow-sm text-brand-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                        {t.myInterestsTab}
-                    </button>
-                 </div>
-            </div>
-
-            {adoptionTab === 'find' ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {MOCK_ADOPTION_PETS.map(pet => (
-                    <div key={pet.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
-                    <div className="overflow-hidden h-48 relative">
-                        <img src={pet.image} alt={pet.name} className="w-full h-full object-cover bg-gray-100 transition-transform duration-500 group-hover:scale-105" />
-                        
-                        <button 
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(pet.id); }}
-                        className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-sm z-10"
-                        >
-                            <Heart 
-                            size={20} 
-                            className={`transition-colors ${currentUser.favorites?.includes(pet.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-                            />
-                        </button>
-
-                        {getDistanceText(pet.location) && (
-                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                                <Navigation size={10} />
-                                {getDistanceText(pet.location)}
-                            </div>
-                        )}
-                    </div>
-                    <div className="p-4">
-                        <h3 className="font-bold text-lg text-gray-900">{pet.name}</h3>
-                        <p className="text-sm text-gray-500">{pet.breed}</p>
-                        <p className="text-sm mt-2 text-gray-600 line-clamp-2">{pet.bio}</p>
-                        <Button 
-                        className="w-full mt-4"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onViewPet(pet);
-                        }}
-                        >
-                        {t.adoptMe}
-                        </Button>
-                    </div>
-                    </div>
-                ))}
-                </div>
-            ) : (
-                /* My Interests List */
-                <div className="space-y-4 max-w-3xl">
-                    {adoptionInterests.length > 0 ? (
-                        adoptionInterests.map(interest => {
-                            const pet = MOCK_ADOPTION_PETS.find(p => p.id === interest.petId);
-                            if (!pet) return null;
-                            
-                            return (
-                                <div key={interest.id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex items-center gap-4">
-                                    <img src={pet.image} alt={pet.name} className="w-20 h-20 rounded-lg object-cover bg-gray-100" />
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-bold text-lg text-gray-900">{pet.name}</h3>
-                                                <p className="text-sm text-gray-500">{new Date(interest.date).toLocaleDateString()}</p>
-                                            </div>
-                                            <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded-md border border-yellow-200 uppercase tracking-wider">
-                                                {interest.status === 'pending' ? t.statusPending : interest.status}
-                                            </span>
-                                        </div>
-                                        <div className="mt-2 text-sm text-gray-500">
-                                            {t.statusLabel}: <span className="font-medium text-gray-700">{t.statusPending}</span>
-                                        </div>
-                                    </div>
-                                    <Button size="sm" variant="outline" onClick={() => onViewPet(pet)}>
-                                        {t.viewDetails}
-                                    </Button>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                            <Heart size={32} className="mx-auto text-gray-300 mb-2" />
-                            <p className="text-gray-500 font-medium">{t.noInterests}</p>
-                            <Button variant="ghost" className="mt-2 text-brand-600" onClick={() => setAdoptionTab('find')}>
-                                {t.findPetsTab}
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            )}
-          </div>
+          <Suspense fallback={renderViewLoader()}>
+            <AdoptionView
+              lang={lang}
+              adoptionTab={adoptionTab}
+              setAdoptionTab={setAdoptionTab}
+              adoptionPets={adoptionPets}
+              currentUser={currentUser}
+              adoptionInterests={adoptionInterests}
+              toggleFavorite={toggleFavorite}
+              onViewPet={onViewPet}
+              getDistanceText={getDistanceText}
+            />
+          </Suspense>
         )}
 
         {/* Dating View */}
         {activeView === 'dating' && activePet && (
           checkPlanAccess('dating') ? (
-            <div>
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">{t.dashDating}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {MOCK_DATING_PETS.map(pet => (
-                  <div key={pet.id} className="relative bg-white rounded-2xl overflow-hidden shadow-lg aspect-[3/4] transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] group">
-                    <img src={pet.image} alt={pet.name} className="absolute inset-0 w-full h-full object-cover bg-gray-100 transition-transform duration-700 group-hover:scale-105" />
-                    
-                    {getDistanceText(pet.location) && (
-                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 z-10">
-                            <MapPin size={12} />
-                            {getDistanceText(pet.location)}
-                        </div>
-                    )}
-
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-6 pt-20 text-white">
-                      <h3 className="text-3xl font-bold">{pet.name}, {pet.age}</h3>
-                      <p className="text-lg opacity-90">{pet.breed}</p>
-                      <div className="flex gap-4 mt-4">
-                        <button className="flex-1 bg-white/20 backdrop-blur-md py-3 rounded-full text-white font-bold hover:bg-white/30 transition">❌</button>
-                        <button className="flex-1 bg-brand-500 py-3 rounded-full text-white font-bold hover:bg-brand-600 transition shadow-lg flex justify-center items-center gap-2">
-                          <Heart fill="white" size={20} /> {t.match}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Suspense fallback={renderViewLoader()}>
+              <DatingView
+                lang={lang}
+                activePet={activePet}
+                datingPets={datingPets}
+                getDistanceText={getDistanceText}
+              />
+            </Suspense>
           ) : (
-             <LockedFeature feature={t.dashDating} />
+             <LockedFeature title={t.featureLocked} description={t.upgradeToAccess} ctaLabel={t.unlockNow} onUnlock={() => setShowPlanModal(true)} />
           )
         )}
 
         {/* Health View */}
         {activeView === 'health' && activePet && (
           checkPlanAccess('health') ? (
-            <div className="max-w-3xl">
-              <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <Syringe className="text-brand-600" /> {t.vaccines} - <span className="text-brand-500">{activePet.name}</span>
-                  </h2>
-                  <Button size="sm" variant="outline" onClick={() => setShowAddVaccineModal(true)} className="flex items-center gap-2">
-                      <Plus size={16} /> <span className="hidden sm:inline">{t.addManual}</span>
-                  </Button>
-              </div>
-
-              {/* Quick Access QR Code Card */}
-              <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl shadow-lg p-6 mb-8 text-white flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div className="flex items-center gap-4">
-                      <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                          <QrCode size={32} />
-                      </div>
-                      <div>
-                          <h3 className="font-bold text-lg">{t.qrCodeTitle}</h3>
-                          <p className="text-white/90 text-sm max-w-md">{t.qrCodeDesc}</p>
-                      </div>
-                  </div>
-                  <Button 
-                      size="sm" 
-                      onClick={() => setShowQrModal(true)} 
-                      className="!bg-white !text-blue-600 hover:!bg-blue-50 border-none shadow-sm whitespace-nowrap"
-                  >
-                      {t.generateQrBtn}
-                  </Button>
-              </div>
-
-              {/* Health Table */}
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left whitespace-nowrap">
-                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
-                      <tr><th className="px-6 py-3">{t.healthVaccine}</th><th className="px-6 py-3">{t.healthDate}</th><th className="px-6 py-3">{t.healthNextDue}</th><th className="px-6 py-3">{t.healthStatus}</th></tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {activePet.vaccines && activePet.vaccines.length > 0 ? (
-                        activePet.vaccines.map(v => (
-                        <tr key={v.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-medium text-gray-900">{v.name}</td>
-                          <td className="px-6 py-4 text-gray-500">{new Date(v.date).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 text-brand-600 font-medium">{v.nextDueDate ? new Date(v.nextDueDate).toLocaleDateString() : '-'}</td>
-                          <td className="px-6 py-4"><span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">OK</span></td>
-                        </tr>
-                      ))) : (
-                          <tr><td colSpan={4} className="p-8 text-center text-gray-500">{t.healthNoRecords}</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">{t.healthTip}</div>
-            </div>
+            <Suspense fallback={renderViewLoader()}>
+              <HealthView
+                lang={lang}
+                activePet={activePet}
+                onOpenAddVaccine={() => setShowAddVaccineModal(true)}
+                onOpenQrModal={() => setShowQrModal(true)}
+              />
+            </Suspense>
           ) : (
-            <LockedFeature feature={t.dashHealth} />
+            <LockedFeature title={t.featureLocked} description={t.upgradeToAccess} ctaLabel={t.unlockNow} onUnlock={() => setShowPlanModal(true)} />
           )
         )}
 
         {/* Services View */}
         {activeView === 'services' && activePet && (
           checkPlanAccess('services') ? (
-             <ServiceBooking 
-                providers={MOCK_SERVICES} 
-                lang={lang} 
-                userLocation={currentUser.location}
-                pets={pets}
-                userId={currentUser.id}
-             />
+             <Suspense fallback={renderViewLoader()}>
+               <ServiceBooking 
+                  providers={serviceProviders} 
+                  lang={lang} 
+                  userLocation={currentUser.location}
+                  pets={pets}
+                  userId={currentUser.id}
+               />
+             </Suspense>
           ) : (
-             <LockedFeature feature={t.dashServices} />
+             <LockedFeature title={t.featureLocked} description={t.upgradeToAccess} ctaLabel={t.unlockNow} onUnlock={() => setShowPlanModal(true)} />
           )
         )}
 

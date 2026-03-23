@@ -1,35 +1,39 @@
 
-import React, { useState, useEffect } from 'react';
-import { Language, AppView, User, PlanType, Ong, Pet, Coordinates } from './types';
-import { TRANSLATIONS, MOCK_DAILY_PHOTOS, MOCK_ONGS, MOCK_DATING_PETS } from './constants';
-import { Dashboard } from './components/Dashboard';
-import { PublicAdoption } from './components/PublicAdoption';
-import { PublicOngs } from './components/PublicOngs';
-import { OngProfile } from './components/OngProfile';
-import { AdoptionPetProfile } from './components/AdoptionPetProfile';
-import { LegalPages } from './components/LegalPages';
-import { StaticPages } from './components/StaticPages';
-import { OngRegistration } from './components/OngRegistration';
+import React, { Suspense, lazy, useState, useEffect, useMemo } from 'react';
+import { Language, AppView, PlanType, Ong, Pet } from './types';
+import { TRANSLATIONS } from './constants';
 import { Button } from './components/Button';
 import { Lock, Check, Camera, Heart, ArrowRight, Eye, EyeOff, Instagram, Facebook, Twitter, Linkedin, MapPin, Loader2, Globe, HeartHandshake, Menu, X, ChevronLeft, ChevronRight, Search, ChevronDown, Youtube, QrCode, Syringe, Calendar, Stethoscope, Scissors, Home as HotelIcon, Footprints, Sparkles, LayoutDashboard } from 'lucide-react';
-import { db } from './services/db';
-import { checkPasswordStrength, validateEmail, mockReverseGeocode, saveLocationToStorage, getLocationFromStorage } from './utils';
+import { checkPasswordStrength, validateEmail, formatPhone } from './utils';
+import { adoptionService } from './services/adoption/adoptionService';
+import { ongService } from './services/ongs/ongService';
+import { catalogRepository } from './services/repositories/catalogRepository';
+import { feedbackService } from './services/browser/feedbackService';
+import { ThreadsIcon } from './components/app/ThreadsIcon';
+import { useAppSession } from './hooks/useAppSession';
+import { usePageMetadata } from './hooks/usePageMetadata';
+import { useStoredLocation } from './hooks/useStoredLocation';
+
+const Dashboard = lazy(() => import('./components/Dashboard').then((module) => ({ default: module.Dashboard })));
+const PublicAdoption = lazy(() => import('./components/PublicAdoption').then((module) => ({ default: module.PublicAdoption })));
+const PublicOngs = lazy(() => import('./components/PublicOngs').then((module) => ({ default: module.PublicOngs })));
+const OngProfile = lazy(() => import('./components/OngProfile').then((module) => ({ default: module.OngProfile })));
+const AdoptionPetProfile = lazy(() => import('./components/AdoptionPetProfile').then((module) => ({ default: module.AdoptionPetProfile })));
+const LegalPages = lazy(() => import('./components/LegalPages').then((module) => ({ default: module.LegalPages })));
+const StaticPages = lazy(() => import('./components/StaticPages').then((module) => ({ default: module.StaticPages })));
+const OngRegistration = lazy(() => import('./components/OngRegistration').then((module) => ({ default: module.OngRegistration })));
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>(Language.PT);
   const [view, setView] = useState<AppView>('landing');
   const [showLogin, setShowLogin] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
-  
-  // User Session State
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { currentUser, setCurrentUser } = useAppSession();
 
   // UI State
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [headerLocation, setHeaderLocation] = useState<string>('');
-  const [userCoords, setUserCoords] = useState<Coordinates | undefined>(undefined);
-  const [isLocating, setIsLocating] = useState(false);
+  const { headerLocation, userCoords, isLocating, detectLocation } = useStoredLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ongCurrentIndex, setOngCurrentIndex] = useState(0);
   const [selectedOng, setSelectedOng] = useState<Ong | null>(null);
@@ -49,28 +53,33 @@ const App: React.FC = () => {
 
   const t = TRANSLATIONS[lang];
   const passwordStrength = checkPasswordStrength(password);
+  const dailyPhotos = useMemo(() => catalogRepository.listDailyPhotos(), []);
+  const datingPets = useMemo(() => adoptionService.listDatingPets(), []);
+  const allOngs = useMemo(() => ongService.listAll(), [view]);
+  usePageMetadata(view, Boolean(currentUser));
 
   // Scroll to top whenever view changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
 
-  // Initialize persistence for location
   useEffect(() => {
-    const savedLocation = getLocationFromStorage();
-    if (savedLocation) {
-        setHeaderLocation(savedLocation);
-    }
-  }, []);
-
-  // Check for existing session on load
-  useEffect(() => {
-    const session = db.auth.getSession();
-    if (session) {
-      setCurrentUser(session);
+    if (currentUser) {
       setView('dashboard');
+      Promise.all([
+        import('./components/Dashboard'),
+        import('./components/dashboard/views/OverviewView'),
+        import('./components/dashboard/views/UserProfileView'),
+        import('./components/dashboard/views/PetProfileView'),
+        import('./components/dashboard/views/AdoptionView'),
+        import('./components/dashboard/views/DatingView'),
+        import('./components/dashboard/views/HealthView'),
+        import('./components/ServiceBooking'),
+      ]).catch(() => {
+        // Ignore preload failures; the views will still lazy-load on demand.
+      });
     }
-  }, []);
+  }, [currentUser]);
 
   // Handle Scroll Effect for Navbar
   useEffect(() => {
@@ -84,25 +93,23 @@ const App: React.FC = () => {
   // Photo Slideshow Effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentPhotoIndex((prev) => (prev + 1) % MOCK_DAILY_PHOTOS.length);
+      setCurrentPhotoIndex((prev) => (prev + 1) % dailyPhotos.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
-
-  const toggleLang = (l: Language) => setLang(l);
+  }, [dailyPhotos.length]);
 
   // Filter ONGs based on location
   const getFilteredOngs = () => {
-    if (!headerLocation) return MOCK_ONGS;
+    if (!headerLocation) return allOngs;
     
     // Simple check: if the ONG location contains the city name (or vice versa)
     const city = headerLocation.split(',')[0].trim();
-    const local = MOCK_ONGS.filter(ong => 
+    const local = allOngs.filter(ong => 
         ong.location.toLowerCase().includes(city.toLowerCase()) || 
         headerLocation.toLowerCase().includes(ong.location.toLowerCase())
     );
 
-    return local.length > 0 ? local : MOCK_ONGS;
+    return local.length > 0 ? local : allOngs;
   };
 
   const displayOngs = getFilteredOngs();
@@ -138,11 +145,11 @@ const App: React.FC = () => {
   };
 
   const handleInterest = (pet: Pet) => {
-      const session = db.auth.getSession();
+      const session = authService.getSession();
       if (session) {
           // If logged in, register interest immediately
-          db.adoptionInterests.create({ userId: session.id, petId: pet.id });
-          alert(t.interestSuccess);
+          adoptionService.registerInterest(session.id, pet.id);
+          feedbackService.alert(t.interestSuccess);
       } else {
           // If not logged in, queue interest and open signup for Basic plan
           setPendingInterestPet(pet);
@@ -150,53 +157,8 @@ const App: React.FC = () => {
       }
   };
 
-  // Phone Mask Helper
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '').slice(0, 11);
-    
-    if (numbers.length > 10) {
-      // (11) 91234-5678
-      return numbers.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
-    } else if (numbers.length > 6) {
-      // (11) 1234-5678 (Fixed line or partial mobile)
-      return numbers.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-    } else if (numbers.length > 2) {
-      return numbers.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
-    } else {
-      return numbers.replace(/^(\d*)/, '($1');
-    }
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(formatPhone(e.target.value));
-  };
-
-  const handleHeaderLocationClick = () => {
-      if ("geolocation" in navigator) {
-          setIsLocating(true);
-          navigator.geolocation.getCurrentPosition(async (position) => {
-              try {
-                  const lat = position.coords.latitude;
-                  const lng = position.coords.longitude;
-                  setUserCoords({ lat, lng }); // Save coords for distance calc
-                  const cityState = await mockReverseGeocode(lat, lng);
-                  setHeaderLocation(cityState);
-                  saveLocationToStorage(cityState); // Persist
-              } catch (e) {
-                  console.error("Geocoding failed", e);
-              } finally {
-                  setIsLocating(false);
-              }
-          }, (error) => {
-              console.error("Error getting location:", error.message);
-              // Fallback for demo purposes
-              const fallback = "São Paulo, SP";
-              setHeaderLocation(fallback);
-              setUserCoords({ lat: -23.5505, lng: -46.6333 }); // Mock SP coords
-              saveLocationToStorage(fallback);
-              setIsLocating(false);
-          });
-      }
   };
 
   const handleAuth = (e: React.FormEvent) => {
@@ -209,15 +171,15 @@ const App: React.FC = () => {
     }
 
     if (isLoginMode) {
-      const user = db.auth.login(email, password);
+      const user = authService.login(email, password);
       if (user) {
         setShowLogin(false);
         setCurrentUser(user);
         
         // If there was a pending interest, process it
         if (pendingInterestPet) {
-            db.adoptionInterests.create({ userId: user.id, petId: pendingInterestPet.id });
-            alert(t.interestSuccess);
+            adoptionService.registerInterest(user.id, pendingInterestPet.id);
+            feedbackService.alert(t.interestSuccess);
             setPendingInterestPet(null);
         }
         
@@ -238,7 +200,7 @@ const App: React.FC = () => {
         return;
       }
       
-      const newUser = db.auth.signup({
+      const newUser = authService.signup({
         name,
         email,
         password, // Note: In production, never store plain text passwords
@@ -253,8 +215,8 @@ const App: React.FC = () => {
 
         // Handle Pending Interest
         if (pendingInterestPet) {
-             db.adoptionInterests.create({ userId: newUser.id, petId: pendingInterestPet.id });
-             alert(t.interestSuccess);
+             adoptionService.registerInterest(newUser.id, pendingInterestPet.id);
+             feedbackService.alert(t.interestSuccess);
              setPendingInterestPet(null);
         }
         
@@ -295,7 +257,7 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    db.auth.logout();
+    authService.logout();
     setCurrentUser(null);
     setView('landing');
   };
@@ -321,78 +283,104 @@ const App: React.FC = () => {
       return t.strong;
   };
 
-  // SVG for Threads Icon
-  const ThreadsIcon = ({ size = 20, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M19 12a7 7 0 1 0-1.7 4.6c-.7 1.3-1.6 2.3-3.3 2.3-2 0-3-1.8-3-4 0-2.3 1.2-4 3-4 1.5 0 2.5 1 2.5 3v1c0 1.5 1 2.5 2 2.5s2.5-1.5 2.5-3.5C21 8 17 4 12 4 7 4 3 8 3 13.5 3 19 8 22 13 22" />
-    </svg>
+  const renderViewLoader = () => (
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center gap-3 text-brand-600 font-bold">
+        <Loader2 size={20} className="animate-spin" />
+        <span>Carregando...</span>
+      </div>
+    </div>
   );
 
   const renderContent = () => {
     if (view === 'dashboard') {
-      return <Dashboard lang={lang} setLang={setLang} onLogout={handleLogout} onViewPet={handleViewPet} />;
+      return (
+        <Suspense fallback={renderViewLoader()}>
+          <Dashboard lang={lang} setLang={setLang} onLogout={handleLogout} onViewPet={handleViewPet} />
+        </Suspense>
+      );
     }
 
     if (view === 'public-adoption') {
       return (
-        <PublicAdoption 
-          lang={lang} 
-          setLang={setLang} 
-          onBack={() => setView('landing')} 
-          onSignup={() => openSignup('basic')}
-          onViewPet={handleViewPet}
-          onInterest={handleInterest}
-        />
+        <Suspense fallback={renderViewLoader()}>
+          <PublicAdoption 
+            lang={lang} 
+            setLang={setLang} 
+            onBack={() => setView('landing')} 
+            onSignup={() => openSignup('basic')}
+            onViewPet={handleViewPet}
+            onInterest={handleInterest}
+          />
+        </Suspense>
       );
     }
 
     if (view === 'public-ongs') {
         return (
-          <PublicOngs 
-              lang={lang} 
-              setLang={setLang} 
-              onBack={() => setView('landing')} 
-              onViewOng={handleViewOng}
-              userCoordinates={userCoords}
-          />
+          <Suspense fallback={renderViewLoader()}>
+            <PublicOngs 
+                lang={lang} 
+                setLang={setLang} 
+                onBack={() => setView('landing')} 
+                onViewOng={handleViewOng}
+                userCoordinates={userCoords}
+            />
+          </Suspense>
         );
     }
 
     if (view === 'ong-profile' && selectedOng) {
         return (
-          <OngProfile 
-            lang={lang} 
-            ong={selectedOng} 
-            onBack={() => setView('landing')} 
-            onViewPet={handleViewPet}
-          />
+          <Suspense fallback={renderViewLoader()}>
+            <OngProfile 
+              lang={lang} 
+              ong={selectedOng} 
+              onBack={() => setView('landing')} 
+              onViewPet={handleViewPet}
+            />
+          </Suspense>
         );
     }
 
     if (view === 'adoption-pet-profile' && selectedPet) {
         return (
-          <AdoptionPetProfile 
-              lang={lang} 
-              pet={selectedPet} 
-              onBack={() => setView('public-adoption')}
-              onSignup={(pet) => {
-                  if(pet) setPendingInterestPet(pet);
-                  handleInterest(pet || selectedPet);
-              }}
-          />
+          <Suspense fallback={renderViewLoader()}>
+            <AdoptionPetProfile 
+                lang={lang} 
+                pet={selectedPet} 
+                onBack={() => setView('public-adoption')}
+                onSignup={(pet) => {
+                    if(pet) setPendingInterestPet(pet);
+                    handleInterest(pet || selectedPet);
+                }}
+            />
+          </Suspense>
         );
     }
 
     if (view === 'terms' || view === 'privacy') {
-      return <LegalPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+      return (
+        <Suspense fallback={renderViewLoader()}>
+          <LegalPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />
+        </Suspense>
+      );
     }
 
     if (view === 'about' || view === 'careers' || view === 'blog' || view === 'contact' || view === 'help') {
-      return <StaticPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />;
+      return (
+        <Suspense fallback={renderViewLoader()}>
+          <StaticPages type={view} lang={lang} setLang={setLang} onBack={() => setView('landing')} />
+        </Suspense>
+      );
     }
 
     if (view === 'ong-register') {
-        return <OngRegistration lang={lang} onBack={() => setView('landing')} prefilledLocation={headerLocation} />;
+        return (
+          <Suspense fallback={renderViewLoader()}>
+            <OngRegistration lang={lang} onBack={() => setView('landing')} prefilledLocation={headerLocation} />
+          </Suspense>
+        );
     }
 
     // Default: Landing Page
@@ -403,7 +391,7 @@ const App: React.FC = () => {
            <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
                <div className="flex items-center gap-4 max-w-[65%] md:max-w-none">
                    <button 
-                    onClick={handleHeaderLocationClick}
+                    onClick={detectLocation}
                     disabled={isLocating}
                     className="flex items-center gap-1.5 hover:text-brand-200 transition-colors truncate"
                    >
@@ -574,7 +562,7 @@ const App: React.FC = () => {
                           <Camera size={14} /> Foto da Semana
                       </div>
   
-                      {MOCK_DAILY_PHOTOS.map((photo, index) => (
+                      {dailyPhotos.map((photo, index) => (
                         <div 
                           key={index}
                           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -602,7 +590,7 @@ const App: React.FC = () => {
                       ))}
                       
                       <div className="absolute -right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
-                         {MOCK_DAILY_PHOTOS.map((_, idx) => (
+                         {dailyPhotos.map((_, idx) => (
                            <div 
                               key={idx} 
                               className={`w-2 h-2 rounded-full transition-all duration-300 ${
@@ -757,7 +745,7 @@ const App: React.FC = () => {
                <div className="flex items-center justify-between mb-8">
                    <div className="flex items-center gap-4">
                       <h3 className="text-2xl font-bold text-gray-800">{t.registeredOngsTitle}</h3>
-                      {headerLocation && displayOngs.length < MOCK_ONGS.length && (
+                      {headerLocation && displayOngs.length < allOngs.length && (
                           <span className="bg-brand-50 text-brand-600 px-3 py-1 rounded-full text-xs font-bold border border-brand-100 flex items-center">
                               <MapPin size={10} className="mr-1" />
                               {headerLocation.split(',')[0]}
@@ -848,9 +836,9 @@ const App: React.FC = () => {
                           {/* Fake Dating Card 1 */}
                           <div className="absolute left-0 md:left-10 bottom-10 w-48 h-64 bg-white rounded-2xl shadow-2xl p-2 transform -rotate-12 hover:-rotate-6 transition-transform duration-500 z-10">
                               <div className="w-full h-full relative overflow-hidden rounded-xl">
-                                  <img src={MOCK_DATING_PETS[0].image} className="w-full h-full object-cover" alt="Pet 1" />
+                                  <img src={datingPets[0].image} className="w-full h-full object-cover" alt="Pet 1" />
                                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3 text-white">
-                                      <span className="font-bold">{MOCK_DATING_PETS[0].name}</span>, {MOCK_DATING_PETS[0].age}
+                                      <span className="font-bold">{datingPets[0].name}</span>, {datingPets[0].age}
                                   </div>
                               </div>
                           </div>
@@ -858,9 +846,9 @@ const App: React.FC = () => {
                            {/* Fake Dating Card 2 */}
                           <div className="absolute right-0 md:right-10 top-10 w-48 h-64 bg-white rounded-2xl shadow-2xl p-2 transform rotate-6 hover:rotate-3 transition-transform duration-500 z-20">
                               <div className="w-full h-full relative overflow-hidden rounded-xl">
-                                  <img src={MOCK_DATING_PETS[1].image} className="w-full h-full object-cover" alt="Pet 2" />
+                                  <img src={datingPets[1].image} className="w-full h-full object-cover" alt="Pet 2" />
                                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3 text-white">
-                                      <span className="font-bold">{MOCK_DATING_PETS[1].name}</span>, {MOCK_DATING_PETS[1].age}
+                                      <span className="font-bold">{datingPets[1].name}</span>, {datingPets[1].age}
                                   </div>
                               </div>
                                {/* Match Badge */}

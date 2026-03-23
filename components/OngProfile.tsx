@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { Language, Ong, Pet } from '../types';
-import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
 import { ArrowLeft, MapPin, Mail, Phone, Globe, Copy, Check, Info, Dog, Cat, Heart, Calendar, TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText } from 'lucide-react';
+import { ongService } from '../services/ongs/ongService';
 
 interface OngProfileProps {
   lang: Language;
@@ -19,7 +20,7 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
   const [activeTab, setActiveTab] = useState<'about' | 'transparency'>('about');
 
   // Filter pets that belong to this NGO
-  const availablePets = MOCK_ADOPTION_PETS.filter(pet => pet.ongId === ong.id);
+  const availablePets = ongService.listPetsByOngId(ong.id);
 
   const handleCopyPix = () => {
     if (ong.pixKey) {
@@ -290,7 +291,7 @@ export const OngProfile: React.FC<OngProfileProps> = ({ lang, ong, onBack, onVie
                                 </a>
                             )}
                             {ong.website && (
-                                <a href="#" className="flex items-center gap-4 text-gray-600 group hover:text-brand-600 transition-colors p-3 rounded-xl hover:bg-brand-50">
+                                <a href={ong.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-600 group hover:text-brand-600 transition-colors p-3 rounded-xl hover:bg-brand-50">
                                     <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 shrink-0 group-hover:bg-brand-100 transition-colors">
                                         <Globe size={20} />
                                     </div>

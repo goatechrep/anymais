@@ -1,5 +1,5 @@
-import { User, Pet, ServiceProvider, Ong, Appointment, AdoptionInterest, Vaccine } from '../types';
-import { MOCK_ADOPTION_PETS, MOCK_DATING_PETS, MOCK_SERVICES, MOCK_ONGS } from '../constants';
+import { User, Pet, Ong, Appointment, AdoptionInterest, Vaccine } from '../types';
+import { MOCK_ONGS } from '../constants';
 
 const DB_KEY = 'anymais_db_v1';
 const SESSION_KEY = 'anymais_session_v1';

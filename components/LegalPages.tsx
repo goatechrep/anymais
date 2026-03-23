@@ -58,7 +58,7 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, lang, setLang, onB
           
           <div className="prose prose-brand text-gray-600 leading-relaxed space-y-6">
             <p className="font-medium text-gray-900">
-              {lang === Language.PT ? 'Última atualização: Outubro 2024' : 'Last updated: October 2024'}
+              {lang === Language.PT ? 'Última atualização: Outubro 2025' : 'Last updated: October 2025'}
             </p>
 
             {type === 'terms' ? (

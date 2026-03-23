@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { Language, Pet } from '../types';
-import { TRANSLATIONS, MOCK_ONGS } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
 import { ArrowLeft, MapPin, Heart, Info, Calendar, Ruler, Phone, Mail, Globe, Share2, ShieldCheck, Building2, Check } from 'lucide-react';
+import { ongService } from '../services/ongs/ongService';
 
 interface AdoptionPetProfileProps {
   lang: Language;
@@ -18,7 +19,7 @@ export const AdoptionPetProfile: React.FC<AdoptionPetProfileProps> = ({ lang, pe
   const [showCopied, setShowCopied] = useState(false);
   
   // Find associated NGO if any
-  const ownerOng = pet.ongId ? MOCK_ONGS.find(o => o.id === pet.ongId) : null;
+  const ownerOng = pet.ongId ? ongService.getById(pet.ongId) : null;
 
   const copyToClipboard = () => {
       const url = window.location.href;

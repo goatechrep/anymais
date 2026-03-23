@@ -3,8 +3,10 @@ import { ServiceProvider, Language, Coordinates, Pet, Appointment } from '../typ
 import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
 import { Star, MapPin, Calendar, Clock, ShieldCheck, Dog, Search, Loader2, Filter, X, CheckCircle, Car, AlertTriangle } from 'lucide-react';
-import { calculateDistance, mockGeocode } from '../utils';
-import { db } from '../services/db';
+import { calculateDistance } from '../utils';
+import { appointmentService } from '../services/appointments/appointmentService';
+import { locationService } from '../services/location/locationService';
+import { feedbackService } from '../services/browser/feedbackService';
 
 interface ServiceBookingProps {
   providers: ServiceProvider[];
@@ -46,7 +48,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
   // Load appointments
   const refreshAppointments = () => {
       if (userId) {
-          const apps = db.appointments.listByUser(userId);
+          const apps = appointmentService.listByUser(userId);
           setMyAppointments(apps);
       }
   };
@@ -68,11 +70,11 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
 
     setIsSearching(true);
     try {
-        const coords = await mockGeocode(searchQuery);
+        const coords = await locationService.geocode(searchQuery);
         if (coords) {
             setReferenceLocation(coords);
         } else {
-            alert(t.locationNotFound);
+            feedbackService.alert(t.locationNotFound);
         }
     } catch (error) {
         console.error("Geocoding error", error);
@@ -108,7 +110,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
           status: 'confirmed'
       };
 
-      db.appointments.create(newAppointment);
+      appointmentService.create(newAppointment);
       setBookingSuccess(true);
       refreshAppointments();
       
@@ -127,7 +129,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
 
   const confirmCancellation = () => {
       if (appointmentToCancel) {
-          db.appointments.updateStatus(appointmentToCancel, 'cancelled');
+          appointmentService.updateStatus(appointmentToCancel, 'cancelled');
           refreshAppointments();
           setIsCancelModalOpen(false);
           setAppointmentToCancel(null);
@@ -135,8 +137,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({ providers, lang,
   };
 
   const handleCompleteService = (aptId: string) => {
-      if (window.confirm(t.confirmService)) {
-          db.appointments.updateStatus(aptId, 'completed');
+      if (feedbackService.confirm(t.confirmService)) {
+          appointmentService.updateStatus(aptId, 'completed');
           refreshAppointments();
       }
   };

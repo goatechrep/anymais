@@ -1,12 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
+import { appEnv } from "../config/env";
 import { Language } from "../types";
 
 // Note: In a real app, API calls should be proxied through a backend to protect the key.
-// For this demo, we assume the key is in process.env.API_KEY.
+// For this demo, we read the public env configured for the Vite app.
 // If the key is missing, we'll return a mock string to prevent crashing in the UI demo.
 
 export const generatePetBio = async (name: string, breed: string, traits: string, lang: Language = Language.PT): Promise<string> => {
-  if (!process.env.API_KEY) {
+  if (!appEnv.geminiApiKey) {
     console.warn("API_KEY is missing. Returning mock bio.");
     const mockMsg = lang === Language.PT 
       ? `(Bio IA Mock): ${name} é um ${breed} maravilhoso e muito ${traits}. Adora brincar e procura novos amigos!`
@@ -15,7 +16,7 @@ export const generatePetBio = async (name: string, breed: string, traits: string
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: appEnv.geminiApiKey });
     const model = 'gemini-2.5-flash';
     
     let languageName = 'Portuguese';

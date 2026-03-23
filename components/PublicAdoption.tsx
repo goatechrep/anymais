@@ -2,10 +2,12 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Language, Pet } from '../types';
-import { TRANSLATIONS, MOCK_ADOPTION_PETS } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
 import { ArrowLeft, Heart, Dog, Cat, Info, Play, Pause, ChevronDown, Globe, MapPin, Navigation, Ruler, Check } from 'lucide-react';
-import { db } from '../services/db';
+import { adoptionService } from '../services/adoption/adoptionService';
+import { authService } from '../services/auth/authService';
+import { guestFavoritesService } from '../services/session/guestFavoritesService';
 
 interface PublicAdoptionProps {
   lang: Language;
@@ -18,20 +20,16 @@ interface PublicAdoptionProps {
 
 export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, onBack, onSignup, onViewPet, onInterest }) => {
   const t = TRANSLATIONS[lang];
+  const pets = adoptionService.listPublicPets();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [successId, setSuccessId] = useState<string | null>(null);
   
   // Favorites State
   const [favorites, setFavorites] = useState<string[]>(() => {
-    const session = db.auth.getSession();
+    const session = authService.getSession();
     if (session && session.favorites) return session.favorites;
-    const local = localStorage.getItem('guest_favorites');
-    try {
-        return local ? JSON.parse(local) : [];
-    } catch {
-        return [];
-    }
+    return guestFavoritesService.getAll();
   });
 
   const toggleFavorite = (e: React.MouseEvent, petId: string) => {
@@ -46,14 +44,14 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
     }
     setFavorites(newFavs);
 
-    const session = db.auth.getSession();
+    const session = authService.getSession();
     if (session) {
         // If logged in, update user profile
         const updatedUser = { ...session, favorites: newFavs };
-        db.auth.updateUser(updatedUser);
+        authService.updateUser(updatedUser);
     } else {
         // If guest, save to local storage
-        localStorage.setItem('guest_favorites', JSON.stringify(newFavs));
+        guestFavoritesService.save(newFavs);
     }
   };
 
@@ -159,7 +157,7 @@ export const PublicAdoption: React.FC<PublicAdoptionProps> = ({ lang, setLang, o
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-               {MOCK_ADOPTION_PETS.map(pet => {
+               {pets.map(pet => {
                   const isSuccess = successId === pet.id;
                   return (
                   <div 

@@ -4,7 +4,8 @@ import { TRANSLATIONS } from '../constants';
 import { formatCNPJ, formatPhone, validateCNPJ, validateTaxID } from '../utils';
 import { Button } from './Button';
 import { ArrowLeft, Building2, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
-import { db } from '../services/db';
+import { authService } from '../services/auth/authService';
+import { ongService } from '../services/ongs/ongService';
 
 interface OngRegistrationProps {
   lang: Language;
@@ -64,12 +65,12 @@ export const OngRegistration: React.FC<OngRegistrationProps> = ({ lang, onBack, 
     }
 
     // Determine current user for ownership
-    const currentUser = db.auth.getSession();
+    const currentUser = authService.getSession();
 
     // Simulate API call and save to DB
     setTimeout(() => {
         // Create the NGO in the local DB
-        db.ongs.create({
+        ongService.create({
             name: formData.name,
             description: formData.description,
             location: formData.location,

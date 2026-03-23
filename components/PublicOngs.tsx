@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { Language, Ong, Coordinates } from '../types';
-import { TRANSLATIONS, MOCK_ONGS } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import { Button } from './Button';
 import { ArrowLeft, MapPin, Search, ChevronLeft, ChevronRight, Phone, Mail, ArrowRight, ExternalLink, Globe, ChevronDown, Navigation } from 'lucide-react';
 import { calculateDistance } from '../utils';
+import { ongService } from '../services/ongs/ongService';
 
 interface PublicOngsProps {
   lang: Language;
@@ -17,11 +18,12 @@ interface PublicOngsProps {
 
 export const PublicOngs: React.FC<PublicOngsProps> = ({ lang, setLang, onBack, onViewOng, userCoordinates }) => {
   const t = TRANSLATIONS[lang];
+  const ongs = ongService.listAll();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const filteredOngs = MOCK_ONGS.filter(ong => 
+  const filteredOngs = ongs.filter(ong => 
     ong.location.toLowerCase().includes(searchQuery.toLowerCase()) || 
     ong.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
